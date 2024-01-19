@@ -1,6 +1,6 @@
 # Battlecode 2023 Scaffold
 
-This is the Battlecode 2023 scaffold, containing an `examplefuncsplayer`. Read [Google Doc here](https://docs.google.com/document/d/1UX7giVlS1l-RzncPpiYSfFUnFTn5wk-bEmbNObQLTqk/edit?usp=sharing)
+This is the Battlecode 2023 scaffold, containing an `examplefuncsplayer`. READ [Google Doc](https://docs.google.com/document/d/1UX7giVlS1l-RzncPpiYSfFUnFTn5wk-bEmbNObQLTqk/edit)
 
 ### Project Structure
 
