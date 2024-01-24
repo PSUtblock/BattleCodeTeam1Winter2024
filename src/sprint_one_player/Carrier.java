@@ -4,28 +4,19 @@ import battlecode.common.*;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Random;
+//import java.util.Random;
 import java.util.Set;
 
+import static sprint_one_player.RobotPlayer.directions;
+import static sprint_one_player.RobotPlayer.rng;
+
 public class Carrier {
-
-    /** Stored values sent from RobotPlayer. Add or remove as needed **/
-    private static Random rng;
-    private static Direction[] directions;
-
-    /** Constructor for Carriers. This establishes values passed from Robot Player That are used
-     * at Headquarters. Add or remove parameters as needed **/
-    public Carrier(Random rng, Direction[] directions)
-    {
-        this.rng = rng;
-        this.directions = directions;
-    }
 
     /**
      * Run a single turn for a Carrier.
      * This code is wrapped inside the infinite loop in run(), so it is called once per turn.
      */
-    static void runCarrier(RobotController rc) throws GameActionException {
+    public static void runCarrier(RobotController rc) throws GameActionException {
         if (rc.getAnchor() != null) {
             // If I have an anchor singularly focus on getting it to the first island I see
             int[] islands = rc.senseNearbyIslands();

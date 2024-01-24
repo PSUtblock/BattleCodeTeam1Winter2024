@@ -2,10 +2,10 @@ package sprint_one_player;
 
 import battlecode.common.*;
 
-import java.util.Arrays;
-import java.util.HashSet;
+//import java.util.Arrays;
+//import java.util.HashSet;
 import java.util.Random;
-import java.util.Set;
+//import java.util.Set;
 
 /**
  * RobotPlayer is the class that describes your main robot strategy.
@@ -20,6 +20,7 @@ public strictfp class RobotPlayer {
      * these variables are static, in Battlecode they aren't actually shared between your robots.
      */
     static int turnCount = 0;
+    static MapLocation testWell = new MapLocation(9,14);
 
     /**
      * A random number generator.
@@ -41,11 +42,6 @@ public strictfp class RobotPlayer {
         Direction.NORTHWEST,
     };
 
-    /** Instantiation of the Bot Classes **/
-    static Headquarters hq = new Headquarters(rng, directions);
-    static Carrier carrier = new Carrier(rng,directions);
-    static Launcher launcher = new Launcher(rng,directions);
-
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
      * It is like the main function for your robot. If this method returns, the robot dies!
@@ -61,7 +57,7 @@ public strictfp class RobotPlayer {
         System.out.println("I'm a " + rc.getType() + " and I just got created! I have health " + rc.getHealth());
 
         // You can also use indicators to save debug notes in replays.
-        rc.setIndicatorString("Hello world, examplefuncsplayer2!");
+        rc.setIndicatorString("Hello world, I am Sprint Player One!");
 
         while (true) {
             // This code runs during the entire lifespan of the robot, which is why it is in an infinite
@@ -77,9 +73,9 @@ public strictfp class RobotPlayer {
                 // use different strategies on different robots. If you wish, you are free to rewrite
                 // this into a different control structure!
                 switch (rc.getType()) {
-                    case HEADQUARTERS:     hq.runHeadquarters(rc);  break;
-                    case CARRIER:      carrier.runCarrier(rc);   break;
-                    case LAUNCHER: launcher.runLauncher(rc); break;
+                    case HEADQUARTERS:     Headquarters.runHeadquarters(rc) ;  break;
+                    case CARRIER:      Carrier.runCarrier(rc);   break;
+                    case LAUNCHER: Launcher.runLauncher(rc); break;
                     case BOOSTER: // Examplefuncsplayer doesn't use any of these robot types below.
                     case DESTABILIZER: // You might want to give them a try!
                     case AMPLIFIER:       break;
