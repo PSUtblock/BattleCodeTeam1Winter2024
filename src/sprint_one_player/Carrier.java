@@ -11,12 +11,18 @@ import static sprint_one_player.RobotPlayer.directions;
 import static sprint_one_player.RobotPlayer.rng;
 
 public class Carrier {
+    // Map location to store headquarters.
+    private static MapLocation hqLocation;
 
     /**
      * Run a single turn for a Carrier.
      * This code is wrapped inside the infinite loop in run(), so it is called once per turn.
      */
     public static void runCarrier(RobotController rc) throws GameActionException {
+        // If the headquarters have not already been found, locate it.
+        if (hqLocation == null)
+            locateHQ(rc);
+
         if (rc.getAnchor() != null) {
             // If I have an anchor singularly focus on getting it to the first island I see
             int[] islands = rc.senseNearbyIslands();
@@ -66,11 +72,19 @@ public class Carrier {
             }
         }
 
-        // If we can see a well, move towards it
-        WellInfo[] wells = rc.senseNearbyWells();
-        if (wells.length > 1 && rng.nextInt(2) == 1) {
-            WellInfo well_one = wells[1];
-            Direction dir = me.directionTo(well_one.getMapLocation());
+        // If the robot has capacity, move toward a nearby well.
+        if (rc.getWeight() < GameConstants.CARRIER_CAPACITY) {
+            WellInfo[] wells = rc.senseNearbyWells();
+            if (wells.length > 1 && rng.nextInt(2) == 1) {
+                WellInfo well_one = wells[1];
+                Direction dir = me.directionTo(well_one.getMapLocation());
+                if (rc.canMove(dir))
+                    rc.move(dir);
+            }
+        }
+        // If the robot's capacity is full, move toward headquarters.
+        else if (hqLocation != null) {
+            Direction dir = me.directionTo(hqLocation);
             if (rc.canMove(dir))
                 rc.move(dir);
         }
@@ -78,6 +92,20 @@ public class Carrier {
         Direction dir = directions[rng.nextInt(directions.length)];
         if (rc.canMove(dir)) {
             rc.move(dir);
+        }
+    }
+
+    /** Locate the Headquarters, so the Carrier can always find its way back.**/
+    public static void locateHQ(RobotController rc) throws GameActionException {
+        RobotInfo[] robots = rc.senseNearbyRobots();
+
+        // Check for this teams Headquarters and record its location.
+        for (RobotInfo robot : robots) {
+            if ((robot.getTeam() == rc.getTeam()) && (robot.getType() == RobotType.HEADQUARTERS)) {
+                hqLocation = robot.getLocation();
+                rc.setIndicatorString("Found headquarters at: " + hqLocation);
+                break;
+            }
         }
     }
 }
