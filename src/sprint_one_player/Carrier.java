@@ -11,14 +11,18 @@ import static sprint_one_player.RobotPlayer.directions;
 import static sprint_one_player.RobotPlayer.rng;
 
 public class Carrier {
-    // Map location to store headquarters.
+    // Map locations to store headquarters and well position.
     private static MapLocation hqLocation;
+    private static MapLocation wellLocation;
 
     /**
      * Run a single turn for a Carrier.
      * This code is wrapped inside the infinite loop in run(), so it is called once per turn.
      */
     public static void runCarrier(RobotController rc) throws GameActionException {
+        // Get robot's current location.
+        MapLocation me = rc.getLocation();
+
         // If the headquarters have not already been found, locate it.
         if (hqLocation == null)
             locateHQ(rc);
@@ -35,9 +39,10 @@ public class Carrier {
                 MapLocation islandLocation = islandLocs.iterator().next();
                 rc.setIndicatorString("Moving my anchor towards " + islandLocation);
                 while (!rc.getLocation().equals(islandLocation)) {
-                    Direction dir = rc.getLocation().directionTo(islandLocation);
+                    Direction dir = me.directionTo(islandLocation);
                     if (rc.canMove(dir)) {
                         rc.move(dir);
+                        me = rc.getLocation();
                     }
                 }
                 if (rc.canPlaceAnchor()) {
@@ -47,7 +52,6 @@ public class Carrier {
             }
         }
         // Try to gather from squares around us.
-        MapLocation me = rc.getLocation();
         for (int dx = -1; dx <= 1; dx++) {
             for (int dy = -1; dy <= 1; dy++) {
                 MapLocation wellLocation = new MapLocation(me.x + dx, me.y + dy);
@@ -74,10 +78,9 @@ public class Carrier {
 
         // If the robot has capacity, move toward a nearby well.
         if (rc.getWeight() < GameConstants.CARRIER_CAPACITY) {
-            WellInfo[] wells = rc.senseNearbyWells();
-            if (wells.length > 1 && rng.nextInt(2) == 1) {
-                WellInfo well_one = wells[1];
-                Direction dir = me.directionTo(well_one.getMapLocation());
+            locateWell(rc, me);
+            if (wellLocation != null) {
+                Direction dir = me.directionTo(wellLocation);
                 if (rc.canMove(dir))
                     rc.move(dir);
             }
@@ -87,11 +90,12 @@ public class Carrier {
             Direction dir = me.directionTo(hqLocation);
             if (rc.canMove(dir))
                 rc.move(dir);
-        }
-        // Also try to move randomly.
-        Direction dir = directions[rng.nextInt(directions.length)];
-        if (rc.canMove(dir)) {
-            rc.move(dir);
+        } else {
+            // Also try to move randomly.
+            Direction dir = directions[rng.nextInt(directions.length)];
+            if (rc.canMove(dir)) {
+                rc.move(dir);
+            }
         }
     }
 
@@ -106,6 +110,36 @@ public class Carrier {
                 rc.setIndicatorString("Found headquarters at: " + hqLocation);
                 break;
             }
+        }
+    }
+
+    /** Locate the closest well based on current robot's location.**/
+    public static void locateWell(RobotController rc, MapLocation me) throws GameActionException {
+        WellInfo[] wells = rc.senseNearbyWells();
+
+        // Find the closest well if more than one is nearby.
+        if (wells.length > 1) {
+            WellInfo closestWell = wells[0];
+            int minDistance = me.distanceSquaredTo(closestWell.getMapLocation());
+
+            for (WellInfo well : wells) {
+                int wellDistance = me.distanceSquaredTo(well.getMapLocation());
+                if (minDistance > wellDistance) {
+                    minDistance = wellDistance;
+                    closestWell = well;
+                }
+            }
+            // Move toward the closest well.
+            wellLocation = closestWell.getMapLocation();
+            rc.setIndicatorString("Found closest well at: " + wellLocation);
+        }
+        // If only one well is nearby, move to it.
+        else if (wells.length == 1) {
+            wellLocation = wells[0].getMapLocation();
+            rc.setIndicatorString("Found well at: " + wellLocation);
+        }
+        else {
+            rc.setIndicatorString("No wells are nearby.");
         }
     }
 }
