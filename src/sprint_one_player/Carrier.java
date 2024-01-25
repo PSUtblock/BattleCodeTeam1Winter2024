@@ -52,20 +52,8 @@ public class Carrier {
             }
         }
         // Try to gather from squares around us.
-        for (int dx = -1; dx <= 1; dx++) {
-            for (int dy = -1; dy <= 1; dy++) {
-                MapLocation wellLocation = new MapLocation(me.x + dx, me.y + dy);
-                if (rc.canCollectResource(wellLocation, -1)) {
-                    if (rng.nextBoolean()) {
-                        rc.collectResource(wellLocation, -1);
-                        rc.setIndicatorString("Collecting, now have, AD:" +
-                                rc.getResourceAmount(ResourceType.ADAMANTIUM) +
-                                " MN: " + rc.getResourceAmount(ResourceType.MANA) +
-                                " EX: " + rc.getResourceAmount(ResourceType.ELIXIR));
-                    }
-                }
-            }
-        }
+        gatherAdjacentSquares(rc, me);
+
         // Occasionally try out the carriers attack
 //        if (rng.nextInt(20) == 1) {
 //            RobotInfo[] enemyRobots = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
@@ -99,7 +87,7 @@ public class Carrier {
         }
     }
 
-    /** Locate the Headquarters, so the Carrier can always find its way back.**/
+    /** Locate the Headquarters, so the Carrier can always find its way back. **/
     public static void locateHQ(RobotController rc) throws GameActionException {
         RobotInfo[] robots = rc.senseNearbyRobots();
 
@@ -113,7 +101,7 @@ public class Carrier {
         }
     }
 
-    /** Locate the closest well based on current robot's location.**/
+    /** Locate the closest well based on current robot's location. **/
     public static void locateWell(RobotController rc, MapLocation me) throws GameActionException {
         WellInfo[] wells = rc.senseNearbyWells();
 
@@ -142,4 +130,21 @@ public class Carrier {
             rc.setIndicatorString("No wells are nearby.");
         }
     }
+
+    /** Gather from squares around the robot. **/
+    public static void gatherAdjacentSquares(RobotController rc, MapLocation me) throws GameActionException {
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                MapLocation adjacentLoc = new MapLocation(me.x + dx, me.y + dy);
+                if (rc.canCollectResource(adjacentLoc, -1)) {
+                    rc.collectResource(adjacentLoc, -1);
+                    rc.setIndicatorString("Collecting, now have, AD:" +
+                            rc.getResourceAmount(ResourceType.ADAMANTIUM) +
+                            " MN: " + rc.getResourceAmount(ResourceType.MANA) +
+                            " EX: " + rc.getResourceAmount(ResourceType.ELIXIR));
+                }
+            }
+        }
+    }
+
 }
