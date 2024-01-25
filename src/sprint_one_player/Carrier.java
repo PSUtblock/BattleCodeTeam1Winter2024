@@ -27,6 +27,10 @@ public class Carrier {
         if (hqLocation == null)
             locateHQ(rc);
 
+        // If the robot does not have an anchor, try to collect one.
+        if (rc.getAnchor() == null)
+            collectAnchor(rc);
+
         if (rc.getAnchor() != null) {
             // If I have an anchor singularly focus on getting it to the first island I see
             int[] islands = rc.senseNearbyIslands();
@@ -144,6 +148,14 @@ public class Carrier {
                             " EX: " + rc.getResourceAmount(ResourceType.ELIXIR));
                 }
             }
+        }
+    }
+
+    /** Collect an anchor from headquarters. **/
+    public static void collectAnchor(RobotController rc) throws GameActionException {
+        if (rc.canTakeAnchor(hqLocation, Anchor.STANDARD)) {
+            rc.takeAnchor(hqLocation, Anchor.STANDARD);
+            rc.setIndicatorString("Taking anchor, now have, Anchor: " + rc.getAnchor());
         }
     }
 
