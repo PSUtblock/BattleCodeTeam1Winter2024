@@ -28,8 +28,9 @@ public class Carrier {
             locateHQ(rc);
 
         // If the robot does not have an anchor, try to collect one.
-        if (rc.getAnchor() == null)
+        if (rc.getAnchor() == null) {
             collectAnchor(rc);
+        }
 
         if (rc.getAnchor() != null) {
             // If I have an anchor singularly focus on getting it to the first island I see
@@ -57,6 +58,10 @@ public class Carrier {
         }
         // Try to gather from squares around us.
         gatherAdjacentSquares(rc, me);
+
+        // If next to headquarters, deposit everything from the carrier.
+        depositResource(rc, ResourceType.MANA);
+        depositResource(rc, ResourceType.ADAMANTIUM);
 
         // Occasionally try out the carriers attack
 //        if (rng.nextInt(20) == 1) {
@@ -157,6 +162,22 @@ public class Carrier {
             rc.takeAnchor(hqLocation, Anchor.STANDARD);
             rc.setIndicatorString("Taking anchor, now have, Anchor: " + rc.getAnchor());
         }
+        else {
+            rc.setIndicatorString("Unable to collect anchor.");
+        }
+    }
+
+    /** Deposit all resources of a certain type to headquarters. **/
+    public static void depositResource(RobotController rc, ResourceType type) throws GameActionException {
+        int amount = rc.getResourceAmount(type);
+
+        // If robot has any resources, deposit all of it.
+        if ((amount > 0) && rc.canTransferResource(hqLocation, type, amount))
+            rc.transferResource(hqLocation, type, amount);
+        rc.setIndicatorString("Depositing, now have, AD:" +
+                rc.getResourceAmount(ResourceType.ADAMANTIUM) +
+                " MN: " + rc.getResourceAmount(ResourceType.MANA) +
+                " EX: " + rc.getResourceAmount(ResourceType.ELIXIR));
     }
 
 }
