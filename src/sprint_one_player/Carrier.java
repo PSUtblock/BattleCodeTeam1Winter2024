@@ -20,8 +20,8 @@ public class Carrier {
      * This code is wrapped inside the infinite loop in run(), so it is called once per turn.
      */
     public static void runCarrier(RobotController rc) throws GameActionException {
-        // Get robot's current location.
-        MapLocation me = rc.getLocation();
+        Direction randDir = directions[rng.nextInt(directions.length)]; // Hold rand direction if needed.
+        MapLocation me = rc.getLocation();                              // Get robot's current location.
 
         // If the headquarters have not already been found, locate it.
         if (hqLocation == null)
@@ -44,11 +44,8 @@ public class Carrier {
                 MapLocation islandLocation = islandLocs.iterator().next();
                 rc.setIndicatorString("Moving my anchor towards " + islandLocation);
                 while (!rc.getLocation().equals(islandLocation)) {
-                    Direction dir = me.directionTo(islandLocation);
-                    if (rc.canMove(dir)) {
-                        rc.move(dir);
-                        me = rc.getLocation();
-                    }
+                    moveToLocation(rc, me.directionTo(islandLocation));
+                    me = rc.getLocation();
                 }
                 if (rc.canPlaceAnchor()) {
                     rc.setIndicatorString("Huzzah, placed anchor!");
@@ -76,24 +73,17 @@ public class Carrier {
         // If the robot has capacity, move toward a nearby well.
         if (rc.getWeight() < GameConstants.CARRIER_CAPACITY) {
             locateWell(rc, me);
-            if (wellLocation != null) {
-                Direction dir = me.directionTo(wellLocation);
-                if (rc.canMove(dir))
-                    rc.move(dir);
-            }
+            if (wellLocation != null)
+                moveToLocation(rc, me.directionTo(wellLocation));
+            else
+                moveToLocation(rc, randDir);
         }
         // If the robot's capacity is full, move toward headquarters.
-        else if (hqLocation != null) {
-            Direction dir = me.directionTo(hqLocation);
-            if (rc.canMove(dir))
-                rc.move(dir);
-        } else {
-            // Also try to move randomly.
-            Direction dir = directions[rng.nextInt(directions.length)];
-            if (rc.canMove(dir)) {
-                rc.move(dir);
-            }
-        }
+        else if (hqLocation != null)
+            moveToLocation(rc, me.directionTo(hqLocation));
+        // Otherwise, just move randomly.
+        else
+            moveToLocation(rc, randDir);
     }
 
     /** Locate the Headquarters, so the Carrier can always find its way back. **/
@@ -178,6 +168,23 @@ public class Carrier {
                 rc.getResourceAmount(ResourceType.ADAMANTIUM) +
                 " MN: " + rc.getResourceAmount(ResourceType.MANA) +
                 " EX: " + rc.getResourceAmount(ResourceType.ELIXIR));
+    }
+
+    /** Move the robot in a given direction. **/
+    public static void moveToLocation(RobotController rc, Direction dir) throws GameActionException {
+        Direction randDir = directions[rng.nextInt(directions.length)]; // Random direction, if needed.
+
+        // If the robot can move, move in that direction. Otherwise, try to move randomly.
+        if (rc.canMove(dir)) {
+            rc.move(dir);
+            rc.setIndicatorString("Moving in direction: " + dir);
+        }
+        else if (rc.canMove(randDir)) {
+            rc.move(randDir);
+            rc.setIndicatorString("Moving randomly in direction: " + randDir);
+        }
+        else
+            rc.setIndicatorString("Unable to move right now.");
     }
 
 }
