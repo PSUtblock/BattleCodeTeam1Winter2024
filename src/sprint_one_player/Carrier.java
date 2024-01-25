@@ -25,7 +25,7 @@ public class Carrier {
                 MapLocation[] thisIslandLocs = rc.senseNearbyIslandLocations(id);
                 islandLocs.addAll(Arrays.asList(thisIslandLocs));
             }
-            if (islandLocs.size() > 0) {
+            if (!islandLocs.isEmpty()) {
                 MapLocation islandLocation = islandLocs.iterator().next();
                 rc.setIndicatorString("Moving my anchor towards " + islandLocation);
                 while (!rc.getLocation().equals(islandLocation)) {
