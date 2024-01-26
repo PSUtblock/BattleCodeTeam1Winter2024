@@ -69,16 +69,21 @@ public class Carrier {
         // If the robot has capacity, move toward a nearby well.
         if (rc.getWeight() < GameConstants.CARRIER_CAPACITY) {
             locateWell(rc, me);
-            if (wellLocation != null)
-                moveToLocation(rc, me.directionTo(wellLocation));
+            if (wellLocation != null) {
+                // Only move if not adjacent to a well.
+                if (!me.isAdjacentTo(wellLocation))
+                    moveToLocation(rc, me.directionTo(wellLocation));
+            }
             else
                 moveToLocation(rc, randDir);
         }
-        // If the robot's capacity is full, move toward headquarters.
-        else if (hqLocation != null)
-            moveToLocation(rc, me.directionTo(hqLocation));
-        // Otherwise, just move randomly.
+        else if (hqLocation != null) {
+            // Only move if not adjacent to HQ.
+            if (!me.isAdjacentTo(hqLocation))
+                moveToLocation(rc, me.directionTo(hqLocation));
+        }
         else
+            // Otherwise, just move randomly.
             moveToLocation(rc, randDir);
     }
 
@@ -100,7 +105,7 @@ public class Carrier {
     public static void locateWell(RobotController rc, MapLocation me) throws GameActionException {
         WellInfo[] wells = rc.senseNearbyWells();
 
-        // Find the closest well if more than one is nearby.
+        // Find the closest or only well nearby.
         if (wells.length > 1) {
             WellInfo closestWell = wells[0];
             int minDistance = me.distanceSquaredTo(closestWell.getMapLocation());
@@ -112,11 +117,9 @@ public class Carrier {
                     closestWell = well;
                 }
             }
-            // Move toward the closest well.
             wellLocation = closestWell.getMapLocation();
             rc.setIndicatorString("Found closest well at: " + wellLocation);
         }
-        // If only one well is nearby, move to it.
         else if (wells.length == 1) {
             wellLocation = wells[0].getMapLocation();
             rc.setIndicatorString("Found well at: " + wellLocation);
@@ -167,29 +170,29 @@ public class Carrier {
         int amount = rc.getResourceAmount(type);
 
         // If robot has any resources, deposit all of it.
-        if ((amount > 0) && rc.canTransferResource(hqLocation, type, amount))
+        if ((amount > 0) && rc.canTransferResource(hqLocation, type, amount)) {
             rc.transferResource(hqLocation, type, amount);
-        rc.setIndicatorString("Depositing, now have, AD:" +
-                rc.getResourceAmount(ResourceType.ADAMANTIUM) +
-                " MN: " + rc.getResourceAmount(ResourceType.MANA) +
-                " EX: " + rc.getResourceAmount(ResourceType.ELIXIR));
+            rc.setIndicatorString("Depositing, now have, AD:" +
+                    rc.getResourceAmount(ResourceType.ADAMANTIUM) +
+                    " MN: " + rc.getResourceAmount(ResourceType.MANA) +
+                    " EX: " + rc.getResourceAmount(ResourceType.ELIXIR));
+        }
     }
 
     /** Move the robot in a given direction. **/
     public static void moveToLocation(RobotController rc, Direction dir) throws GameActionException {
-        Direction randDir = directions[rng.nextInt(directions.length)]; // Random direction, if needed.
-
         // If the robot can move, move in that direction. Otherwise, try to move randomly.
         if (rc.canMove(dir)) {
             rc.move(dir);
             rc.setIndicatorString("Moving in direction: " + dir);
         }
-        else if (rc.canMove(randDir)) {
-            rc.move(randDir);
-            rc.setIndicatorString("Moving randomly in direction: " + randDir);
+        else {
+            Direction randDir = directions[rng.nextInt(directions.length)];
+            if (rc.canMove(randDir)) {
+                rc.move(randDir);
+                rc.setIndicatorString("Moving randomly in direction: " + randDir);
+            }
         }
-        else
-            rc.setIndicatorString("Unable to move right now.");
     }
 }
 // Condense island sensing into function
