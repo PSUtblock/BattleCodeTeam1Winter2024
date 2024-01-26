@@ -11,9 +11,10 @@ import static sprint_one_player.RobotPlayer.directions;
 import static sprint_one_player.RobotPlayer.rng;
 
 public class Carrier {
-    // Map locations to store headquarters and well position.
+    // Map locations to store headquarters, closest well, and island positions.
     private static MapLocation hqLocation;
     private static MapLocation wellLocation;
+    private static Set<MapLocation> islandLocs = new HashSet<>();
 
     /**
      * Run a single turn for a Carrier.
@@ -32,24 +33,19 @@ public class Carrier {
             collectAnchor(rc);
         }
 
+        // If I have an anchor singularly focus on getting it to the first island I see
         if (rc.getAnchor() != null) {
-            // If I have an anchor singularly focus on getting it to the first island I see
-            int[] islands = rc.senseNearbyIslands();
-            Set<MapLocation> islandLocs = new HashSet<>();
-            for (int id : islands) {
-                MapLocation[] thisIslandLocs = rc.senseNearbyIslandLocations(id);
-                islandLocs.addAll(Arrays.asList(thisIslandLocs));
-            }
+            locateIslands(rc);
             if (!islandLocs.isEmpty()) {
                 MapLocation islandLocation = islandLocs.iterator().next();
                 rc.setIndicatorString("Moving my anchor towards " + islandLocation);
-                while (!rc.getLocation().equals(islandLocation)) {
+                while (!me.equals(islandLocation)) {
                     moveToLocation(rc, me.directionTo(islandLocation));
                     me = rc.getLocation();
                 }
                 if (rc.canPlaceAnchor()) {
-                    rc.setIndicatorString("Huzzah, placed anchor!");
                     rc.placeAnchor();
+                    rc.setIndicatorString("Huzzah, placed anchor!");
                 }
             }
         }
@@ -130,6 +126,15 @@ public class Carrier {
         }
     }
 
+    /** Locate all islands nearby. **/
+    public static void locateIslands(RobotController rc) throws GameActionException {
+        int[] islands = rc.senseNearbyIslands();
+        for (int id : islands) {
+            MapLocation[] thisIslandLocs = rc.senseNearbyIslandLocations(id);
+            islandLocs.addAll(Arrays.asList(thisIslandLocs));
+        }
+    }
+
     /** Gather from squares around the robot. **/
     public static void gatherAdjacentSquares(RobotController rc, MapLocation me) throws GameActionException {
         for (int dx = -1; dx <= 1; dx++) {
@@ -186,5 +191,9 @@ public class Carrier {
         else
             rc.setIndicatorString("Unable to move right now.");
     }
-
 }
+// Condense island sensing into function
+// Create strategy for moving to island, not necessarily first one in list?
+// Involve isMovementReady - can the robot even move?
+// Involve canActLocation - is the location within the actionable range?
+// Increase the amount the robot moves with while loop, rather than one step to well?
