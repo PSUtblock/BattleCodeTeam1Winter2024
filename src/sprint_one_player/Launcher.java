@@ -25,53 +25,41 @@ public class Launcher {
             }
         }
 
-        // attempting to move to the defined space 'testWell' position (9,14) that is defined in the RobotPlayer.java class
-        /* The launcher will move to the testWell location and once the location is within the actionable radius, it will start to move randomly
-        until the testWell is no longer within its actionable radius
-        the path movement is simplified.
-         */
-        while(rc.isMovementReady())
-        {
-            MapLocation currentLocation;
+        // Additional functionality to track and follow an ally Carrier
+        followAllyCarrier(rc);
 
-            while(!rc.canActLocation(testWell))
-            {
-                currentLocation = rc.getLocation();
-                rc.setIndicatorString("Moving to test location");
+        // Also try to move randomly.
+        Direction dir = directions[rng.nextInt(directions.length)];
+        if (rc.canMove(dir)) {
+            rc.move(dir);
+        }
+    //}
+    }
+    /**
+     * Tracks and moves towards the nearest ally Carrier.
+     */
+    private static void followAllyCarrier(RobotController rc) throws GameActionException {
+        RobotInfo[] nearbyRobots = rc.senseNearbyRobots(); // Gets all robots within vision radius
+        MapLocation closestCarrierLocation = null;
+        double minDistance = Double.MAX_VALUE;
 
-                if(currentLocation.x < testWell.x)
-                {
-                    if (rc.canMove(Direction.EAST)) {
-                        rc.move(Direction.EAST);
-                    }
+        for (RobotInfo robot : nearbyRobots) {
+            if (robot.getType() == RobotType.CARRIER && robot.getTeam() == rc.getTeam()) {
+                double distance = rc.getLocation().distanceSquaredTo(robot.getLocation());
+                if (distance < minDistance) {
+                    closestCarrierLocation = robot.getLocation();
+                    minDistance = distance;
                 }
-                else if (currentLocation.x > testWell.x) {
-                    if (rc.canMove(Direction.WEST)) {
-                        rc.move(Direction.WEST);
-                    }
-                }
-
-                if(currentLocation.y < testWell.y)
-                {
-                    if (rc.canMove(Direction.NORTH)) {
-                        rc.move(Direction.NORTH);
-                    }
-                }
-                else if (currentLocation.y > testWell.y) {
-                    if (rc.canMove(Direction.SOUTH)) {
-                        rc.move(Direction.SOUTH);
-                    }
-                }
-
-            }
-
-            // Also try to move randomly.
-            Direction dir = directions[rng.nextInt(directions.length)];
-            if (rc.canMove(dir)) {
-                rc.move(dir);
             }
         }
 
-
+        // If a Carrier is found, move towards it
+        if (closestCarrierLocation != null && rc.isMovementReady()) {
+            Direction directionToMove = rc.getLocation().directionTo(closestCarrierLocation);
+            if (rc.canMove(directionToMove)) {
+                rc.move(directionToMove);
+            }
+        }
     }
+
 }
