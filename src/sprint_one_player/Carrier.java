@@ -129,12 +129,15 @@ public class Carrier {
         }
     }
 
-    /** Locate all islands nearby. **/
+    /** Locate all unoccupied islands nearby. **/
     public static void locateIslands(RobotController rc) throws GameActionException {
         int[] islands = rc.senseNearbyIslands();
         for (int id : islands) {
-            MapLocation[] thisIslandLocs = rc.senseNearbyIslandLocations(id);
-            islandLocs.addAll(Arrays.asList(thisIslandLocs));
+            // Check if island is unoccupied first.
+            if (rc.senseTeamOccupyingIsland(id) == Team.NEUTRAL) {
+                MapLocation[] thisIslandLocs = rc.senseNearbyIslandLocations(id);
+                islandLocs.addAll(Arrays.asList(thisIslandLocs));
+            }
         }
     }
 
