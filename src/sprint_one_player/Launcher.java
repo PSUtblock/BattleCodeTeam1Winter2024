@@ -10,14 +10,23 @@ public class Launcher {
      * Run a single turn for a Launcher.
      * This code is wrapped inside the infinite loop in run(), so it is called once per turn.
      */
+    static int wellGuardTurns = 0;
     public static void runLauncher(RobotController rc) throws GameActionException {
+        if (wellGuardTurns > 0) {
+            wellGuardTurns--;
+            // Sense for enemies while guarding the well
+            RobotInfo[] enemiesTeam = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
+            if (enemiesTeam.length > 0) {
+                System.out.println("Enemy detected while guarding!");
+            }
+            return; // Skip rest of the turn if still guarding
+        }
         // Try to attack someone
         int radius = rc.getType().actionRadiusSquared;
         Team opponent = rc.getTeam().opponent();
         RobotInfo[] enemies = rc.senseNearbyRobots(radius, opponent);
         if (enemies.length > 0) {
             MapLocation toAttack = enemies[0].location;
-            //MapLocation toAttack = rc.getLocation().add(Direction.EAST);
 
             if (rc.canAttack(toAttack)) {
                 rc.setIndicatorString("Attacking");
@@ -32,8 +41,15 @@ public class Launcher {
         Direction dir = directions[rng.nextInt(directions.length)];
         if (rc.canMove(dir)) {
             rc.move(dir);
+            // Check if the Launcher has moved to a well
+            WellInfo[] nearbyWells = rc.senseNearbyWells();
+            for (WellInfo well : nearbyWells) {
+                if (rc.getLocation().equals(well.getMapLocation())) {
+                    wellGuardTurns = 5; // Start guarding for 5 turns
+                    break;
+                }
+            }
         }
-    //}
     }
     /**
      * Tracks and moves towards the nearest ally Carrier.
