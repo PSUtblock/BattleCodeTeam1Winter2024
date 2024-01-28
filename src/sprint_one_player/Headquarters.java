@@ -22,10 +22,13 @@ public class Headquarters {
         Direction dir = directions[rng.nextInt(directions.length)];
         MapLocation newLoc = rc.getLocation().add(dir);
         int roundNum = rc.getRoundNum();
+        int rndsForAnchor = 10;
+        int rndsForCarrier = 4;
+        int rndsForLauncher = 6;
         /**
          * For every 10 rounds, build an anchor
          */
-        if(roundNum % 10 == 0){
+        if(roundNum % rndsForAnchor == 0){
         if (rc.canBuildAnchor(Anchor.STANDARD)) {
             // If we can build an anchor do it!
             rc.buildAnchor(Anchor.STANDARD);
@@ -36,7 +39,7 @@ public class Headquarters {
             /**
              * For every 4 rounds, create a carrier
              */
-            if(roundNum % 4 == 0 ){
+            if(roundNum % rndsForCarrier == 0 ){
             // Let's try to build a carrier.
             rc.setIndicatorString("Trying to build a carrier");
             if (rc.canBuildRobot(RobotType.CARRIER, newLoc)) {
@@ -47,7 +50,7 @@ public class Headquarters {
             /**
              * For every 6 rounds, create a launcher
              */
-            if(roundNum % 6 == 0 ) {
+            if(roundNum % rndsForLauncher == 0 ) {
                 // Let's try to build a launcher.
                 rc.setIndicatorString("Trying to build a launcher");
                 if (rc.canBuildRobot(RobotType.LAUNCHER, newLoc)) {
