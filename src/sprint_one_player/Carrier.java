@@ -55,26 +55,25 @@ public class Carrier {
         depositResource(rc, ResourceType.MANA);
         depositResource(rc, ResourceType.ADAMANTIUM);
 
-        // If the robot has almost no health left, think about attacking.
-        if (rc.getHealth() < 5) {
-            RobotInfo[] enemyRobots = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
-            // Only try to attack if there are a lot of nearby enemies.
-            if (enemyRobots.length >= 8) {
-                RobotInfo enemyToAttack = enemyRobots[0];
-                int minHealth = enemyToAttack.getHealth();
-                // Find the enemy with the lowest health.
-                for (int i = 1; i < enemyRobots.length; ++i) {
-                    if (minHealth > enemyRobots[i].getHealth()) {
-                        enemyToAttack = enemyRobots[i];
-                        minHealth = enemyToAttack.getHealth();
-                    }
-                }
-                // Try to attack the enemy.
-                if (rc.canAttack(enemyToAttack.location)) {
-                    rc.attack(enemyToAttack.location);
-                }
-            }
-        }
+        // Depending on certain health level, think about attacking.
+//        if (rc.getHealth() < 150) {
+//            RobotInfo[] enemyRobots = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
+//            if (enemyRobots.length > 0) {
+//                RobotInfo enemyToAttack = enemyRobots[0];
+//                int minHealth = enemyToAttack.getHealth();
+//                // Find the enemy with the lowest health.
+//                for (int i = 1; i < enemyRobots.length; ++i) {
+//                    if (minHealth > enemyRobots[i].getHealth()) {
+//                        enemyToAttack = enemyRobots[i];
+//                        minHealth = enemyToAttack.getHealth();
+//                    }
+//                }
+//                // Try to attack the enemy.
+//                if (rc.canAttack(enemyToAttack.location)) {
+//                    rc.attack(enemyToAttack.location);
+//                }
+//            }
+//        }
 
         // If the robot has capacity, move toward a nearby well.
         if (rc.getWeight() < GameConstants.CARRIER_CAPACITY) {
