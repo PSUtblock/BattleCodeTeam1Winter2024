@@ -4,7 +4,6 @@ import battlecode.common.*;
 
 import java.util.Arrays;
 import java.util.HashSet;
-//import java.util.Random;
 import java.util.Set;
 
 import static sprint_one_player.RobotPlayer.directions;
@@ -33,7 +32,7 @@ public class Carrier {
             collectAnchor(rc);
         }
 
-        // If I have an anchor singularly focus on getting it to the first island I see
+        // If the robot has an anchor singularly focus on getting it to the first island it sees.
         if (rc.getAnchor() != null) {
             locateIslands(rc);
             if (!islandLocs.isEmpty()) {
@@ -56,15 +55,26 @@ public class Carrier {
         depositResource(rc, ResourceType.MANA);
         depositResource(rc, ResourceType.ADAMANTIUM);
 
-        // Occasionally try out the carriers attack
-//        if (rng.nextInt(20) == 1) {
-//            RobotInfo[] enemyRobots = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
-//            if (enemyRobots.length > 0) {
-//                if (rc.canAttack(enemyRobots[0].location)) {
-//                    rc.attack(enemyRobots[0].location);
-//                }
-//            }
-//        }
+        // If the robot has almost no health left, think about attacking.
+        if (rc.getHealth() < 5) {
+            RobotInfo[] enemyRobots = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
+            // Only try to attack if there are a lot of nearby enemies.
+            if (enemyRobots.length >= 8) {
+                RobotInfo enemyToAttack = enemyRobots[0];
+                int minHealth = enemyToAttack.getHealth();
+                // Find the enemy with the lowest health.
+                for (int i = 1; i < enemyRobots.length; ++i) {
+                    if (minHealth > enemyRobots[i].getHealth()) {
+                        enemyToAttack = enemyRobots[i];
+                        minHealth = enemyToAttack.getHealth();
+                    }
+                }
+                // Try to attack the enemy.
+                if (rc.canAttack(enemyToAttack.location)) {
+                    rc.attack(enemyToAttack.location);
+                }
+            }
+        }
 
         // If the robot has capacity, move toward a nearby well.
         if (rc.getWeight() < GameConstants.CARRIER_CAPACITY) {
@@ -198,8 +208,3 @@ public class Carrier {
         }
     }
 }
-// Condense island sensing into function
-// Create strategy for moving to island, not necessarily first one in list?
-// Involve isMovementReady - can the robot even move?
-// Involve canActLocation - is the location within the actionable range?
-// Increase the amount the robot moves with while loop, rather than one step to well?
