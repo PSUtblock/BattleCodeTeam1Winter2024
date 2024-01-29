@@ -51,13 +51,16 @@ public class Communication {
             }
         }
         // Return the closest headquarter or return null.
-        MapLocation closestHQ = hqLocations.get(0);
-        int minDistance = me.distanceSquaredTo(closestHQ);
-        for (int i = 1; i < hqLocations.size(); ++i) {
-            int currDistance = me.distanceSquaredTo(hqLocations.get(i));
-            if (minDistance > currDistance) {
-                minDistance = currDistance;
-                closestHQ = hqLocations.get(i);
+        MapLocation closestHQ = null;
+        if (!hqLocations.isEmpty()) {
+            closestHQ = hqLocations.get(0);
+            int minDistance = me.distanceSquaredTo(closestHQ);
+            for (int i = 1; i < hqLocations.size(); ++i) {
+                int currDistance = me.distanceSquaredTo(hqLocations.get(i));
+                if (minDistance > currDistance) {
+                    minDistance = currDistance;
+                    closestHQ = hqLocations.get(i);
+                }
             }
         }
         return closestHQ;
@@ -65,11 +68,20 @@ public class Communication {
 
     // Write headquarter location to array.
     public static void writeHQ(RobotController rc) throws GameActionException {
-        MapLocation me = rc.getLocation();
+        MapLocation hqLoc = null;
+        RobotInfo[] robots = rc.senseNearbyRobots();
+
+        // Check for this teams Headquarters and record its location.
+        for (RobotInfo robot : robots) {
+            if ((robot.getTeam() == rc.getTeam()) && (robot.getType() == RobotType.HEADQUARTERS)) {
+                hqLoc = robot.getLocation();
+                break;
+            }
+        }
         for (int i = START_HQ_IDX; i < START_WELL_IDX; i += XY_IDX_INCREMENT) {
-            if (rc.readSharedArray(i) == 0) {
-                rc.writeSharedArray(i, me.x);
-                rc.writeSharedArray(i + 1, me.y);
+            if (rc.readSharedArray(i) == 0 && hqLoc != null && rc.canWriteSharedArray(i, hqLoc.x)) {
+                rc.writeSharedArray(i, hqLoc.x);
+                rc.writeSharedArray(i + 1, hqLoc.y);
                 break;
             }
         }

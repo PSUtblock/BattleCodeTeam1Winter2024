@@ -14,6 +14,7 @@ public class Carrier {
     private static MapLocation hqLocation;
     private static MapLocation wellLocation;
     private static Set<MapLocation> islandLocs = new HashSet<>();
+    private static boolean recordedHQ = false;
 
     /**
      * Run a single turn for a Carrier.
@@ -24,14 +25,17 @@ public class Carrier {
         MapLocation me = rc.getLocation();                              // Get robot's current location.
 
         // Try to write location of the headquarters to the communications array (robot spawns at HQ).
-        if (turnCount == 1)
+        if (!recordedHQ) {
             writeHQ(rc);
+            recordedHQ = true;
+        }
+
 
         // If the headquarters have not already been found, locate the closest one.
-        if (hqLocation == null) {
+//        if (hqLocation == null) {
             hqLocation = readHQ(rc);
 //            locateHQ(rc);
-        }
+//        }
 
         // If the robot does not have an anchor, try to collect one.
         if (rc.getAnchor() == null) {
@@ -174,7 +178,7 @@ public class Carrier {
 
     /** Collect an anchor from headquarters. **/
     public static void collectAnchor(RobotController rc) throws GameActionException {
-        if (rc.canTakeAnchor(hqLocation, Anchor.STANDARD)) {
+        if (hqLocation != null && rc.canTakeAnchor(hqLocation, Anchor.STANDARD)) {
             rc.takeAnchor(hqLocation, Anchor.STANDARD);
             rc.setIndicatorString("Taking anchor, now have, Anchor: " + rc.getAnchor());
         }
@@ -188,7 +192,7 @@ public class Carrier {
         int amount = rc.getResourceAmount(type);
 
         // If robot has any resources, deposit all of it.
-        if ((amount > 0) && rc.canTransferResource(hqLocation, type, amount)) {
+        if ((amount > 0) && hqLocation != null && rc.canTransferResource(hqLocation, type, amount)) {
             rc.transferResource(hqLocation, type, amount);
             rc.setIndicatorString("Depositing, now have, AD:" +
                     rc.getResourceAmount(ResourceType.ADAMANTIUM) +
