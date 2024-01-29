@@ -11,15 +11,36 @@ public class Launcher {
      * This code is wrapped inside the infinite loop in run(), so it is called once per turn.
      */
     static int wellGuardTurns = 0;
+    static boolean isChasing = false; // New variable to track if we are chasing an enemy
+    static MapLocation wellLocation = null; // New variable to remember the well location
     public static void runLauncher(RobotController rc) throws GameActionException {
-        if (wellGuardTurns > 0) {
-            wellGuardTurns--;
+        if (wellGuardTurns > 0 || isChasing) {
+            wellGuardTurns = isChasing ? wellGuardTurns : wellGuardTurns - 1;
+            System.out.println("Guarding well at " + wellLocation + ", turns left: " + wellGuardTurns);
             // Sense for enemies while guarding the well
             RobotInfo[] enemiesTeam = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
             if (enemiesTeam.length > 0) {
-                System.out.println("Enemy detected while guarding!");
+                MapLocation enemyLocation = enemiesTeam[0].location;
+                isChasing = true; // Start chasing
+                //System.out.println("Chasing enemy at " + enemyLocation);
+                if (rc.canMove(rc.getLocation().directionTo(enemyLocation))) {
+                    rc.move(rc.getLocation().directionTo(enemyLocation));
+                }
+                if (rc.getLocation().isAdjacentTo(enemyLocation) && rc.canAttack(enemyLocation)) {
+                    rc.attack(enemyLocation);
+                }
+                return; // Skip rest of the turn if chasing or guarding
+            } else if (isChasing) {
+                // Return to well and reset the guard timer
+                if (rc.getLocation().equals(wellLocation)) {
+                    wellGuardTurns = 5;
+                    isChasing = false;
+                    //System.out.println("Returning to well at " + wellLocation);
+                } else if (rc.canMove(rc.getLocation().directionTo(wellLocation))) {
+                    rc.move(rc.getLocation().directionTo(wellLocation));
+                }
+                return; // Skip rest of the turn if still guarding
             }
-            return; // Skip rest of the turn if still guarding
         }
         // Try to attack someone
         int radius = rc.getType().actionRadiusSquared;
@@ -46,6 +67,7 @@ public class Launcher {
             for (WellInfo well : nearbyWells) {
                 if (rc.getLocation().equals(well.getMapLocation())) {
                     wellGuardTurns = 5; // Start guarding for 5 turns
+                    wellLocation = well.getMapLocation(); // Remember well location
                     break;
                 }
             }
