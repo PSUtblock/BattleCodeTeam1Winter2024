@@ -6,8 +6,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import static sprint_one_player.RobotPlayer.directions;
-import static sprint_one_player.RobotPlayer.rng;
+import static sprint_one_player.Communication.*;
+import static sprint_one_player.RobotPlayer.*;
 
 public class Carrier {
     // Map locations to store headquarters, closest well, and island positions.
@@ -23,9 +23,15 @@ public class Carrier {
         Direction randDir = directions[rng.nextInt(directions.length)]; // Hold rand direction if needed.
         MapLocation me = rc.getLocation();                              // Get robot's current location.
 
-        // If the headquarters have not already been found, locate it.
-        if (hqLocation == null)
-            locateHQ(rc);
+        // Try to write location of the headquarters to the communications array (robot spawns at HQ).
+        if (turnCount == 1)
+            writeHQ(rc);
+
+        // If the headquarters have not already been found, locate the closest one.
+        if (hqLocation == null) {
+            hqLocation = readHQ(rc);
+//            locateHQ(rc);
+        }
 
         // If the robot does not have an anchor, try to collect one.
         if (rc.getAnchor() == null) {
