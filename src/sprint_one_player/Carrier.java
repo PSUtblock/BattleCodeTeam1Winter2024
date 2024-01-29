@@ -90,6 +90,8 @@ public class Carrier {
             // Only move if not adjacent to HQ.
             if (!me.isAdjacentTo(hqLocation))
                 moveToLocation(rc, me.directionTo(hqLocation));
+            else if (rc.getAnchor() != null)
+                moveToLocation(rc, randDir);
         }
         else
             // Otherwise, just move randomly.
