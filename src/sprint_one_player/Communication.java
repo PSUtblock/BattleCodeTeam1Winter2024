@@ -27,7 +27,7 @@ import static sprint_one_player.RobotPlayer.rng;
 public class Communication {
     // Number of headquarters, wells, and islands allowed in communication array.
     private static final int NUM_HQ = GameConstants.MAX_STARTING_HEADQUARTERS;
-    private static final int NUM_WELLS = 6;
+    private static final int NUM_WELLS = 4;
     private static final int NUM_ISLANDS = 20;
 
     // Array index increment amounts.
