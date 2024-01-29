@@ -6,8 +6,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import static sprint_one_player.RobotPlayer.directions;
-import static sprint_one_player.RobotPlayer.rng;
+import static sprint_one_player.Communication.*;
+import static sprint_one_player.RobotPlayer.*;
 
 public class Carrier {
     // Map locations to store headquarters, closest well, and island positions.
@@ -33,7 +33,8 @@ public class Carrier {
 
         // If the headquarters have not already been found, locate the closest one.
 //        if (hqLocation == null) {
-        hqLocation = readHQ(rc);
+//        hqLocation = readHQ(rc);
+            hqLocation = readHQ(rc);
 //            locateHQ(rc);
 //        }
 
