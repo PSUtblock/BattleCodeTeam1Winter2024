@@ -47,15 +47,23 @@ public class Carrier {
         }
 
         // If the robot does not have an anchor, try to collect one.
-        if (rc.getAnchor() == null) {
+        /**
+         * While debugging, if the robot has an anchor, the condition still return true that it is null,
+         * so I've added more conditions to ensure it returns the correct result.
+         */
+        if (rc.getAnchor() == null && rc.getAnchor() != Anchor.STANDARD && rc.getAnchor() != Anchor.ACCELERATING) {
             collectAnchor(rc);
         }
 
         // If the robot has an anchor singularly focus on getting it to the first island it sees.
-        if (rc.getAnchor() != null) {
+        /**
+         * While debugging, if the robot has an anchor, the condition returns false,
+         * so I've added more conditions to ensure it returns the correct result.
+         */
+        if (rc.getAnchor() != null || rc.getAnchor() == Anchor.STANDARD || rc.getAnchor() == Anchor.ACCELERATING) {
             if (islandLocation != null) {
                 rc.setIndicatorString("Moving my anchor towards " + islandLocation);
-                while (!myLocation.equals(islandLocation)) {
+                if (!myLocation.equals(islandLocation)) {
                     moveToLocation(rc, myLocation.directionTo(islandLocation));
                 }
                 if (rc.canPlaceAnchor()) {
@@ -68,22 +76,19 @@ public class Carrier {
                 moveToLocation(rc, randDir);
             }
         }
-
         // If there is capacity, then go collect resources.
-        if (rc.getWeight() < GameConstants.CARRIER_CAPACITY) {
+        else if (rc.getWeight() < GameConstants.CARRIER_CAPACITY) {
             if (wellLocation != null) {
                 rc.setIndicatorString("Moving towards well at: " + wellLocation);
-                while (!myLocation.isAdjacentTo(wellLocation)) {
-                    moveToLocation(rc, myLocation.directionTo(wellLocation));
-                }
+                moveToLocation(rc, myLocation.directionTo(wellLocation));
             }
             // Try to collect whether a well was located or not, in case robot has moved since located.
             collectFromWell(rc);
         }
-        // Do not head to HQ if an anchor is present.
-        else if (hqLocation != null && rc.getAnchor() == null) {
+        // Head to HQ if your resources are full.
+        else if (hqLocation != null) {
             wellLocation = null; // Reset well location if full of resources.
-            while (!myLocation.isAdjacentTo(hqLocation)) {
+            if (!myLocation.isAdjacentTo(hqLocation)) {
                 moveToLocation(rc, myLocation.directionTo(hqLocation));
             }
             // If next to headquarters, deposit everything from the carrier.
