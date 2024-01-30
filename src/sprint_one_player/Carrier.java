@@ -60,8 +60,10 @@ public class Carrier {
             if (rc.canPlaceAnchor()) {
                 rc.placeAnchor();
                 rc.setIndicatorString("Huzzah, placed anchor!");
+                islandLocation = null;
             }
         }
+
         // Try to gather from squares around us.
         collectFromWell(rc);
 
