@@ -10,14 +10,44 @@ public class Launcher {
      * Run a single turn for a Launcher.
      * This code is wrapped inside the infinite loop in run(), so it is called once per turn.
      */
+    static int wellGuardTurns = 0;
+    static boolean isChasing = false; // New variable to track if we are chasing an enemy
+    static MapLocation wellLocation = null; // New variable to remember the well location
     public static void runLauncher(RobotController rc) throws GameActionException {
+        if (wellGuardTurns > 0 || isChasing) {
+            wellGuardTurns = isChasing ? wellGuardTurns : wellGuardTurns - 1;
+            System.out.println("Guarding well at " + wellLocation + ", turns left: " + wellGuardTurns);
+            // Sense for enemies while guarding the well
+            RobotInfo[] enemiesTeam = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
+            if (enemiesTeam.length > 0) {
+                MapLocation enemyLocation = enemiesTeam[0].location;
+                isChasing = true; // Start chasing
+                //System.out.println("Chasing enemy at " + enemyLocation);
+                if (rc.canMove(rc.getLocation().directionTo(enemyLocation))) {
+                    rc.move(rc.getLocation().directionTo(enemyLocation));
+                }
+                if (rc.getLocation().isAdjacentTo(enemyLocation) && rc.canAttack(enemyLocation)) {
+                    rc.attack(enemyLocation);
+                }
+                return; // Skip rest of the turn if chasing or guarding
+            } else if (isChasing) {
+                // Return to well and reset the guard timer
+                if (rc.getLocation().equals(wellLocation)) {
+                    wellGuardTurns = 5;
+                    isChasing = false;
+                    //System.out.println("Returning to well at " + wellLocation);
+                } else if (rc.canMove(rc.getLocation().directionTo(wellLocation))) {
+                    rc.move(rc.getLocation().directionTo(wellLocation));
+                }
+                return; // Skip rest of the turn if still guarding
+            }
+        }
         // Try to attack someone
         int radius = rc.getType().actionRadiusSquared;
         Team opponent = rc.getTeam().opponent();
         RobotInfo[] enemies = rc.senseNearbyRobots(radius, opponent);
         if (enemies.length > 0) {
             MapLocation toAttack = enemies[0].location;
-            //MapLocation toAttack = rc.getLocation().add(Direction.EAST);
 
             if (rc.canAttack(toAttack)) {
                 rc.setIndicatorString("Attacking");
@@ -25,53 +55,49 @@ public class Launcher {
             }
         }
 
-        // attempting to move to the defined space 'testWell' position (9,14) that is defined in the RobotPlayer.java class
-        /* The launcher will move to the testWell location and once the location is within the actionable radius, it will start to move randomly
-        until the testWell is no longer within its actionable radius
-        the path movement is simplified.
-         */
-        while(rc.isMovementReady())
-        {
-            MapLocation currentLocation;
+        // Additional functionality to track and follow an ally Carrier
+        followAllyCarrier(rc);
 
-            while(!rc.canActLocation(testWell))
-            {
-                currentLocation = rc.getLocation();
-                rc.setIndicatorString("Moving to test location");
-
-                if(currentLocation.x < testWell.x)
-                {
-                    if (rc.canMove(Direction.EAST)) {
-                        rc.move(Direction.EAST);
-                    }
+        // Also try to move randomly.
+        Direction dir = directions[rng.nextInt(directions.length)];
+        if (rc.canMove(dir)) {
+            rc.move(dir);
+            // Check if the Launcher has moved to a well
+            WellInfo[] nearbyWells = rc.senseNearbyWells();
+            for (WellInfo well : nearbyWells) {
+                if (rc.getLocation().equals(well.getMapLocation())) {
+                    wellGuardTurns = 5; // Start guarding for 5 turns
+                    wellLocation = well.getMapLocation(); // Remember well location
+                    break;
                 }
-                else if (currentLocation.x > testWell.x) {
-                    if (rc.canMove(Direction.WEST)) {
-                        rc.move(Direction.WEST);
-                    }
-                }
-
-                if(currentLocation.y < testWell.y)
-                {
-                    if (rc.canMove(Direction.NORTH)) {
-                        rc.move(Direction.NORTH);
-                    }
-                }
-                else if (currentLocation.y > testWell.y) {
-                    if (rc.canMove(Direction.SOUTH)) {
-                        rc.move(Direction.SOUTH);
-                    }
-                }
-
             }
+        }
+    }
+    /**
+     * Tracks and moves towards the nearest ally Carrier.
+     */
+    private static void followAllyCarrier(RobotController rc) throws GameActionException {
+        RobotInfo[] nearbyRobots = rc.senseNearbyRobots(); // Gets all robots within vision radius
+        MapLocation closestCarrierLocation = null;
+        double minDistance = Double.MAX_VALUE;
 
-            // Also try to move randomly.
-            Direction dir = directions[rng.nextInt(directions.length)];
-            if (rc.canMove(dir)) {
-                rc.move(dir);
+        for (RobotInfo robot : nearbyRobots) {
+            if (robot.getType() == RobotType.CARRIER && robot.getTeam() == rc.getTeam()) {
+                double distance = rc.getLocation().distanceSquaredTo(robot.getLocation());
+                if (distance < minDistance) {
+                    closestCarrierLocation = robot.getLocation();
+                    minDistance = distance;
+                }
             }
         }
 
-
+        // If a Carrier is found, move towards it
+        if (closestCarrierLocation != null && rc.isMovementReady()) {
+            Direction directionToMove = rc.getLocation().directionTo(closestCarrierLocation);
+            if (rc.canMove(directionToMove)) {
+                rc.move(directionToMove);
+            }
+        }
     }
+
 }
