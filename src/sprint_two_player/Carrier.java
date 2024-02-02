@@ -65,7 +65,8 @@ public class Carrier {
             if (islandLocation != null) {
                 rc.setIndicatorString("Moving my anchor towards " + islandLocation);
                 if (!myLocation.equals(islandLocation)) {
-                    moveToLocation(rc, myLocation.directionTo(islandLocation));
+                    Movement.moveToLocation(rc, myLocation.directionTo(islandLocation));
+                    myLocation = rc.getLocation();
                 }
                 if (rc.canPlaceAnchor()) {
                     rc.placeAnchor();
@@ -74,14 +75,16 @@ public class Carrier {
                 }
             }
             else {
-                moveToLocation(rc, randDir);
+                Movement.moveToLocation(rc, randDir);
+                myLocation = rc.getLocation();
             }
         }
         // If there is capacity, then go collect resources.
         else if (rc.getWeight() < GameConstants.CARRIER_CAPACITY) {
             if (wellLocation != null) {
                 rc.setIndicatorString("Moving towards well at: " + wellLocation);
-                moveToLocation(rc, myLocation.directionTo(wellLocation));
+                Movement.moveToLocation(rc, myLocation.directionTo(wellLocation));
+                myLocation = rc.getLocation();
             }
             // Try to collect whether a well was located or not, in case robot has moved since located.
             collectFromWell(rc);
@@ -90,7 +93,8 @@ public class Carrier {
         else if (hqLocation != null) {
             wellLocation = null; // Reset well location if full of resources.
             if (!myLocation.isAdjacentTo(hqLocation)) {
-                moveToLocation(rc, myLocation.directionTo(hqLocation));
+                Movement.moveToLocation(rc, myLocation.directionTo(hqLocation));
+                myLocation = rc.getLocation();
             }
             // If next to headquarters, deposit everything from the carrier.
             depositResource(rc, ResourceType.MANA);
@@ -98,7 +102,8 @@ public class Carrier {
         }
         // Otherwise, move randomly for now.
         else {
-            moveToLocation(rc, randDir);
+            Movement.moveToLocation(rc, randDir);
+            myLocation = rc.getLocation();
         }
 
         // Depending on certain health level, think about attacking.
@@ -145,7 +150,7 @@ public class Carrier {
             for (int i = 0; i < wellLocations.length; ++i) {
                 wellLocations[i] = wells[i].getMapLocation();
             }
-            wellLocation = getClosestLocation(wellLocations);
+            wellLocation = Movement.getClosestLocation(rc, wellLocations);
             rc.setIndicatorString("Found closest well at: " + wellLocation);
         }
     }
@@ -160,52 +165,14 @@ public class Carrier {
                 MapLocation[] thisIslandLocs = rc.senseNearbyIslandLocations(id);
                 // Add the closest parts of each island.
                 if (thisIslandLocs.length > 0) {
-                    closestIslands.add(getClosestLocation(thisIslandLocs));
+                    closestIslands.add(Movement.getClosestLocation(rc, thisIslandLocs));
                 }
             }
         }
         // Get the actual closest part of the closest island.
         if (!closestIslands.isEmpty()) {
-            islandLocation = getClosestLocation(closestIslands);
+            islandLocation = Movement.getClosestLocation(rc, closestIslands);
         }
-    }
-
-    /** Return the closest location with respect to robot's current location. Uses an array of MapLocations as a parameter. **/
-    public static MapLocation getClosestLocation(MapLocation[] locations) throws GameActionException{
-        if (locations.length > 0) {
-            MapLocation currClosest = locations[0];
-            int minDistance = myLocation.distanceSquaredTo(currClosest);
-
-            for (MapLocation island : locations) {
-                int currDistance = myLocation.distanceSquaredTo(island);
-                if (minDistance > currDistance) {
-                    minDistance = currDistance;
-                    currClosest = island;
-                }
-            }
-            return currClosest;
-        }
-
-        return null;
-    }
-
-    /** Return the closest location with respect to robot's current location. Uses set of MapLocations as a parameter. **/
-    public static MapLocation getClosestLocation(Set<MapLocation> locations) throws GameActionException {
-        if (!locations.isEmpty()) {
-            MapLocation currClosest = locations.iterator().next();
-            int minDistance = myLocation.distanceSquaredTo(currClosest);
-
-            for (MapLocation island : locations) {
-                int currDistance = myLocation.distanceSquaredTo(island);
-                if (minDistance > currDistance) {
-                    minDistance = currDistance;
-                    currClosest = island;
-                }
-            }
-            return currClosest;
-        }
-
-        return null;
     }
 
     /** Collect from well in adjacent squares. **/
@@ -246,20 +213,6 @@ public class Carrier {
                     rc.getResourceAmount(ResourceType.ADAMANTIUM) +
                     " MN: " + rc.getResourceAmount(ResourceType.MANA) +
                     " EX: " + rc.getResourceAmount(ResourceType.ELIXIR));
-        }
-    }
-
-    /** Move the robot in a given direction. **/
-    public static void moveToLocation(RobotController rc, Direction dir) throws GameActionException {
-        Direction randDir = directions[rng.nextInt(directions.length)];
-        // If the robot can move, move in that direction. Otherwise, try to move randomly.
-        if (rc.canMove(dir)) {
-            rc.move(dir);
-            myLocation = rc.getLocation();
-        }
-        else if (rc.canMove(randDir)) {
-            rc.move(randDir);
-            myLocation = rc.getLocation();
         }
     }
 }

@@ -2,6 +2,10 @@ package sprint_two_player;
 
 import battlecode.common.*;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Map;
+
 import static sprint_two_player.RobotPlayer.directions;
 import static sprint_two_player.RobotPlayer.rng;
 
@@ -24,9 +28,7 @@ public class Launcher {
                 MapLocation enemyLocation = enemiesTeam[0].location;
                 isChasing = true; // Start chasing
                 //System.out.println("Chasing enemy at " + enemyLocation);
-                if (rc.canMove(rc.getLocation().directionTo(enemyLocation))) {
-                    rc.move(rc.getLocation().directionTo(enemyLocation));
-                }
+                Movement.moveToLocation(rc, rc.getLocation().directionTo(enemyLocation));
                 if (rc.getLocation().isAdjacentTo(enemyLocation) && rc.canAttack(enemyLocation)) {
                     rc.attack(enemyLocation);
                 }
@@ -37,8 +39,8 @@ public class Launcher {
                     wellGuardTurns = 5;
                     isChasing = false;
                     //System.out.println("Returning to well at " + wellLocation);
-                } else if (rc.canMove(rc.getLocation().directionTo(wellLocation))) {
-                    rc.move(rc.getLocation().directionTo(wellLocation));
+                } else {
+                    Movement.moveToLocation(rc, rc.getLocation().directionTo(wellLocation));
                 }
                 return; // Skip rest of the turn if still guarding
             }
@@ -61,16 +63,14 @@ public class Launcher {
 
         // Also try to move randomly.
         Direction dir = directions[rng.nextInt(directions.length)];
-        if (rc.canMove(dir)) {
-            rc.move(dir);
-            // Check if the Launcher has moved to a well
-            WellInfo[] nearbyWells = rc.senseNearbyWells();
-            for (WellInfo well : nearbyWells) {
-                if (rc.getLocation().equals(well.getMapLocation())) {
-                    wellGuardTurns = 5; // Start guarding for 5 turns
-                    wellLocation = well.getMapLocation(); // Remember well location
-                    break;
-                }
+        Movement.moveToLocation(rc, dir);
+        // Check if the Launcher has moved to a well
+        WellInfo[] nearbyWells = rc.senseNearbyWells();
+        for (WellInfo well : nearbyWells) {
+            if (rc.getLocation().equals(well.getMapLocation())) {
+                wellGuardTurns = 5; // Start guarding for 5 turns
+                wellLocation = well.getMapLocation(); // Remember well location
+                break;
             }
         }
     }
@@ -80,25 +80,21 @@ public class Launcher {
     private static void followAllyCarrier(RobotController rc) throws GameActionException {
         RobotInfo[] nearbyRobots = rc.senseNearbyRobots(); // Gets all robots within vision radius
         MapLocation closestCarrierLocation = null;
-        double minDistance = Double.MAX_VALUE;
 
-        for (RobotInfo robot : nearbyRobots) {
-            if (robot.getType() == RobotType.CARRIER && robot.getTeam() == rc.getTeam()) {
-                double distance = rc.getLocation().distanceSquaredTo(robot.getLocation());
-                if (distance < minDistance) {
-                    closestCarrierLocation = robot.getLocation();
-                    minDistance = distance;
+        if (nearbyRobots.length > 0) {
+            Set<MapLocation> alliedCarriers = new HashSet<>();
+            for (RobotInfo robot : nearbyRobots) {
+                if (robot.getType() == RobotType.CARRIER && robot.getTeam() == rc.getTeam()) {
+                    alliedCarriers.add(robot.getLocation());
                 }
             }
+            closestCarrierLocation = Movement.getClosestLocation(rc, alliedCarriers);
         }
 
         // If a Carrier is found, move towards it
         if (closestCarrierLocation != null && rc.isMovementReady()) {
             Direction directionToMove = rc.getLocation().directionTo(closestCarrierLocation);
-            if (rc.canMove(directionToMove)) {
-                rc.move(directionToMove);
-            }
+            Movement.moveToLocation(rc, directionToMove);
         }
     }
-
 }
