@@ -24,17 +24,9 @@ public class Carrier {
         Direction randDir = directions[rng.nextInt(directions.length)]; // Hold rand direction if needed.
         myLocation = rc.getLocation();                                  // Get robot's current location.
 
-        // Try to write location of the headquarters to the communications array (robot spawns at HQ).
-//        if (!recordedHQ) {
-//            writeHQ(rc);
-//            recordedHQ = true;
-//        }
-
-
         // If the headquarters have not already been found, locate the closest one.
-//        hqLocation = readHQ(rc);
         if (hqLocation == null) {
-            locateHQ(rc);
+            hqLocation = Communication.readHQ(rc);
         }
 
         // If the closest well has not been found, locate it.
@@ -143,36 +135,15 @@ public class Carrier {
 
     /** Locate the closest well based on current robot's location. **/
     public static void locateWell(RobotController rc) throws GameActionException {
-        WellInfo[] wells = rc.senseNearbyWells();
-        // Find the closest or only well nearby.
-        if (wells.length > 0) {
-            MapLocation[] wellLocations = new MapLocation[wells.length];
-            for (int i = 0; i < wellLocations.length; ++i) {
-                wellLocations[i] = wells[i].getMapLocation();
-            }
-            wellLocation = Movement.getClosestLocation(rc, wellLocations);
-            rc.setIndicatorString("Found closest well at: " + wellLocation);
-        }
+        Communication.writeWells(rc);
+        wellLocation = Communication.readWell(rc);
+        rc.setIndicatorString("Found closest well at: " + wellLocation);
     }
 
     /** Locate closest unoccupied island nearby. **/
     public static void locateIsland(RobotController rc) throws GameActionException {
-        int[] islands = rc.senseNearbyIslands();
-        Set<MapLocation> closestIslands = new HashSet<>();
-        for (int id : islands) {
-            // Check if island is unoccupied first.
-            if (rc.senseTeamOccupyingIsland(id) == Team.NEUTRAL) {
-                MapLocation[] thisIslandLocs = rc.senseNearbyIslandLocations(id);
-                // Add the closest parts of each island.
-                if (thisIslandLocs.length > 0) {
-                    closestIslands.add(Movement.getClosestLocation(rc, thisIslandLocs));
-                }
-            }
-        }
-        // Get the actual closest part of the closest island.
-        if (!closestIslands.isEmpty()) {
-            islandLocation = Movement.getClosestLocation(rc, closestIslands);
-        }
+        Communication.writeIslands(rc);
+        islandLocation = Communication.readIsland(rc);
     }
 
     /** Collect from well in adjacent squares. **/

@@ -24,6 +24,12 @@ public class Headquarters {
         int spawn_anchor_fail = 0;
         int spawn_carrier_fail = 0;
         int spawn_launcher_fail = 0;
+
+        // Write Headquarters location to shared array if first turn.
+        if (roundNum == 1) {
+            Communication.writeHQ(rc);
+        }
+
         /**
          * For every 10 rounds, build an anchor
          */

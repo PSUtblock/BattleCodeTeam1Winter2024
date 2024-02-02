@@ -65,13 +65,10 @@ public class Launcher {
         Direction dir = directions[rng.nextInt(directions.length)];
         Movement.moveToLocation(rc, dir);
         // Check if the Launcher has moved to a well
-        WellInfo[] nearbyWells = rc.senseNearbyWells();
-        for (WellInfo well : nearbyWells) {
-            if (rc.getLocation().equals(well.getMapLocation())) {
-                wellGuardTurns = 5; // Start guarding for 5 turns
-                wellLocation = well.getMapLocation(); // Remember well location
-                break;
-            }
+        Communication.writeWells(rc);
+        wellLocation = Communication.readWell(rc);
+        if (rc.getLocation().equals(wellLocation)) {
+            wellGuardTurns = 5; // Start guarding for 5 turns
         }
     }
     /**
