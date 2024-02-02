@@ -2,9 +2,6 @@ package sprint_two_player;
 
 import battlecode.common.*;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import static sprint_two_player.RobotPlayer.directions;
 import static sprint_two_player.RobotPlayer.rng;
 
@@ -30,29 +27,23 @@ public class Carrier {
         }
 
         // If the closest well has not been found, locate it.
+        Communication.writeWells(rc);
         if (wellLocation == null) {
-            locateWell(rc);
+            wellLocation = Communication.readWell(rc);
         }
 
         // If the closest island has not been found, locate it.
+        Communication.writeIslands(rc);
         if (islandLocation == null) {
-            locateIsland(rc);
+            islandLocation = Communication.readIsland(rc);
         }
 
         // If the robot does not have an anchor, try to collect one.
-        /**
-         * While debugging, if the robot has an anchor, the condition still return true that it is null,
-         * so I've added more conditions to ensure it returns the correct result.
-         */
         if (rc.getAnchor() == null && rc.getAnchor() != Anchor.STANDARD && rc.getAnchor() != Anchor.ACCELERATING) {
             collectAnchor(rc);
         }
 
         // If the robot has an anchor singularly focus on getting it to the first island it sees.
-        /**
-         * While debugging, if the robot has an anchor, the condition returns false,
-         * so I've added more conditions to ensure it returns the correct result.
-         */
         if (rc.getAnchor() != null || rc.getAnchor() == Anchor.STANDARD || rc.getAnchor() == Anchor.ACCELERATING) {
             if (islandLocation != null) {
                 rc.setIndicatorString("Moving my anchor towards " + islandLocation);
@@ -63,6 +54,8 @@ public class Carrier {
                 if (rc.canPlaceAnchor()) {
                     rc.placeAnchor();
                     rc.setIndicatorString("Huzzah, placed anchor!");
+                    // Removes island from shared array.
+                    Communication.updateIslands(rc, islandLocation);
                     islandLocation = null;
                 }
             }
@@ -117,33 +110,6 @@ public class Carrier {
 //                }
 //            }
 //        }
-    }
-
-    /** Locate the Headquarters, so the Carrier can always find its way back. **/
-    public static void locateHQ(RobotController rc) throws GameActionException {
-        RobotInfo[] robots = rc.senseNearbyRobots();
-
-        // Check for this teams Headquarters and record its location.
-        for (RobotInfo robot : robots) {
-            if ((robot.getTeam() == rc.getTeam()) && (robot.getType() == RobotType.HEADQUARTERS)) {
-                hqLocation = robot.getLocation();
-                rc.setIndicatorString("Found headquarters at: " + hqLocation);
-                break;
-            }
-        }
-    }
-
-    /** Locate the closest well based on current robot's location. **/
-    public static void locateWell(RobotController rc) throws GameActionException {
-        Communication.writeWells(rc);
-        wellLocation = Communication.readWell(rc);
-        rc.setIndicatorString("Found closest well at: " + wellLocation);
-    }
-
-    /** Locate closest unoccupied island nearby. **/
-    public static void locateIsland(RobotController rc) throws GameActionException {
-        Communication.writeIslands(rc);
-        islandLocation = Communication.readIsland(rc);
     }
 
     /** Collect from well in adjacent squares. **/

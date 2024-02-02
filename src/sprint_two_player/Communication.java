@@ -147,13 +147,27 @@ public class Communication {
                         }
                     }
                     else if (rc.readSharedArray(i) == island.x && rc.readSharedArray(i + 1) == island.y) {
-                        // If island already exists in array, break out of loop.
+                        // If island already exists, skip this iteration.
                         break;
                     }
                 }
             }
         }
     }
+
+    /** Update array of islands, removing any that are now occupied. **/
+    public static void updateIslands(RobotController rc, MapLocation island) throws GameActionException {
+        // Island is in array, remove it.
+        for (int i = START_ISLAND_IDX; i < PRIORITY_IDX; i += XY_IDX_INCREMENT) {
+            if (rc.readSharedArray(i) == island.x && rc.readSharedArray(i + 1) == island.y) {
+                if (rc.canWriteSharedArray(i, 0)) {
+                    rc.writeSharedArray(i, 0);
+                    rc.writeSharedArray(i + 1, 0);
+                }
+            }
+        }
+    }
+
 
     /** Read which resource to prioritize. **/
     public static int readPriority(RobotController rc) throws GameActionException {
