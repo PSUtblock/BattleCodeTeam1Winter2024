@@ -4,9 +4,6 @@ import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
-import sprint_one_player.Carrier;
-import sprint_one_player.Headquarters;
-import sprint_one_player.Launcher;
 
 import java.util.Random;
 //import java.util.Set;
@@ -35,14 +32,14 @@ public strictfp class RobotPlayer {
 
     /** Array containing all the possible movement directions. */
     static final Direction[] directions = {
-        Direction.NORTH,
-        Direction.NORTHEAST,
-        Direction.EAST,
-        Direction.SOUTHEAST,
-        Direction.SOUTH,
-        Direction.SOUTHWEST,
-        Direction.WEST,
-        Direction.NORTHWEST,
+            Direction.NORTH,
+            Direction.NORTHEAST,
+            Direction.EAST,
+            Direction.SOUTHEAST,
+            Direction.SOUTH,
+            Direction.SOUTHWEST,
+            Direction.WEST,
+            Direction.NORTHWEST,
     };
 
     /**
