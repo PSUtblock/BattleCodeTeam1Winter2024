@@ -9,4 +9,6 @@ import static sprint_two_player.RobotPlayer.directions;
 import static sprint_two_player.RobotPlayer.rng;
 
 public class Amplifier {
+    public static void runAmplifier(RobotController rc) throws GameActionException {
+    }
 }
