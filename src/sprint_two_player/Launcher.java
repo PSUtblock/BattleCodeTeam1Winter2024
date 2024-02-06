@@ -45,18 +45,9 @@ public class Launcher {
                 return; // Skip rest of the turn if still guarding
             }
         }
-        // Try to attack someone
-        int radius = rc.getType().actionRadiusSquared;
-        Team opponent = rc.getTeam().opponent();
-        RobotInfo[] enemies = rc.senseNearbyRobots(radius, opponent);
-        if (enemies.length > 0) {
-            MapLocation toAttack = enemies[0].location;
 
-            if (rc.canAttack(toAttack)) {
-                rc.setIndicatorString("Attacking");
-                rc.attack(toAttack);
-            }
-        }
+        // Attack logic
+        attackEnemies(rc);
 
         // Additional functionality to track and follow an ally Carrier
         followAllyCarrier(rc);
@@ -64,12 +55,8 @@ public class Launcher {
         // Also try to move randomly.
         Direction dir = directions[rng.nextInt(directions.length)];
         Movement.moveToLocation(rc, dir);
-        // Check if the Launcher has moved to a well
-        Communication.writeWells(rc);
-        wellLocation = Communication.readWell(rc);
-        if (rc.getLocation().equals(wellLocation)) {
-            wellGuardTurns = 5; // Start guarding for 5 turns
-        }
+        updateWellLocation(rc);
+
     }
     /**
      * Tracks and moves towards the nearest ally Carrier.
@@ -92,6 +79,25 @@ public class Launcher {
         if (closestCarrierLocation != null && rc.isMovementReady()) {
             Direction directionToMove = rc.getLocation().directionTo(closestCarrierLocation);
             Movement.moveToLocation(rc, directionToMove);
+        }
+    }
+    private static void attackEnemies(RobotController rc) throws GameActionException {
+        RobotInfo[] enemies = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
+        if (enemies.length > 0) {
+            MapLocation toAttack = enemies[0].location;
+            if (rc.canAttack(toAttack)) {
+                rc.setIndicatorString("Attacking");
+                rc.attack(toAttack);
+            }
+        }
+    }
+
+    private static void updateWellLocation(RobotController rc) throws GameActionException {
+        // Refresh well locations and guard if on a well
+        Communication.writeWells(rc);
+        wellLocation = Communication.readWell(rc);
+        if (rc.getLocation().equals(wellLocation)) {
+            wellGuardTurns = 5; // Start guarding for 5 turns
         }
     }
 }
