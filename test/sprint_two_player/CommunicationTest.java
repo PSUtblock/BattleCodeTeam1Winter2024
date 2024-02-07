@@ -12,7 +12,48 @@ public class CommunicationTest {
     public void testReadHQWithEmptySharedArray() throws GameActionException {
         CommunicationRobotController rc = new CommunicationRobotController();
         MapLocation closestHQ = Communication.readHQ(rc);
+        // Assert that location is null.
         assertNull(closestHQ);
+    }
+
+    // Testing reading the closest HQ from a shared array with one HQ.
+    @Test
+    public void testReadHQWithOneHQ() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] oneHQInArray = new int[] {
+                1, 1, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        rc.setSharedArray(oneHQInArray);
+        MapLocation closestHQ = Communication.readHQ(rc);
+        // Assert that closest location is correct.
+        assertEquals(new MapLocation(1, 1), closestHQ);
+    }
+
+    // Testing reading the closest HQ from a shared array with multiple HQ's.
+    @Test
+    public void testReadHQWithMultipleHQ() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] oneHQInArray = new int[] {
+                2, 2, 2, 0, 1, 1, 0, 2,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        rc.setSharedArray(oneHQInArray);
+        MapLocation closestHQ = Communication.readHQ(rc);
+        // Assert that closest location is correct.
+        assertEquals(new MapLocation(1, 1), closestHQ);
     }
 
     @Test
@@ -58,7 +99,7 @@ class CommunicationRobotController implements RobotController {
     boolean canWriteResult = true;
 
     // Create a sharedArray of 64 integers.
-    int[] sharedArray = new int[]{
+    int[] sharedArray = new int[] {
             0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0,
@@ -79,7 +120,7 @@ class CommunicationRobotController implements RobotController {
 
     public void reset() {
         canWriteResult = true;
-        sharedArray = new int[]{
+        sharedArray = new int[] {
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
