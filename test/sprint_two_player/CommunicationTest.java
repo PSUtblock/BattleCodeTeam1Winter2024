@@ -5,6 +5,8 @@ import battlecode.common.*;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
+import java.util.Map;
+
 public class CommunicationTest {
 
     // Testing reading an HQ from an empty shared array.
@@ -34,14 +36,15 @@ public class CommunicationTest {
         MapLocation closestHQ = Communication.readHQ(rc);
         // Assert that closest location is correct.
         assertEquals(new MapLocation(1, 1), closestHQ);
+        rc.reset();
     }
 
     // Testing reading the closest HQ from a shared array with multiple HQ's.
     @Test
     public void testReadHQWithMultipleHQ() throws GameActionException {
         CommunicationRobotController rc = new CommunicationRobotController();
-        int[] oneHQInArray = new int[] {
-                2, 2, 2, 0, 1, 1, 0, 2,
+        int[] multiHQInArray = new int[] {
+                2, 2, 2, 0, 1, 1, 1, 2,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
@@ -50,18 +53,204 @@ public class CommunicationTest {
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0
         };
-        rc.setSharedArray(oneHQInArray);
+        rc.setSharedArray(multiHQInArray);
         MapLocation closestHQ = Communication.readHQ(rc);
         // Assert that closest location is correct.
         assertEquals(new MapLocation(1, 1), closestHQ);
+        rc.reset();
     }
 
+    // Testing writing an HQ to an empty shared array when it can write.
     @Test
-    public void testWriteHQ() {
+    public void testWriteHQToEmptyArrayCanWrite() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        rc.setLocation(new MapLocation(1, 1));
+        int[] validArray = new int[] {
+                1, 1, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+
+        rc.setCanWriteResult(true);
+        Communication.writeHQ(rc);
+        // Assert that written HQ is equal to validArray.
+        assertArrayEquals(validArray, rc.getArray());
+        rc.reset();
     }
 
+    // Testing writing a null HQ to an empty shared array.
     @Test
-    public void testReadWell() {
+    public void testWriteNullHQToEmptyArray() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        rc.setLocation(null);
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+
+        rc.setCanWriteResult(true);
+        Communication.writeHQ(rc);
+        // Assert that written HQ is equal to validArray.
+        assertArrayEquals(validArray, rc.getArray());
+        rc.reset();
+    }
+
+    // Testing writing an HQ to an empty shared array when it cannot write.
+    @Test
+    public void testWriteHQToEmptyArrayCannotWrite() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        rc.setLocation(new MapLocation(1, 1));
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+
+        rc.setCanWriteResult(false);
+        Communication.writeHQ(rc);
+        // Assert that written HQ is equal to validArray.
+        assertArrayEquals(validArray, rc.getArray());
+        rc.reset();
+    }
+
+    // Testing writing an HQ to a shared array with one HQ.
+    // HQ's never spawn in the same location, so no need to test location validity.
+    @Test
+    public void testWriteHQWithOneHQInArray() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        rc.setLocation(new MapLocation(1, 1));
+        int[] existingArray = new int[] {
+                2, 2, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        int[] validArray = new int[] {
+                2, 2, 1, 1, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+
+        rc.setSharedArray(existingArray);
+
+        rc.setCanWriteResult(true);
+        Communication.writeHQ(rc);
+        // Assert that written HQ is equal to validArray.
+        assertArrayEquals(validArray, rc.getArray());
+        rc.reset();
+    }
+
+    // Testing writing an HQ to a shared array with multiple HQ.
+    // HQ's never spawn in the same location, so no need to test location validity.
+    // No more than four HQ's will ever be created, so no need to test for overfilling.
+    @Test
+    public void testWriteHQWithMultipleHQInArray() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        rc.setLocation(new MapLocation(1, 1));
+        int[] existingArray = new int[] {
+                2, 2, 1, 2, 1, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        int[] validArray = new int[] {
+                2, 2, 1, 2, 1, 0, 1, 1,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+
+        rc.setSharedArray(existingArray);
+
+        rc.setCanWriteResult(true);
+        Communication.writeHQ(rc);
+        // Assert that written HQ is equal to validArray.
+        assertArrayEquals(validArray, rc.getArray());
+        rc.reset();
+    }
+
+    // Testing reading a well from an empty shared array.
+    @Test
+    public void testReadWellWithEmptySharedArray() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        MapLocation closestWell = Communication.readWell(rc);
+        // Assert that location is null.
+        assertNull(closestWell);
+    }
+
+    // Testing reading the closest well from a shared array with one well.
+    @Test
+    public void testReadWellWithOneWell() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] oneWellInArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 1, 1, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        rc.setSharedArray(oneWellInArray);
+        MapLocation closestWell = Communication.readWell(rc);
+        // Assert that closest location is correct.
+        assertEquals(new MapLocation(1, 1), closestWell);
+        rc.reset();
+    }
+
+    // Testing reading the closest well from a shared array with multiple wells.
+    @Test
+    public void testReadWellWithMultipleWell() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] multiWellInArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                2, 2, 2, 0, 0, 0, 1, 2,
+                0, 0, 1, 1, 2, 1, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        rc.setSharedArray(multiWellInArray);
+        MapLocation closestWell = Communication.readWell(rc);
+        // Assert that closest location is correct.
+        assertEquals(new MapLocation(1, 1), closestWell);
+        rc.reset();
     }
 
     @Test
@@ -92,9 +281,11 @@ public class CommunicationTest {
 /**
  * Implements a simple mock RobotController for testing. Has to implement all methods, but the only affected methods
  * are getMapWidth, getMapHeight, and getLocation. New methods for testing include setSharedArray, setCanWriteResult,
- * and reset.
+ * setLocation, getArray, and reset.
  **/
 class CommunicationRobotController implements RobotController {
+    final int max_array_value = 65536; // 2^16
+    final int max_array_length = 64;
     MapLocation currentLocation = new MapLocation(0, 0);
     boolean canWriteResult = true;
 
@@ -118,8 +309,17 @@ class CommunicationRobotController implements RobotController {
         canWriteResult = writeResult;
     }
 
+    public void setLocation(MapLocation location) {
+        currentLocation = location;
+    }
+
+    public int[] getArray() {
+        return sharedArray;
+    }
+
     public void reset() {
         canWriteResult = true;
+        currentLocation = new MapLocation(0, 0);
         sharedArray = new int[] {
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
@@ -152,14 +352,15 @@ class CommunicationRobotController implements RobotController {
         return sharedArray[index];
     }
 
+    // The games indices and values are always within valid parameters, so passed in values cannot be tested.
     @Override
     public boolean canWriteSharedArray(int index, int value) {
-        return false;
+        return canWriteResult;
     }
 
     @Override
     public void writeSharedArray(int index, int value)  {
-
+        sharedArray[index] = value;
     }
 
 
