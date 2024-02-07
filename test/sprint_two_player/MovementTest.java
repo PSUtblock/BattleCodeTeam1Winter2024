@@ -6,6 +6,9 @@ import junit.framework.TestCase;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
+/**
+ * Implements unit testing for the Movement class.
+ */
 public class MovementTest extends TestCase {
 
     // Testing moveToLocation method.
