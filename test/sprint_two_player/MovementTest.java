@@ -63,8 +63,8 @@ public class MovementTest {
     public void testGetClosestLocationWithMultipleLocations() throws GameActionException {
         MovementRobotController rc = new MovementRobotController();
         MapLocation[] locations = {
+                new MapLocation(2, 2),
                 new MapLocation(1, 1),
-                new MapLocation(3, 3),
                 new MapLocation(2, 0)
         };
 
@@ -100,7 +100,7 @@ public class MovementTest {
     public void testGetClosestLocationWithMultipleLocationsSet() throws GameActionException {
         MovementRobotController rc = new MovementRobotController();
         Set<MapLocation> locations = new HashSet<>(
-                Arrays.asList(new MapLocation(1, 1), new MapLocation(3, 3), new MapLocation(2, 0)));
+                Arrays.asList(new MapLocation(2, 2), new MapLocation(1, 1), new MapLocation(2, 0)));
 
         // Assert that closest location is correct.
         MapLocation closestLocation = Movement.getClosestLocation(rc, locations);
