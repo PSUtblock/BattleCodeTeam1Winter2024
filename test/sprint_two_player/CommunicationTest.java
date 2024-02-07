@@ -5,125 +5,90 @@ import battlecode.common.*;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+public class CommunicationTest {
 
-/**
- * Implements unit testing for the Movement class.
- */
-public class MovementTest {
-
-    // Testing moveToLocation method.
+    // Testing reading an HQ from an empty shared array.
     @Test
-    public void testMoveToLocation() throws GameActionException{
-        MovementRobotController rc = new MovementRobotController();
-        Direction validDir = Direction.NORTH;
-
-        // Check resulting location if it can move.
-        rc.setCanMoveResult(true);
-        Movement.moveToLocation(rc, validDir);
-        assertEquals(new MapLocation(0, 1), rc.getLocation());
-        rc.reset();
-
-        // Check resulting location if it cannot move.
-        rc.setCanMoveResult(false);
-        Movement.moveToLocation(rc, validDir);
-        assertNotEquals(new MapLocation(0, 1), rc.getLocation());
-        rc.reset();
+    public void testReadHQWithEmptySharedArray() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        MapLocation closestHQ = Communication.readHQ(rc);
+        assertNull(closestHQ);
     }
 
-    // Testing getClosestLocation method with an array of zero locations.
     @Test
-    public void testGetClosestLocationWithEmptyArray() throws GameActionException {
-        MovementRobotController rc = new MovementRobotController();
-        MapLocation[] locations = {};
-
-        // Assert that the returned location is null.
-        MapLocation closestLocation = Movement.getClosestLocation(rc, locations);
-        assertNull(closestLocation);
+    public void testWriteHQ() {
     }
 
-    // Testing getClosestLocation method with an array of one location.
     @Test
-    public void testGetClosestLocationWithSingleLocation() throws GameActionException {
-        MovementRobotController rc = new MovementRobotController();
-        MapLocation[] locations = {
-                new MapLocation(1, 1)
-        };
-
-        // Assert that closest location is correct.
-        MapLocation closestLocation = Movement.getClosestLocation(rc, locations);
-        assertEquals(new MapLocation(1, 1), closestLocation);
+    public void testReadWell() {
     }
 
-    // Testing getClosestLocation method with an array of multiple locations.
     @Test
-    public void testGetClosestLocationWithMultipleLocations() throws GameActionException {
-        MovementRobotController rc = new MovementRobotController();
-        MapLocation[] locations = {
-                new MapLocation(1, 1),
-                new MapLocation(3, 3),
-                new MapLocation(2, 0)
-        };
-
-        // Assert that closest location is correct.
-        MapLocation closestLocation = Movement.getClosestLocation(rc, locations);
-        assertEquals(new MapLocation(1, 1), closestLocation);
+    public void testWriteWells() {
     }
 
-    // Testing getClosestLocation method with a set of zero locations.
     @Test
-    public void testGetClosestLocationWithEmptySet() throws GameActionException {
-        MovementRobotController rc = new MovementRobotController();
-        Set<MapLocation> locations = new HashSet<>();
-
-        // Assert that the returned location is null.
-        MapLocation closestLocation = Movement.getClosestLocation(rc, locations);
-        assertNull(closestLocation);
+    public void testReadIsland() {
     }
 
-    // Testing getClosestLocation method with an array of one location.
     @Test
-    public void testGetClosestLocationWithSingleLocationSet() throws GameActionException {
-        MovementRobotController rc = new MovementRobotController();
-        Set<MapLocation> locations = new HashSet<>(Collections.singletonList(new MapLocation(1, 1)));
-
-        // Assert that closest location is correct.
-        MapLocation closestLocation = Movement.getClosestLocation(rc, locations);
-        assertEquals(new MapLocation(1, 1), closestLocation);
+    public void testWriteIslands() {
     }
 
-    // Testing getClosestLocation method with an array of multiple locations.
     @Test
-    public void testGetClosestLocationWithMultipleLocationsSet() throws GameActionException {
-        MovementRobotController rc = new MovementRobotController();
-        Set<MapLocation> locations = new HashSet<>(
-                Arrays.asList(new MapLocation(1, 1), new MapLocation(3, 3), new MapLocation(2, 0)));
+    public void testUpdateIslands() {
+    }
 
-        // Assert that closest location is correct.
-        MapLocation closestLocation = Movement.getClosestLocation(rc, locations);
-        assertEquals(new MapLocation(1, 1), closestLocation);
+    @Test
+    public void testReadPriority() {
+    }
+
+    @Test
+    public void testWritePriority() {
     }
 }
 
 /**
  * Implements a simple mock RobotController for testing. Has to implement all methods, but the only affected methods
- * are getMapWidth, getMapHeight, getLocation, canMove, and move. New methods for testing include setCanMoveResult and
- * reset.
+ * are getMapWidth, getMapHeight, and getLocation. New methods for testing include setSharedArray, setCanWriteResult,
+ * and reset.
  **/
-class MovementRobotController implements RobotController{
-    private boolean canMoveResult = true; // Controls canMove result
-    private MapLocation currentLocation = new MapLocation(0, 0);
+class CommunicationRobotController implements RobotController {
+    MapLocation currentLocation = new MapLocation(0, 0);
+    boolean canWriteResult = true;
 
-    public void setCanMoveResult(boolean moveResult) {
-        canMoveResult = moveResult;
+    // Create a sharedArray of 64 integers.
+    int[] sharedArray = new int[]{
+            0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0
+    };
+
+    public void setSharedArray(int[] sharedArrayResult) {
+        sharedArray = sharedArrayResult.clone();
+    }
+
+    public void setCanWriteResult(boolean writeResult) {
+        canWriteResult = writeResult;
     }
 
     public void reset() {
-        canMoveResult = true;
-        currentLocation = new MapLocation(0, 0);
+        canWriteResult = true;
+        sharedArray = new int[]{
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
     }
 
     @Override
@@ -142,13 +107,28 @@ class MovementRobotController implements RobotController{
     }
 
     @Override
+    public int readSharedArray(int index)  {
+        return sharedArray[index];
+    }
+
+    @Override
+    public boolean canWriteSharedArray(int index, int value) {
+        return false;
+    }
+
+    @Override
+    public void writeSharedArray(int index, int value)  {
+
+    }
+
+
+    @Override
     public boolean canMove(Direction dir) {
-        return canMoveResult;
+        return true;
     }
 
     @Override
     public void move(Direction dir) {
-        currentLocation = currentLocation.add(dir);
     }
 
     @Override
@@ -518,21 +498,6 @@ class MovementRobotController implements RobotController{
 
     @Override
     public void placeAnchor()  {
-
-    }
-
-    @Override
-    public int readSharedArray(int index)  {
-        return 0;
-    }
-
-    @Override
-    public boolean canWriteSharedArray(int index, int value) {
-        return false;
-    }
-
-    @Override
-    public void writeSharedArray(int index, int value)  {
 
     }
 
