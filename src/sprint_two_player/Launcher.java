@@ -46,6 +46,8 @@ public class Launcher {
             }
         }
 
+        attackWithPriority(rc);
+
         // Attack logic
         attackEnemies(rc);
 
@@ -98,6 +100,42 @@ public class Launcher {
         wellLocation = Communication.readWell(rc);
         if (rc.getLocation().equals(wellLocation)) {
             wellGuardTurns = 5; // Start guarding for 5 turns
+        }
+    }
+
+    private static void attackWithPriority(RobotController rc) throws GameActionException {
+        RobotInfo[] enemies = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
+        // Group enemies by type with predefined priorities
+        RobotInfo targetCarrier = null;
+        RobotInfo targetLauncher = null;
+        RobotInfo targetAmplifier = null;
+
+        for (RobotInfo enemy : enemies) {
+            switch (enemy.getType()) {
+                case CARRIER:
+                    if (targetCarrier == null)
+                        targetCarrier = enemy; // Target the first Carrier seen
+                    break;
+                case LAUNCHER:
+                    if (targetLauncher == null)
+                        targetLauncher = enemy; // Target the first Launcher seen
+                    break;
+                case AMPLIFIER:
+                    if (targetAmplifier == null)
+                        targetAmplifier = enemy; // Target the first Amplifier seen
+                    break;
+            }
+        }
+
+        // Attack based on priority: Carriers -> Launchers -> Amplifiers
+        if (targetCarrier != null && rc.canAttack(targetCarrier.location)) {
+            rc.attack(targetCarrier.location);
+        } else if (targetLauncher != null && rc.canAttack(targetLauncher.location)) {
+            rc.attack(targetLauncher.location);
+        } else if (targetAmplifier != null && rc.canAttack(targetAmplifier.location)) {
+            rc.attack(targetAmplifier.location);
+        }else {
+            attackEnemies(rc);
         }
     }
 }
