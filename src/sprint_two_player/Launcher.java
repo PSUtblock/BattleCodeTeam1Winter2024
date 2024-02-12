@@ -19,6 +19,15 @@ public class Launcher {
     static boolean isChasing = false; // New variable to track if we are chasing an enemy
     static MapLocation wellLocation = null; // New variable to remember the well location
     public static void runLauncher(RobotController rc) throws GameActionException {
+        int behaviorMode = (rc.getRoundNum() / 10) % 2;
+
+        if (behaviorMode == 0) {
+            // Follow ally carrier
+            followAllyCarrier(rc);
+        } else {
+            // Attack enemy robots
+            attackEnemies(rc);
+        }
         if (wellGuardTurns > 0 || isChasing) {
             wellGuardTurns = isChasing ? wellGuardTurns : wellGuardTurns - 1;
             System.out.println("Guarding well at " + wellLocation + ", turns left: " + wellGuardTurns);
@@ -44,14 +53,10 @@ public class Launcher {
                 return; // Skip rest of the turn if still guarding
             }
         }
-
         attackWithPriority(rc);
 
         // Attack logic
         attackEnemies(rc);
-
-        // Additional functionality to track and follow an ally Carrier
-        followAllyCarrier(rc);
 
         followAndGuardAlly(rc);
 
