@@ -38,7 +38,6 @@ public class Launcher {
                 if (rc.getLocation().equals(wellLocation)) {
                     wellGuardTurns = 5;
                     isChasing = false;
-                    //System.out.println("Returning to well at " + wellLocation);
                 } else {
                     Movement.moveToLocation(rc, rc.getLocation().directionTo(wellLocation));
                 }
@@ -53,6 +52,8 @@ public class Launcher {
 
         // Additional functionality to track and follow an ally Carrier
         followAllyCarrier(rc);
+
+        followAndGuardAlly(rc);
 
         // Also try to move randomly.
         Direction dir = directions[rng.nextInt(directions.length)];
@@ -138,4 +139,54 @@ public class Launcher {
             attackEnemies(rc);
         }
     }
+
+    private static MapLocation lastAmplifierLocation = null;
+    private static boolean isAssignedToAmplifier = false;
+
+    private static void followAndGuardAlly(RobotController rc) throws GameActionException {
+        RobotInfo[] nearbyRobots = rc.senseNearbyRobots();
+
+        // Find the closest Amplifier if not already assigned
+        if (!isAssignedToAmplifier) {
+            RobotInfo closestAmplifier = null;
+            for (RobotInfo robot : nearbyRobots) {
+                if (robot.getType() == RobotType.AMPLIFIER && robot.getTeam() == rc.getTeam()) {
+                    if (closestAmplifier == null || rc.getLocation().distanceSquaredTo(robot.getLocation()) < rc.getLocation().distanceSquaredTo(closestAmplifier.getLocation())) {
+                        closestAmplifier = robot;
+                        isAssignedToAmplifier = true;
+                    }
+                }
+            }
+
+            if (closestAmplifier != null) {
+                lastAmplifierLocation = closestAmplifier.getLocation();
+            }
+        }
+
+        // If assigned to an Amplifier, check if it has moved
+        if (isAssignedToAmplifier && lastAmplifierLocation != null) {
+            RobotInfo currentAmplifier = null;
+            for (RobotInfo robot : nearbyRobots) {
+                if (robot.getType() == RobotType.AMPLIFIER && robot.getLocation().equals(lastAmplifierLocation)) {
+                    currentAmplifier = robot;
+                    break;
+                }
+            }
+
+            // If the Amplifier is no longer at the last known location, it has moved
+            if (currentAmplifier == null) {
+                // Attempt to find and follow the Amplifier again
+                isAssignedToAmplifier = false;
+                lastAmplifierLocation = null;
+                followAndGuardAlly(rc); // Retry finding an Amplifier
+            } else {
+                // Stay and guard the Amplifier
+                attackWithPriority(rc); // Attack nearby enemies
+            }
+        } else {
+            // No Amplifier to follow; engage in other behaviors
+            attackWithPriority(rc);
+        }
+    }
+
 }
