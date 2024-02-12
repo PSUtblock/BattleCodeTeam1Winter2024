@@ -1,11 +1,11 @@
 package sprint_two_player;
 
 import battlecode.common.*;
+import battlecode.world.Inventory;
 
 import static org.junit.Assert.*;
-import org.junit.Test;
 
-import java.util.Map;
+import org.junit.Test;
 
 public class CommunicationTest {
 
@@ -253,8 +253,43 @@ public class CommunicationTest {
         rc.reset();
     }
 
+    // Testing writing a well to an empty shared array when it can write.
     @Test
-    public void testWriteWells() {
+    public void testWriteWellsToEmptyArrayCanWrite() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        rc.setWells(new WellInfo[] {
+                new WellInfo(
+                        new MapLocation(1, 1),
+                        ResourceType.NO_RESOURCE,
+                        new Inventory(10),
+                        false),
+                new WellInfo(
+                        new MapLocation(1, 2),
+                        ResourceType.NO_RESOURCE,
+                        new Inventory(10),
+                        false),
+                new WellInfo(
+                        new MapLocation(2, 2),
+                        ResourceType.NO_RESOURCE,
+                        new Inventory(10),
+                        false)
+        });
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                1, 1, 1, 2, 2, 2, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+
+        rc.setCanWriteResult(true);
+        Communication.writeWells(rc);
+        // Assert that written HQ is equal to validArray.
+        assertArrayEquals(validArray, rc.getArray());
+        rc.reset();
     }
 
     @Test
@@ -280,13 +315,12 @@ public class CommunicationTest {
 
 /**
  * Implements a simple mock RobotController for testing. Has to implement all methods, but the only affected methods
- * are getMapWidth, getMapHeight, and getLocation. New methods for testing include setSharedArray, setCanWriteResult,
- * setLocation, getArray, and reset.
+ * are getMapWidth, getMapHeight, getLocation, and senseNearbyWells. New methods for testing include setSharedArray,
+ * setCanWriteResult, setLocation, getArray, setWells, setIslands, and reset.
  **/
 class CommunicationRobotController implements RobotController {
-    final int max_array_value = 65536; // 2^16
-    final int max_array_length = 64;
     MapLocation currentLocation = new MapLocation(0, 0);
+    WellInfo[] currentWells = new WellInfo[] {};
     boolean canWriteResult = true;
 
     // Create a sharedArray of 64 integers.
@@ -313,6 +347,10 @@ class CommunicationRobotController implements RobotController {
         currentLocation = location;
     }
 
+    public void setWells(WellInfo[] wellInfo) {
+        currentWells = wellInfo;
+    }
+
     public int[] getArray() {
         return sharedArray;
     }
@@ -320,6 +358,7 @@ class CommunicationRobotController implements RobotController {
     public void reset() {
         canWriteResult = true;
         currentLocation = new MapLocation(0, 0);
+        currentWells = new WellInfo[]{};
         sharedArray = new int[] {
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
@@ -330,6 +369,11 @@ class CommunicationRobotController implements RobotController {
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0
         };
+    }
+
+    @Override
+    public WellInfo[] senseNearbyWells() {
+        return currentWells;
     }
 
     @Override
@@ -559,11 +603,6 @@ class CommunicationRobotController implements RobotController {
     }
 
     @Override
-    public WellInfo[] senseNearbyWells() {
-        return new WellInfo[0];
-    }
-
-    @Override
     public WellInfo[] senseNearbyWells(int radiusSquared)  {
         return new WellInfo[0];
     }
@@ -767,4 +806,5 @@ class CommunicationRobotController implements RobotController {
     public void setIndicatorLine(MapLocation startLoc, MapLocation endLoc, int red, int green, int blue) {
 
     }
+
 }
