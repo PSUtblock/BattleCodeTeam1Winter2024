@@ -11,6 +11,9 @@ import static sprint_two_player.RobotPlayer.rng;
  * Unify movement capabilities into one class.
  */
 public class Movement {
+    private static final int NUM_DIRS = 8; // Total number of directions not including CENTER.
+    private static Direction currentDir = null;
+
     /** Move the robot in a given direction. **/
     public static void moveToLocation(RobotController rc, Direction dir) throws GameActionException {
         Direction randDir = directions[rng.nextInt(directions.length)];
@@ -23,8 +26,40 @@ public class Movement {
         }
     }
 
+    /** Move the robot to a given location. **/
+    public static void moveToLocation(RobotController rc, MapLocation location) throws GameActionException {
+        // Check that robot is not already at the location and that movement is ready.
+        if (!rc.getLocation().equals(location) && rc.isMovementReady()) {
+            Direction dir = rc.getLocation().directionTo(location);
+            // If robot can move, then there are no obstacles in this direction.
+            if (rc.canMove(dir)) {
+                rc.move(dir);
+                currentDir = null;
+            }
+            else {
+                // Otherwise, there is an obstacle we must go around (clockwise).
+                if (currentDir == null) {
+                    currentDir = dir;
+                }
+                // For all possible directions, try to move in a clockwise motion around the obstacle.
+                for (int i = 0; i < NUM_DIRS; ++i) {
+                    // If no obstacle, turn right to face toward target location again.
+                    if (rc.canMove(currentDir)) {
+                        rc.move(currentDir);
+                        currentDir = currentDir.rotateRight();
+                        break;
+                    }
+                    else {
+                        // Otherwise, turn left to go around the obstacle clockwise.
+                        currentDir = currentDir.rotateLeft();
+                    }
+                }
+            }
+        }
+    }
+
     /** Return the closest location with respect to robot's current location. Uses an array of MapLocations as a parameter. **/
-    public static MapLocation getClosestLocation(RobotController rc, MapLocation[] locations) throws GameActionException{
+    public static MapLocation getClosestLocation(RobotController rc, MapLocation[] locations) {
         if (locations.length > 0) {
             MapLocation currClosest = locations[0];
             MapLocation myLocation = rc.getLocation();
@@ -44,7 +79,7 @@ public class Movement {
     }
 
     /** Return the closest location with respect to robot's current location. Uses set of MapLocations as a parameter. **/
-    public static MapLocation getClosestLocation(RobotController rc, Set<MapLocation> locations) throws GameActionException {
+    public static MapLocation getClosestLocation(RobotController rc, Set<MapLocation> locations) {
         if (!locations.isEmpty()) {
             MapLocation currClosest = locations.iterator().next();
             MapLocation myLocation = rc.getLocation();
