@@ -38,20 +38,23 @@ public class Movement {
                     currentDir = dir;
                 }
                 // For all possible directions, try to move in a clockwise motion around the obstacle.
-                for (int i = 0; i < NUM_DIRS; ++i) {
-                    // If no obstacle, turn right to face toward target location again.
-                    if (rc.canMove(currentDir)) {
-                        rc.move(currentDir);
-                        currentDir = currentDir.rotateRight();
-                        break;
-                    }
-                    else {
-                        // Otherwise, turn left to go around the obstacle clockwise.
-                        currentDir = currentDir.rotateLeft();
-                    }
-                }
+                currentDir = moveClockwise(rc, currentDir);
             }
         }
+    }
+
+    /** Turn clockwise around an obstacle **/
+    public static Direction moveClockwise(RobotController rc, Direction currentDir) throws GameActionException{
+        for (int i = 0; i < NUM_DIRS; ++i) {
+            // If no obstacle, turn right to face toward target location again.
+            if (rc.canMove(currentDir)) {
+                rc.move(currentDir);
+                return currentDir.rotateRight();
+            }
+            // Otherwise, turn left to go around the obstacle clockwise.
+            currentDir = currentDir.rotateLeft();
+        }
+        return currentDir;
     }
 
     /** Return the closest location with respect to robot's current location. Uses an array of MapLocations as a parameter. **/

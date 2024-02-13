@@ -292,6 +292,117 @@ public class CommunicationTest {
         rc.reset();
     }
 
+    // Testing writing a well when none are sensed.
+    @Test
+    public void testWriteWellsNoneSensed() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        rc.setWells(new WellInfo[] {});
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+
+        Communication.writeWells(rc);
+        // Assert that written HQ is equal to validArray.
+        assertArrayEquals(validArray, rc.getArray());
+        rc.reset();
+    }
+
+    // Testing writing a well to an empty shared array when it cannot write.
+    @Test
+    public void testWriteWellsCannotWrite() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        rc.setWells(new WellInfo[] {
+                new WellInfo(
+                        new MapLocation(1, 1),
+                        ResourceType.NO_RESOURCE,
+                        new Inventory(10),
+                        false),
+                new WellInfo(
+                        new MapLocation(1, 2),
+                        ResourceType.NO_RESOURCE,
+                        new Inventory(10),
+                        false),
+                new WellInfo(
+                        new MapLocation(2, 2),
+                        ResourceType.NO_RESOURCE,
+                        new Inventory(10),
+                        false)
+        });
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+
+        rc.setCanWriteResult(false);
+        Communication.writeWells(rc);
+        // Assert that written HQ is equal to validArray.
+        assertArrayEquals(validArray, rc.getArray());
+        rc.reset();
+    }
+
+    // Testing writing a well to a shared array with a matching location.
+    @Test
+    public void testWriteWellsExistingWell() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        rc.setWells(new WellInfo[] {
+                new WellInfo(
+                        new MapLocation(1, 1),
+                        ResourceType.NO_RESOURCE,
+                        new Inventory(10),
+                        false),
+                new WellInfo(
+                        new MapLocation(1, 2),
+                        ResourceType.NO_RESOURCE,
+                        new Inventory(10),
+                        false),
+                new WellInfo(
+                        new MapLocation(2, 2),
+                        ResourceType.NO_RESOURCE,
+                        new Inventory(10),
+                        false)
+        });
+        int[] initialArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                1, 1, 1, 2, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                1, 1, 1, 2, 2, 2, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+
+        rc.setSharedArray(initialArray);
+        rc.setCanWriteResult(true);
+        Communication.writeWells(rc);
+        // Assert that written HQ is equal to validArray.
+        assertArrayEquals(validArray, rc.getArray());
+        rc.reset();
+    }
+
     @Test
     public void testReadIsland() {
     }

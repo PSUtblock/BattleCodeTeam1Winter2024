@@ -15,9 +15,9 @@ import java.util.Set;
  */
 public class MovementTest {
 
-    // Testing moveToLocation method.
+    // Testing moveToLocation method when robot can move in a direction.
     @Test
-    public void testMoveToLocation() throws GameActionException{
+    public void testMoveToLocationDirCanMove() throws GameActionException{
         MovementRobotController rc = new MovementRobotController();
         Direction validDir = Direction.NORTH;
 
@@ -26,11 +26,97 @@ public class MovementTest {
         Movement.moveToLocation(rc, validDir);
         assertEquals(new MapLocation(0, 1), rc.getLocation());
         rc.reset();
+    }
+
+    // Testing moveToLocation method when robot cannot move in a direction.
+    @Test
+    public void testMoveToLocationDirCannotMove() throws GameActionException{
+        MovementRobotController rc = new MovementRobotController();
+        Direction validDir = Direction.NORTH;
 
         // Check resulting location if it cannot move.
         rc.setCanMoveResult(false);
         Movement.moveToLocation(rc, validDir);
         assertNotEquals(new MapLocation(0, 1), rc.getLocation());
+        rc.reset();
+    }
+
+    // Testing moveToLocation method when a robot's location is equal to the target
+    // location.
+    @Test
+    public void testMoveToLocationTargetSameLocation() throws GameActionException {
+        MovementRobotController rc = new MovementRobotController();
+        MapLocation sameLocation = rc.getLocation();
+        rc.setMovementReady(false);
+        Movement.moveToLocation(rc, sameLocation);
+        assertEquals(new MapLocation(0, 0), rc.getLocation());
+        rc.reset();
+    }
+
+    // Testing moveToLocation method when a robot's location is not equal to the target
+    // location and movement is not ready.
+    @Test
+    public void testMoveToLocationTargetMovementNotReady() throws GameActionException {
+        MovementRobotController rc = new MovementRobotController();
+        MapLocation targetLocation = new MapLocation(1, 1);
+        rc.setMovementReady(false);
+        Movement.moveToLocation(rc, targetLocation);
+        assertEquals(new MapLocation(0, 0), rc.getLocation());
+        rc.reset();
+    }
+
+    // Testing moveToLocation method to a target location when a robot can move.
+    @Test
+    public void testMoveToLocationTargetCanMove() throws GameActionException {
+        MovementRobotController rc = new MovementRobotController();
+        MapLocation targetLocation = new MapLocation(1, 1);
+        rc.setMovementReady(true);
+        rc.setCanMoveResult(true);
+        Movement.moveToLocation(rc, targetLocation);
+        assertEquals(new MapLocation(1, 1), rc.getLocation());
+        rc.reset();
+    }
+
+    // Testing moveToLocation method to a target location when a robot cannot move.
+    @Test
+    public void testMoveToLocationTargetCannotMove() throws GameActionException {
+        MovementRobotController rc = new MovementRobotController();
+        MapLocation targetLocation = new MapLocation(1, 1);
+        rc.setMovementReady(true);
+        rc.setCanMoveResult(false);
+        Movement.moveToLocation(rc, targetLocation);
+        assertEquals(new MapLocation(0, 0), rc.getLocation());
+        rc.reset();
+    }
+
+    // Testing moveClockwise method to a target location when a robot can move.
+    @Test
+    public void testMoveClockwiseCanMove() throws GameActionException {
+        MovementRobotController rc = new MovementRobotController();
+        MapLocation targetLocation = new MapLocation(1, 1);
+        Direction resultingDir = null;
+        Direction validDir = Direction.NORTHEAST;
+        Direction solutionDir = Direction.EAST;
+        rc.setCanMoveResult(true);
+        resultingDir = Movement.moveClockwise(rc, validDir);
+
+        assertEquals(new MapLocation(1, 1), rc.getLocation());
+        assertEquals(solutionDir, resultingDir);
+        rc.reset();
+    }
+
+    // Testing moveClockwise method to a target location when a robot cannot move.
+    @Test
+    public void testMoveClockwiseCannotMove() throws GameActionException {
+        MovementRobotController rc = new MovementRobotController();
+        MapLocation targetLocation = new MapLocation(1, 1);
+        Direction resultingDir = null;
+        Direction validDir = Direction.NORTHEAST;
+        rc.setCanMoveResult(false);
+        resultingDir = Movement.moveClockwise(rc, validDir);
+
+        assertEquals(new MapLocation(0, 0), rc.getLocation());
+        assertEquals(validDir, resultingDir);
         rc.reset();
     }
 
@@ -110,11 +196,12 @@ public class MovementTest {
 
 /**
  * Implements a simple mock RobotController for testing. Has to implement all methods, but the only affected methods
- * are getMapWidth, getMapHeight, getLocation, canMove, and move. New methods for testing include setCanMoveResult and
- * reset.
+ * are getMapWidth, getMapHeight, getLocation, canMove, move, and isMovementReady. New methods for testing include
+ * setCanMoveResult and reset.
  **/
 class MovementRobotController implements RobotController{
     private boolean canMoveResult = true; // Controls canMove result
+    private boolean movementReadyResult = true; // Controls isMovementReady result
     private MapLocation currentLocation = new MapLocation(0, 0);
 
     public void setCanMoveResult(boolean moveResult) {
@@ -124,6 +211,15 @@ class MovementRobotController implements RobotController{
     public void reset() {
         canMoveResult = true;
         currentLocation = new MapLocation(0, 0);
+    }
+
+    public void setMovementReady(boolean movementReady) {
+        movementReadyResult = movementReady;
+    }
+
+    @Override
+    public boolean isMovementReady() {
+        return movementReadyResult;
     }
 
     @Override
@@ -409,11 +505,6 @@ class MovementRobotController implements RobotController{
     @Override
     public int getActionCooldownTurns() {
         return 0;
-    }
-
-    @Override
-    public boolean isMovementReady() {
-        return false;
     }
 
     @Override
