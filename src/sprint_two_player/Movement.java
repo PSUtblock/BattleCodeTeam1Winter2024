@@ -16,13 +16,9 @@ public class Movement {
 
     /** Move the robot in a given direction. **/
     public static void moveToLocation(RobotController rc, Direction dir) throws GameActionException {
-        Direction randDir = directions[rng.nextInt(directions.length)];
         // If the robot can move, move in that direction. Otherwise, try to move randomly.
         if (rc.canMove(dir)) {
             rc.move(dir);
-        }
-        else if (rc.canMove(randDir)) {
-            rc.move(randDir);
         }
     }
 

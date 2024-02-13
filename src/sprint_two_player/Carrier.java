@@ -35,7 +35,7 @@ public class Carrier {
         }
 
         // If the robot does not have an anchor, try to collect one.
-        if (rc.getAnchor() == null && rc.getAnchor() != Anchor.STANDARD && rc.getAnchor() != Anchor.ACCELERATING) {
+        if (rc.getAnchor() == null) {
             collectAnchor(rc);
         }
 
