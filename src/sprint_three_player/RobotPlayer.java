@@ -4,10 +4,10 @@ import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
-import sprint_two_player.Amplifier;
-import sprint_two_player.Carrier;
-import sprint_two_player.Headquarters;
-import sprint_two_player.Launcher;
+import sprint_three_player.Amplifier;
+import sprint_three_player.Carrier;
+import sprint_three_player.Headquarters;
+import sprint_three_player.Launcher;
 
 import java.util.Random;
 //import java.util.Set;

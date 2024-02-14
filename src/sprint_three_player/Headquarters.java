@@ -1,7 +1,7 @@
 package sprint_three_player;
 
 import battlecode.common.*;
-import sprint_two_player.Communication;
+import sprint_three_player.Communication;
 
 import static sprint_three_player.RobotPlayer.directions;
 import static sprint_three_player.RobotPlayer.rng;
