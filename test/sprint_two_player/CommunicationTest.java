@@ -5,11 +5,7 @@ import battlecode.world.Inventory;
 
 import static org.junit.Assert.*;
 
-import battlecode.world.TeamInfo;
 import org.junit.Test;
-import org.scalactic.Or;
-
-import java.util.Map;
 
 public class CommunicationTest {
 
