@@ -35,7 +35,7 @@ public class Carrier {
         }
 
         // If the robot does not have an anchor, try to collect one.
-        if (rc.getAnchor() == null && rc.getAnchor() != Anchor.STANDARD && rc.getAnchor() != Anchor.ACCELERATING) {
+        if (rc.getAnchor() == null) {
             collectAnchor(rc);
         }
 
@@ -62,9 +62,17 @@ public class Carrier {
                 rc.setIndicatorString("Moving towards well at: " + wellLocation);
                 Movement.moveToLocation(rc, wellLocation);
                 myLocation = rc.getLocation();
+                // Try to collect whether a well was located or not, in case robot has moved since located.
+                collectFromWell(rc);
             }
-            // Try to collect whether a well was located or not, in case robot has moved since located.
-            collectFromWell(rc);
+            else {
+                // If no well located, just make sure to head away from HQ.
+                if (hqLocation != null) {
+                    Direction awayFromHQ = myLocation.directionTo(hqLocation).opposite();
+                    Movement.moveToLocation(rc, awayFromHQ);
+                    myLocation = rc.getLocation();
+                }
+            }
         }
         // Head to HQ if your resources are full.
         else if (hqLocation != null) {
@@ -73,9 +81,14 @@ public class Carrier {
                 Movement.moveToLocation(rc, hqLocation);
                 myLocation = rc.getLocation();
             }
-            // If next to headquarters, deposit everything from the carrier.
-            depositResource(rc, ResourceType.MANA);
-            depositResource(rc, ResourceType.ADAMANTIUM);
+            // Deposit resources and try to collect an anchor immediately.
+            if (myLocation.isAdjacentTo(hqLocation)) {
+                // If next to headquarters, deposit everything from the carrier.
+                depositResource(rc, ResourceType.MANA);
+                depositResource(rc, ResourceType.ADAMANTIUM);
+                collectAnchor(rc);
+                Movement.moveToLocation(rc, myLocation.directionTo(hqLocation).opposite());
+            }
         }
     }
 

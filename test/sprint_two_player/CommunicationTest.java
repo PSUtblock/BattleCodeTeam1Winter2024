@@ -34,7 +34,6 @@ public class CommunicationTest {
         };
         rc.setSharedArray(oneHQInArray);
         MapLocation closestHQ = Communication.readHQ(rc);
-        // Assert that closest location is correct.
         assertEquals(new MapLocation(1, 1), closestHQ);
         rc.reset();
     }
@@ -55,7 +54,6 @@ public class CommunicationTest {
         };
         rc.setSharedArray(multiHQInArray);
         MapLocation closestHQ = Communication.readHQ(rc);
-        // Assert that closest location is correct.
         assertEquals(new MapLocation(1, 1), closestHQ);
         rc.reset();
     }
@@ -78,7 +76,6 @@ public class CommunicationTest {
 
         rc.setCanWriteResult(true);
         Communication.writeHQ(rc);
-        // Assert that written HQ is equal to validArray.
         assertArrayEquals(validArray, rc.getArray());
         rc.reset();
     }
@@ -101,7 +98,6 @@ public class CommunicationTest {
 
         rc.setCanWriteResult(true);
         Communication.writeHQ(rc);
-        // Assert that written HQ is equal to validArray.
         assertArrayEquals(validArray, rc.getArray());
         rc.reset();
     }
@@ -124,7 +120,6 @@ public class CommunicationTest {
 
         rc.setCanWriteResult(false);
         Communication.writeHQ(rc);
-        // Assert that written HQ is equal to validArray.
         assertArrayEquals(validArray, rc.getArray());
         rc.reset();
     }
@@ -160,7 +155,6 @@ public class CommunicationTest {
 
         rc.setCanWriteResult(true);
         Communication.writeHQ(rc);
-        // Assert that written HQ is equal to validArray.
         assertArrayEquals(validArray, rc.getArray());
         rc.reset();
     }
@@ -197,7 +191,6 @@ public class CommunicationTest {
 
         rc.setCanWriteResult(true);
         Communication.writeHQ(rc);
-        // Assert that written HQ is equal to validArray.
         assertArrayEquals(validArray, rc.getArray());
         rc.reset();
     }
@@ -227,7 +220,6 @@ public class CommunicationTest {
         };
         rc.setSharedArray(oneWellInArray);
         MapLocation closestWell = Communication.readWell(rc);
-        // Assert that closest location is correct.
         assertEquals(new MapLocation(1, 1), closestWell);
         rc.reset();
     }
@@ -248,7 +240,6 @@ public class CommunicationTest {
         };
         rc.setSharedArray(multiWellInArray);
         MapLocation closestWell = Communication.readWell(rc);
-        // Assert that closest location is correct.
         assertEquals(new MapLocation(1, 1), closestWell);
         rc.reset();
     }
@@ -287,40 +278,429 @@ public class CommunicationTest {
 
         rc.setCanWriteResult(true);
         Communication.writeWells(rc);
-        // Assert that written HQ is equal to validArray.
         assertArrayEquals(validArray, rc.getArray());
         rc.reset();
     }
 
+    // Testing writing a well when none are sensed.
     @Test
-    public void testReadIsland() {
+    public void testWriteWellsNoneSensed() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        rc.setWells(new WellInfo[] {});
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+
+        Communication.writeWells(rc);
+        assertArrayEquals(validArray, rc.getArray());
+        rc.reset();
     }
 
+    // Testing writing a well to an empty shared array when it cannot write.
     @Test
-    public void testWriteIslands() {
+    public void testWriteWellsCannotWrite() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        rc.setWells(new WellInfo[] {
+                new WellInfo(
+                        new MapLocation(1, 1),
+                        ResourceType.NO_RESOURCE,
+                        new Inventory(10),
+                        false),
+                new WellInfo(
+                        new MapLocation(1, 2),
+                        ResourceType.NO_RESOURCE,
+                        new Inventory(10),
+                        false),
+                new WellInfo(
+                        new MapLocation(2, 2),
+                        ResourceType.NO_RESOURCE,
+                        new Inventory(10),
+                        false)
+        });
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+
+        rc.setCanWriteResult(false);
+        Communication.writeWells(rc);
+        assertArrayEquals(validArray, rc.getArray());
+        rc.reset();
     }
 
+    // Testing writing a well to a shared array with a matching location.
     @Test
-    public void testUpdateIslands() {
+    public void testWriteWellsExistingWell() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        rc.setWells(new WellInfo[] {
+                new WellInfo(
+                        new MapLocation(1, 1),
+                        ResourceType.NO_RESOURCE,
+                        new Inventory(10),
+                        false),
+                new WellInfo(
+                        new MapLocation(1, 2),
+                        ResourceType.NO_RESOURCE,
+                        new Inventory(10),
+                        false),
+                new WellInfo(
+                        new MapLocation(2, 2),
+                        ResourceType.NO_RESOURCE,
+                        new Inventory(10),
+                        false)
+        });
+        int[] initialArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                1, 1, 1, 2, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                1, 1, 1, 2, 2, 2, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+
+        rc.setSharedArray(initialArray);
+        rc.setCanWriteResult(true);
+        Communication.writeWells(rc);
+        assertArrayEquals(validArray, rc.getArray());
+        rc.reset();
+    }
+    // Testing reading an island from an empty shared array.
+    @Test
+    public void testReadIslandWithEmptySharedArray() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        MapLocation closestIsland = Communication.readIsland(rc);
+        // Assert that location is null.
+        assertNull(closestIsland);
     }
 
+    // Testing reading the closest island from a shared array with one island.
     @Test
-    public void testReadPriority() {
+    public void testReadIslandWithOneIsland() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] oneIslandInArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 1, 1, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        rc.setSharedArray(oneIslandInArray);
+        MapLocation closestIsland = Communication.readIsland(rc);
+        assertEquals(new MapLocation(1, 1), closestIsland);
+        rc.reset();
     }
 
+    // Testing reading the closest island from a shared array with multiple islands.
     @Test
-    public void testWritePriority() {
+    public void testReadIslandWithMultipleIslands() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] multiIslandInArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                2, 2, 2, 0, 0, 0, 1, 2,
+                0, 0, 1, 1, 2, 1, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        rc.setSharedArray(multiIslandInArray);
+        MapLocation closestIsland = Communication.readIsland(rc);
+        assertEquals(new MapLocation(1, 1), closestIsland);
+        rc.reset();
     }
+
+    // Testing writing an island with no islands sensed.
+    @Test
+    public void testWriteIslandsNoIslandsSensed() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        rc.setCurrentIslands(new int[]{});
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        Communication.writeIslands(rc);
+        assertArrayEquals(validArray, rc.getArray());
+        rc.reset();
+    }
+
+    // Testing writing an island where no islands are neutral.
+    @Test
+    public void testWriteIslandsNoNeutral() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        rc.setCurrentTeam(Team.A);
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        Communication.writeIslands(rc);
+        assertArrayEquals(validArray, rc.getArray());
+        rc.reset();
+    }
+
+    // Testing writing island when robot cannot write.
+    @Test
+    public void testWriteIslandsCannotWrite() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        rc.setCanWriteResult(false);
+        Communication.writeIslands(rc);
+        assertArrayEquals(validArray, rc.getArray());
+        rc.reset();
+    }
+
+    // Testing writing island when robot can write.
+    @Test
+    public void testWriteIslandsCanWrite() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                1, 1, 2, 2, 1, 2, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        Communication.writeIslands(rc);
+        assertArrayEquals(validArray, rc.getArray());
+        rc.reset();
+    }
+
+    // Testing writing island when island already exists.
+    @Test
+    public void testWriteIslandsExistingIsland() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] initialArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                1, 1, 2, 2, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                1, 1, 2, 2, 1, 2, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        rc.setSharedArray(initialArray);
+        Communication.writeIslands(rc);
+        assertArrayEquals(validArray, rc.getArray());
+        rc.reset();
+    }
+
+    // Testing updating islands when island does not exist.
+    @Test
+    public void testUpdateIslandsDoesNotExist() throws GameActionException{
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        Communication.updateIslands(rc, new MapLocation(1, 1));
+        assertArrayEquals(validArray, rc.getArray());
+        rc.reset();
+    }
+
+    // Testing updating islands when robot cannot write.
+    @Test
+    public void testUpdateIslandsCannotWrite() throws GameActionException{
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 1, 1, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        rc.setSharedArray(validArray);
+        rc.setCanWriteResult(false);
+        Communication.updateIslands(rc, new MapLocation(1, 1));
+        assertArrayEquals(validArray, rc.getArray());
+        rc.reset();
+    }
+
+    // Testing updating islands when robot can write.
+    @Test
+    public void testUpdateIslandsCanWrite() throws GameActionException{
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] initialArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 1, 1, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        rc.setSharedArray(initialArray);
+        Communication.updateIslands(rc, new MapLocation(1, 1));
+        assertArrayEquals(validArray, rc.getArray());
+        rc.reset();
+    }
+
+    // Testing read priority returning the correct value from the shared array.
+    @Test
+    public void testReadPriority() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] initialArray = new int[] {
+                1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 2, 1
+        };
+        rc.setSharedArray(initialArray);
+        int priorityResult = Communication.readPriority(rc);
+        assertEquals(2, priorityResult);
+        rc.reset();
+    }
+
+    // Testing writing priority when robot cannot write.
+    @Test
+    public void testWritePriorityCannotWrite() throws GameActionException{
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        rc.setCanWriteResult(false);
+        Communication.writePriority(rc, 1);
+        assertArrayEquals(validArray, rc.getArray());
+        rc.reset();
+    }
+
+    // Testing writing priority when robot can write.
+    @Test
+    public void testWritePriorityCanWrite() throws GameActionException{
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] initialArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 2, 0
+        };
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 1, 0
+        };
+        rc.setSharedArray(initialArray);
+        Communication.writePriority(rc, 1);
+        assertArrayEquals(validArray, rc.getArray());
+        rc.reset();
+    }
+
 }
 
 /**
  * Implements a simple mock RobotController for testing. Has to implement all methods, but the only affected methods
- * are getMapWidth, getMapHeight, getLocation, and senseNearbyWells. New methods for testing include setSharedArray,
- * setCanWriteResult, setLocation, getArray, setWells, setIslands, and reset.
+ * are getMapWidth, getMapHeight, getLocation, senseNearbyWells, senseNearbyIslands, senseTeamOccupyingIsland, and
+ * senseNearbyIslandLocations. New methods for testing include setSharedArray, setCanWriteResult, setLocation, getArray,
+ * setWells, setCurrentIslands, setCurrentTeam, setCurrentIslandLocations, and reset.
  **/
 class CommunicationRobotController implements RobotController {
     MapLocation currentLocation = new MapLocation(0, 0);
     WellInfo[] currentWells = new WellInfo[] {};
+    int[] currentIslands = new int[] {0, 1, 2};
+    Team[] currentTeam = new Team[] {Team.NEUTRAL, Team.NEUTRAL, Team.NEUTRAL};
+    MapLocation[] islandLocations = new MapLocation[] {new MapLocation(1, 1), new MapLocation(1, 2), new MapLocation(2, 2)};
     boolean canWriteResult = true;
 
     // Create a sharedArray of 64 integers.
@@ -334,6 +714,20 @@ class CommunicationRobotController implements RobotController {
             0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0
     };
+
+    public void setCurrentIslands(int[] islandsToSet) {
+        currentIslands = islandsToSet;
+    }
+
+    public void setCurrentTeam(Team teamType) {
+        for (int i = 0; i < currentIslands.length; ++i) {
+            currentTeam[i] = teamType;
+        }
+    }
+
+    public void setCurrentIslandLocations(MapLocation[] islandsToMap) {
+        islandLocations = islandsToMap;
+    }
 
     public void setSharedArray(int[] sharedArrayResult) {
         sharedArray = sharedArrayResult.clone();
@@ -359,6 +753,9 @@ class CommunicationRobotController implements RobotController {
         canWriteResult = true;
         currentLocation = new MapLocation(0, 0);
         currentWells = new WellInfo[]{};
+        currentIslands = new int[] {0, 1, 2};
+        currentTeam = new Team[] {Team.NEUTRAL, Team.NEUTRAL, Team.NEUTRAL};
+        islandLocations = new MapLocation[] {new MapLocation(1, 1), new MapLocation(1, 2), new MapLocation(2, 2)};
         sharedArray = new int[] {
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
@@ -369,6 +766,21 @@ class CommunicationRobotController implements RobotController {
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0
         };
+    }
+
+    @Override
+    public int[] senseNearbyIslands() {
+        return currentIslands;
+    }
+
+    @Override
+    public MapLocation[] senseNearbyIslandLocations(int idx) {
+        return new MapLocation[] {islandLocations[idx]};
+    }
+
+    @Override
+    public Team senseTeamOccupyingIsland(int islandIdx)  {
+        return currentTeam[islandIdx];
     }
 
     @Override
@@ -543,16 +955,6 @@ class CommunicationRobotController implements RobotController {
     }
 
     @Override
-    public int[] senseNearbyIslands() {
-        return new int[0];
-    }
-
-    @Override
-    public MapLocation[] senseNearbyIslandLocations(int idx)  {
-        return new MapLocation[0];
-    }
-
-    @Override
     public MapLocation[] senseNearbyIslandLocations(int radiusSquared, int idx)  {
         return new MapLocation[0];
     }
@@ -560,11 +962,6 @@ class CommunicationRobotController implements RobotController {
     @Override
     public MapLocation[] senseNearbyIslandLocations(MapLocation center, int radiusSquared, int idx)  {
         return new MapLocation[0];
-    }
-
-    @Override
-    public Team senseTeamOccupyingIsland(int islandIdx)  {
-        return null;
     }
 
     @Override
