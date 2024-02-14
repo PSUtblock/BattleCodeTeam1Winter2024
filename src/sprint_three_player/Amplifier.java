@@ -1,8 +1,8 @@
 package sprint_three_player;
 
 import battlecode.common.*;
-import sprint_two_player.Communication;
-import sprint_two_player.Movement;
+import sprint_three_player.Communication;
+import sprint_three_player.Movement;
 
 import java.util.HashSet;
 import java.util.Set;
