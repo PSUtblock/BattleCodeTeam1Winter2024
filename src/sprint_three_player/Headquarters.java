@@ -22,10 +22,12 @@ public class Headquarters {
         int spawn_interval_carrier = 10;
         int spawn_interval_launcher = 6;
         int spawn_interval_amplifier = 50;
+        int spawn_interval_booster = 50;
         int spawn_anchor_fail = 0;
         int spawn_carrier_fail = 0;
         int spawn_launcher_fail = 0;
         int spawn_amplifier_fail = 0;
+        int spawn_booster_fail = 0;
 
 
         // Write Headquarters location to shared array if first turn.
@@ -87,7 +89,19 @@ public class Headquarters {
                 spawn_amplifier_fail++;
             }
         }
-
+        /**
+         * For every 50 rounds, create a temporal booster
+         */
+        if(roundNum % spawn_interval_booster == 0 ){
+            // Let's try to build a carrier.
+            rc.setIndicatorString("Trying to build a temporal booster");
+            if (rc.canBuildRobot(RobotType.BOOSTER, newLoc)) {
+                rc.buildRobot(RobotType.BOOSTER, newLoc);
+            }
+            else{
+                spawn_booster_fail ++;
+            }
+        }
 
     }
 }
