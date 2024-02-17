@@ -5,6 +5,8 @@ import battlecode.world.Inventory;
 import org.junit.Test;
 import sprint_three_player.Communication;
 
+import java.util.Map;
+
 import static org.junit.Assert.*;
 
 public class CommunicationTest {
@@ -13,7 +15,7 @@ public class CommunicationTest {
     @Test
     public void testReadHQWithEmptySharedArray() throws GameActionException {
         CommunicationRobotController rc = new CommunicationRobotController();
-        MapLocation closestHQ = sprint_two_player.Communication.readHQ(rc);
+        MapLocation closestHQ = Communication.readHQ(rc);
         // Assert that location is null.
         assertNull(closestHQ);
     }
@@ -23,7 +25,7 @@ public class CommunicationTest {
     public void testReadHQWithOneHQ() throws GameActionException {
         CommunicationRobotController rc = new CommunicationRobotController();
         int[] oneHQInArray = new int[] {
-                1, 1, 0, 0, 0, 0, 0, 0,
+                144, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
@@ -33,9 +35,8 @@ public class CommunicationTest {
                 0, 0, 0, 0, 0, 0, 0, 0
         };
         rc.setSharedArray(oneHQInArray);
-        MapLocation closestHQ = sprint_two_player.Communication.readHQ(rc);
-        assertEquals(new MapLocation(1, 1), closestHQ);
-        rc.reset();
+        MapLocation hqLocation = Communication.readHQ(rc);
+        assertEquals(new MapLocation(2, 2), hqLocation);
     }
 
     // Testing reading the closest HQ from a shared array with multiple HQ's.
@@ -43,7 +44,7 @@ public class CommunicationTest {
     public void testReadHQWithMultipleHQ() throws GameActionException {
         CommunicationRobotController rc = new CommunicationRobotController();
         int[] multiHQInArray = new int[] {
-                2, 2, 2, 0, 1, 1, 1, 2,
+                144, 112, 80, 128, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
@@ -53,9 +54,8 @@ public class CommunicationTest {
                 0, 0, 0, 0, 0, 0, 0, 0
         };
         rc.setSharedArray(multiHQInArray);
-        MapLocation closestHQ = sprint_two_player.Communication.readHQ(rc);
+        MapLocation closestHQ = Communication.readHQ(rc);
         assertEquals(new MapLocation(1, 1), closestHQ);
-        rc.reset();
     }
 
     // Testing writing an HQ to an empty shared array when it can write.
@@ -687,6 +687,38 @@ public class CommunicationTest {
         rc.reset();
     }
 
+    // Test combining x and y coordinates into one value.
+    @Test
+    public void testPackCoordinatesIntoValue() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        MapLocation location = new MapLocation(1, 2);
+        assertEquals(8, Communication.packCoordinates(rc, location));
+    }
+
+    // Test getting the x and y coordinate from one value.
+    @Test
+    public void testUnpackCoordinatesFromValue() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int mapValue = 8;
+        assertEquals(new MapLocation(1, 2), Communication.unpackCoordinates(rc, mapValue));
+    }
+
+    // Test packing Headquarters information into one value.
+    @Test
+    public void testPackHQIntoValue() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        MapLocation hqLocation = new MapLocation(2, 2);
+        int packedValue = 144;
+        assertEquals(packedValue, Communication.packHQ(rc, hqLocation));
+    }
+
+    // Test unpacking Headquarters information from one value.
+    @Test
+    public void testUnpackHQFromValue() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int valueToUnpack = 144;
+        assertEquals(new MapLocation(2, 2), Communication.unpackHQ(rc, valueToUnpack));
+    }
 }
 
 /**

@@ -7,45 +7,41 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Current array format:
- *      Headquarters: store x-y coordinate locations in x-y coordinate index pairings.
- *      Wells: store x-y coordinate locations in x-y coordinate index pairings.
- *      Islands: store x-y coordinate locations in x-y coordinate index pairings.
- *      Resource Priority: store 1 for Adamantium or 2 for Mana (3 will be for Elixir in future sprint).
- *      Behavioral State: to be determined (will store a different number representing a different state to be in).
- * Current array indices:
- *      Up to 4 headquarters stored from indices 0 to 7
- *      - (i.e., index 0 and 1 represent x and y coordinate of a Headquarters, respectively)
- *      Up to 12 wells stored from indices 8 to 31
- *      - (uses same x-y pairing method as with headquarters)
- *      Up to 15 islands stored from indices 32 to 61
- *      - (uses same x-y pairing method as with headquarters)
- *      Index 62 is reserved for which resource to prioritize
- *      Index 63 is reserved for behavioral state (reserved for next sprint possibly)
+ * Current array format and indices:
+ *      Up to 4 headquarters stored from indices 0 to 3
+ *      - x, y coordinate converted into number and bitwise shifted
+ *      Up to 10 wells stored from indices 4 to 13
+ *      - x, y coordinate converted into number and bitwise shifted left with well type (1 - Adamantium, 2 - Mana, 3 - Elixir)
+ *      Up to 27 islands (75% of max) from indices 14 to 40
+ *      - uses same format as wells, but instead of containing type, it contains whether it is occupied (1 - yes, 0 - no)
+ *      Index 41 is reserved for which resource to prioritize
  **/
 public class Communication {
     // Number of headquarters, wells, and islands allowed in communication array.
     private static final int NUM_HQ = GameConstants.MAX_STARTING_HEADQUARTERS;
-    private static final int NUM_WELLS = 12;
-    private static final int NUM_ISLANDS = 15;
+    private static final int NUM_WELLS = 10;
+    private static final int NUM_ISLANDS = 27;
 
     // Array index increment amounts.
     private static final int XY_IDX_INCREMENT = 2;
 
     // Starting index for reading and writing from specified location types.
     private static final int START_HQ_IDX = 0;
-    private static final int START_WELL_IDX = NUM_HQ * XY_IDX_INCREMENT;
-    private static final int START_ISLAND_IDX = START_WELL_IDX + (NUM_WELLS * XY_IDX_INCREMENT);
-    private static final int PRIORITY_IDX = START_ISLAND_IDX + (NUM_ISLANDS * XY_IDX_INCREMENT);
-//    private static final int STATE_IDX = PRIORITY_IDX + 1;
+    private static final int START_WELL_IDX = NUM_HQ;
+    private static final int START_ISLAND_IDX = START_WELL_IDX + NUM_WELLS;
+    private static final int PRIORITY_IDX = START_ISLAND_IDX + NUM_ISLANDS;
+
+    // Bit shift amount for storage.
+    private static final int BIT_SHIFT = 4;
 
     /** Read headquarter location closest to robot. **/
     public static MapLocation readHQ(RobotController rc) throws GameActionException {
         Set<MapLocation> hqLocations = new HashSet<>();
         // Read all headquarters.
-        for (int i = START_HQ_IDX; i < START_WELL_IDX; i += XY_IDX_INCREMENT) {
-            if (rc.readSharedArray(i) != 0) {
-                hqLocations.add(new MapLocation(rc.readSharedArray(i), rc.readSharedArray(i + 1)));
+        for (int i = START_HQ_IDX; i < START_WELL_IDX; ++i) {
+            int valueToUnpack = rc.readSharedArray(i);
+            if (valueToUnpack != 0) {
+                hqLocations.add(unpackHQ(rc, valueToUnpack));
             }
         }
         // Return the closest headquarters or return null.
@@ -182,16 +178,27 @@ public class Communication {
         }
     }
 
-//     For behavior state usage in possible future sprint.
-//    /** Read what behavior state we are in. **/
-//    public static int readState(RobotController rc) throws GameActionException {
-//        return rc.readSharedArray(STATE_IDX);
-//    }
-//
-//    /** Write what behavior state to be in. **/
-//    public static void writeState(RobotController rc, int stateType) throws GameActionException {
-//        if (rc.canWriteSharedArray(STATE_IDX, stateType)) {
-//            rc.writeSharedArray(STATE_IDX, stateType);
-//        }
-//    }
+    /** Pack coordinates into one representative value **/
+    public static int packCoordinates(RobotController rc, MapLocation location) throws GameActionException {
+        return 1 + location.x + location.y * rc.getMapWidth();
+    }
+
+    /** Unpack coordinates from one representative value **/
+    public static MapLocation unpackCoordinates(RobotController rc, int mapValue) throws GameActionException {
+        int x = (mapValue - 1) % rc.getMapWidth();
+        int y = (mapValue - 1) / rc.getMapWidth();
+        return new MapLocation(x, y);
+    }
+
+    /** Pack HQ information into one representative value **/
+    public static int packHQ(RobotController rc, MapLocation hqLocation) throws GameActionException {
+        int packedCoordinates = packCoordinates(rc, hqLocation);
+        return (packedCoordinates & 0xFFF) << BIT_SHIFT;
+    }
+
+    /** Unpack HQ information from one representative value **/
+    public static MapLocation unpackHQ(RobotController rc, int valueToUnpack) throws GameActionException {
+        int mapValue = (valueToUnpack >> BIT_SHIFT) & 0xFFF;
+        return unpackCoordinates(rc, mapValue);
+    }
 }
