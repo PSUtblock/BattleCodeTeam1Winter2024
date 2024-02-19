@@ -24,7 +24,7 @@ public class MovementTest {
 
         // Check resulting location if it can move.
         rc.setCanMoveResult(true);
-        sprint_two_player.Movement.moveToLocation(rc, validDir);
+        sprint_three_player.Movement.moveToLocation(rc, validDir);
         assertEquals(new MapLocation(0, 1), rc.getLocation());
         rc.reset();
     }
@@ -37,7 +37,7 @@ public class MovementTest {
 
         // Check resulting location if it cannot move.
         rc.setCanMoveResult(false);
-        sprint_two_player.Movement.moveToLocation(rc, validDir);
+        sprint_three_player.Movement.moveToLocation(rc, validDir);
         assertNotEquals(new MapLocation(0, 1), rc.getLocation());
         rc.reset();
     }
@@ -49,7 +49,7 @@ public class MovementTest {
         MovementRobotController rc = new MovementRobotController();
         MapLocation sameLocation = rc.getLocation();
         rc.setMovementReady(false);
-        sprint_two_player.Movement.moveToLocation(rc, sameLocation);
+        sprint_three_player.Movement.moveToLocation(rc, sameLocation);
         assertEquals(new MapLocation(0, 0), rc.getLocation());
         rc.reset();
     }
@@ -61,7 +61,7 @@ public class MovementTest {
         MovementRobotController rc = new MovementRobotController();
         MapLocation targetLocation = new MapLocation(1, 1);
         rc.setMovementReady(false);
-        sprint_two_player.Movement.moveToLocation(rc, targetLocation);
+        sprint_three_player.Movement.moveToLocation(rc, targetLocation);
         assertEquals(new MapLocation(0, 0), rc.getLocation());
         rc.reset();
     }
@@ -73,7 +73,7 @@ public class MovementTest {
         MapLocation targetLocation = new MapLocation(1, 1);
         rc.setMovementReady(true);
         rc.setCanMoveResult(true);
-        sprint_two_player.Movement.moveToLocation(rc, targetLocation);
+        sprint_three_player.Movement.moveToLocation(rc, targetLocation);
         assertEquals(new MapLocation(1, 1), rc.getLocation());
         rc.reset();
     }
@@ -85,7 +85,7 @@ public class MovementTest {
         MapLocation targetLocation = new MapLocation(1, 1);
         rc.setMovementReady(true);
         rc.setCanMoveResult(false);
-        sprint_two_player.Movement.moveToLocation(rc, targetLocation);
+        sprint_three_player.Movement.moveToLocation(rc, targetLocation);
         assertEquals(new MapLocation(0, 0), rc.getLocation());
         rc.reset();
     }
