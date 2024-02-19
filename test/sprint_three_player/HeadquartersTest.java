@@ -82,12 +82,12 @@ class HeadquartersRobotController implements RobotController {
 
     @Override
     public int getMapWidth() {
-        return 0;
+        return 3;
     }
 
     @Override
     public int getMapHeight() {
-        return 0;
+        return 3;
     }
 
     @Override
