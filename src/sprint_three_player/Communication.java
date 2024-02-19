@@ -1,51 +1,46 @@
 package sprint_three_player;
 
 import battlecode.common.*;
-import sprint_three_player.Movement;
 
 import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Current array format:
- *      Headquarters: store x-y coordinate locations in x-y coordinate index pairings.
- *      Wells: store x-y coordinate locations in x-y coordinate index pairings.
- *      Islands: store x-y coordinate locations in x-y coordinate index pairings.
- *      Resource Priority: store 1 for Adamantium or 2 for Mana (3 will be for Elixir in future sprint).
- *      Behavioral State: to be determined (will store a different number representing a different state to be in).
- * Current array indices:
- *      Up to 4 headquarters stored from indices 0 to 7
- *      - (i.e., index 0 and 1 represent x and y coordinate of a Headquarters, respectively)
- *      Up to 12 wells stored from indices 8 to 31
- *      - (uses same x-y pairing method as with headquarters)
- *      Up to 15 islands stored from indices 32 to 61
- *      - (uses same x-y pairing method as with headquarters)
- *      Index 62 is reserved for which resource to prioritize
- *      Index 63 is reserved for behavioral state (reserved for next sprint possibly)
+ * Current array format and indices:
+ *      Up to 4 headquarters stored from indices 0 to 3
+ *      - x, y coordinate converted into number and bitwise shifted
+ *      Up to 12 wells stored from indices 4 to 15
+ *      - x, y coordinate converted into number and bitwise shifted left with well type (1 - Adamantium, 2 - Mana, 3 - Elixir)
+ *      Up to 30 islands (>75% of max) from indices 16 to 45
+ *      - uses same format as wells, but instead of containing type, it contains whether it is occupied (0 - No, 1 - Yes/Team, 2 - Yes/Opponent)
+ *      Index 46 is reserved for which resource to prioritize
  **/
 public class Communication {
     // Number of headquarters, wells, and islands allowed in communication array.
     private static final int NUM_HQ = GameConstants.MAX_STARTING_HEADQUARTERS;
     private static final int NUM_WELLS = 12;
-    private static final int NUM_ISLANDS = 15;
-
-    // Array index increment amounts.
-    private static final int XY_IDX_INCREMENT = 2;
+    private static final int NUM_ISLANDS = 30;
 
     // Starting index for reading and writing from specified location types.
     private static final int START_HQ_IDX = 0;
-    private static final int START_WELL_IDX = NUM_HQ * XY_IDX_INCREMENT;
-    private static final int START_ISLAND_IDX = START_WELL_IDX + (NUM_WELLS * XY_IDX_INCREMENT);
-    private static final int PRIORITY_IDX = START_ISLAND_IDX + (NUM_ISLANDS * XY_IDX_INCREMENT);
-//    private static final int STATE_IDX = PRIORITY_IDX + 1;
+    private static final int START_WELL_IDX = NUM_HQ;
+    private static final int START_ISLAND_IDX = START_WELL_IDX + NUM_WELLS;
+    private static final int PRIORITY_IDX = START_ISLAND_IDX + NUM_ISLANDS;
+
+    // Bit shift amount for storage.
+    private static final int BIT_SHIFT = 4;
 
     /** Read headquarter location closest to robot. **/
     public static MapLocation readHQ(RobotController rc) throws GameActionException {
         Set<MapLocation> hqLocations = new HashSet<>();
         // Read all headquarters.
-        for (int i = START_HQ_IDX; i < START_WELL_IDX; i += XY_IDX_INCREMENT) {
-            if (rc.readSharedArray(i) != 0) {
-                hqLocations.add(new MapLocation(rc.readSharedArray(i), rc.readSharedArray(i + 1)));
+        for (int i = START_HQ_IDX; i < START_WELL_IDX; ++i) {
+            int valueToUnpack = rc.readSharedArray(i);
+            if (valueToUnpack != 0) {
+                int[] unpackedValue = unpackObject(rc, valueToUnpack);
+                int hqX = unpackedValue[0];
+                int hqY = unpackedValue[1];
+                hqLocations.add(new MapLocation(hqX, hqY));
             }
         }
         // Return the closest headquarters or return null.
@@ -58,23 +53,34 @@ public class Communication {
      * **/
     public static void writeHQ(RobotController rc) throws GameActionException {
         MapLocation hqLoc = rc.getLocation();
-        // Write location into first available index.
-        for (int i = START_HQ_IDX; i < START_WELL_IDX; i += XY_IDX_INCREMENT) {
-            if (rc.readSharedArray(i) == 0 && hqLoc != null && rc.canWriteSharedArray(i, hqLoc.x)) {
-                rc.writeSharedArray(i, hqLoc.x);
-                rc.writeSharedArray(i + 1, hqLoc.y); // This next index should be guaranteed to be open.
-                break;
+        if (hqLoc != null) {
+            int packedValue = packObject(rc, hqLoc);
+            // Write location into first available index.
+            for (int i = START_HQ_IDX; i < START_WELL_IDX; ++i) {
+                if (rc.readSharedArray(i) == 0 && rc.canWriteSharedArray(i, packedValue)) {
+                    rc.writeSharedArray(i, packedValue);
+                    break;
+                }
             }
         }
     }
 
-    /** Read well location closest to robot. **/
-    public static MapLocation readWell(RobotController rc) throws GameActionException {
+    /** Read well location of a certain type. **/
+    public static MapLocation readWell(RobotController rc, int type) throws GameActionException {
         Set<MapLocation> wellLocations = new HashSet<>();
         // Read all wells.
-        for (int i = START_WELL_IDX; i < START_ISLAND_IDX; i += XY_IDX_INCREMENT) {
-            if (rc.readSharedArray(i) != 0) {
-                wellLocations.add(new MapLocation(rc.readSharedArray(i), rc.readSharedArray(i + 1)));
+        for (int i = START_WELL_IDX; i < START_ISLAND_IDX; ++i) {
+            int valueToUnpack = rc.readSharedArray(i);
+            if (valueToUnpack != 0) {
+                int[] unpackedValue = unpackObject(rc, valueToUnpack);
+                int xCoord = unpackedValue[0];
+                int yCoord = unpackedValue[1];
+                int typeValue = unpackedValue[2];
+                // Break out of loop if type of object is found.
+                if (typeValue == type) {
+                    return new MapLocation(xCoord, yCoord);
+                }
+                wellLocations.add(new MapLocation(xCoord, yCoord));
             }
         }
         // Return the closest well or return null.
@@ -86,20 +92,20 @@ public class Communication {
         WellInfo[] wells = rc.senseNearbyWells();
         // Find all nearby well locations.
         if (wells.length > 0) {
-            MapLocation[] wellLocations = new MapLocation[wells.length];
-            // For as many wells as possible, add them to array.
-            for (int i = 0; i < wellLocations.length; ++i) {
-                wellLocations[i] = wells[i].getMapLocation();
+            int[] wellSpecs = new int[wells.length];
+            // For as many objects as possible, add them to array.
+            for (int i = 0; i < wellSpecs.length; ++i) {
+                int type = wellTypeNum(wells[i].getResourceType());
+                wellSpecs[i] = packObject(rc, wells[i].getMapLocation(), type);
                 // Write location into first available index.
-                for (int j = START_WELL_IDX; j < START_ISLAND_IDX; j += XY_IDX_INCREMENT) {
+                for (int j = START_WELL_IDX; j < START_ISLAND_IDX; ++j) {
                     if (rc.readSharedArray(j) == 0) {
-                        if (rc.canWriteSharedArray(j, wellLocations[i].x)) {
-                            rc.writeSharedArray(j, wellLocations[i].x);
-                            rc.writeSharedArray(j + 1, wellLocations[i].y); // Guaranteed to be open.
+                        if (rc.canWriteSharedArray(j, wellSpecs[i])) {
+                            rc.writeSharedArray(j, wellSpecs[i]);
                             break;
                         }
                     }
-                    else if (rc.readSharedArray(j) == wellLocations[i].x && rc.readSharedArray(j + 1) == wellLocations[i].y) {
+                    else if (rc.readSharedArray(j) == wellSpecs[i]) {
                         // If well already exists in array, break out of loop.
                         break;
                     }
@@ -109,45 +115,53 @@ public class Communication {
     }
 
     /** Read island location closest to robot. **/
-    public static MapLocation readIsland(RobotController rc) throws GameActionException {
+    public static MapLocation readIsland(RobotController rc, int type) throws GameActionException {
         Set<MapLocation> islandLocations = new HashSet<>();
         // Read all islands.
-        for (int i = START_ISLAND_IDX; i < PRIORITY_IDX; i += XY_IDX_INCREMENT) {
-            if (rc.readSharedArray(i) != 0) {
-                islandLocations.add(new MapLocation(rc.readSharedArray(i), rc.readSharedArray(i + 1)));
+        for (int i = START_ISLAND_IDX; i < PRIORITY_IDX; ++i) {
+            int valueToUnpack = rc.readSharedArray(i);
+            if (valueToUnpack != 0) {
+                int[] unpackedValue = unpackObject(rc, valueToUnpack);
+                int xCoord = unpackedValue[0];
+                int yCoord = unpackedValue[1];
+                int typeValue = unpackedValue[2];
+                // Break out of loop if type of object is found.
+                if (typeValue == type) {
+                    return new MapLocation(xCoord, yCoord);
+                }
+                islandLocations.add(new MapLocation(xCoord, yCoord));
             }
         }
-        // Return the closest well or return null.
+        // Return the closest island or return null.
         return Movement.getClosestLocation(rc, islandLocations);
     }
 
     /** Write island location to array. For Carrier and Launcher use. **/
     public static void writeIslands(RobotController rc) throws GameActionException {
         int[] islands = rc.senseNearbyIslands();
-        Set<MapLocation> closestIslands = new HashSet<>();
+        Team myTeam = rc.getTeam();
+        Set<Integer> islandsToStore = new HashSet<>();
+
         for (int id : islands) {
-            // Check if island is unoccupied first.
-            if (rc.senseTeamOccupyingIsland(id) == Team.NEUTRAL) {
-                MapLocation[] thisIslandLocs = rc.senseNearbyIslandLocations(id);
-                // Add the closest parts of each island.
-                if (thisIslandLocs.length > 0) {
-                    closestIslands.add(Movement.getClosestLocation(rc, thisIslandLocs));
-                }
-            }
+            // Check if island is occupied first.
+            int islandState = islandStateNum(myTeam, rc.senseTeamOccupyingIsland(id));
+            MapLocation[] thisIslandLocs = rc.senseNearbyIslandLocations(id);
+            // Keep the closest parts of each island.
+            MapLocation closestIsland = Movement.getClosestLocation(rc, thisIslandLocs);
+            islandsToStore.add(packObject(rc, closestIsland, islandState));
         }
         // Add as many islands as possible.
-        if (!closestIslands.isEmpty()) {
-            for (MapLocation island : closestIslands) {
+        if (!islandsToStore.isEmpty()) {
+            for (Integer island : islandsToStore) {
                 // Write location into first available index.
-                for (int i = START_ISLAND_IDX; i < PRIORITY_IDX; i += XY_IDX_INCREMENT) {
+                for (int i = START_ISLAND_IDX; i < PRIORITY_IDX; ++i) {
                     if (rc.readSharedArray(i) == 0) {
-                        if (rc.canWriteSharedArray(i, island.x)) {
-                            rc.writeSharedArray(i, island.x);
-                            rc.writeSharedArray(i + 1, island.y); // Guaranteed to be open.
+                        if (rc.canWriteSharedArray(i, island)) {
+                            rc.writeSharedArray(i, island);
                             break;
                         }
                     }
-                    else if (rc.readSharedArray(i) == island.x && rc.readSharedArray(i + 1) == island.y) {
+                    else if (rc.readSharedArray(i) == island) {
                         // If island already exists, skip this iteration.
                         break;
                     }
@@ -157,13 +171,19 @@ public class Communication {
     }
 
     /** Update array of islands, removing any that are now occupied. **/
-    public static void updateIslands(RobotController rc, MapLocation island) throws GameActionException {
-        // Island is in array, remove it.
-        for (int i = START_ISLAND_IDX; i < PRIORITY_IDX; i += XY_IDX_INCREMENT) {
-            if (rc.readSharedArray(i) == island.x && rc.readSharedArray(i + 1) == island.y) {
-                if (rc.canWriteSharedArray(i, 0)) {
-                    rc.writeSharedArray(i, 0);
-                    rc.writeSharedArray(i + 1, 0);
+    public static void updateIslands(RobotController rc, MapLocation island, int islandState) throws GameActionException {
+        // If island is in array, update it.
+        for (int i = START_ISLAND_IDX; i < PRIORITY_IDX; ++i) {
+            int[] islandSpecs = unpackObject(rc, rc.readSharedArray(i));
+            int xCoord = islandSpecs[0];
+            int yCoord = islandSpecs[1];
+            int stateValue = islandSpecs[2];
+
+            // If island is found and not the same state as the parameter, update it.
+            if (xCoord == island.x && yCoord == island.y && stateValue != islandState) {
+                int updatedValue = packObject(rc, island, islandState);
+                if (rc.canWriteSharedArray(i, updatedValue)) {
+                    rc.writeSharedArray(i, updatedValue);
                 }
             }
         }
@@ -182,16 +202,57 @@ public class Communication {
         }
     }
 
-//     For behavior state usage in possible future sprint.
-//    /** Read what behavior state we are in. **/
-//    public static int readState(RobotController rc) throws GameActionException {
-//        return rc.readSharedArray(STATE_IDX);
-//    }
-//
-//    /** Write what behavior state to be in. **/
-//    public static void writeState(RobotController rc, int stateType) throws GameActionException {
-//        if (rc.canWriteSharedArray(STATE_IDX, stateType)) {
-//            rc.writeSharedArray(STATE_IDX, stateType);
-//        }
-//    }
+    /** Pack coordinates into one representative value **/
+    public static int packCoordinates(RobotController rc, MapLocation location) throws GameActionException {
+        return 1 + location.x + location.y * rc.getMapWidth();
+    }
+
+    /** Unpack coordinates from one representative value **/
+    public static MapLocation unpackCoordinates(RobotController rc, int mapValue) throws GameActionException {
+        int x = (mapValue - 1) % rc.getMapWidth();
+        int y = (mapValue - 1) / rc.getMapWidth();
+        return new MapLocation(x, y);
+    }
+
+    /** Pack object information into one representative value with no type value **/
+    public static int packObject(RobotController rc, MapLocation location) throws GameActionException {
+        int packedCoordinates = packCoordinates(rc, location);
+        return (packedCoordinates & 0xFFF) << BIT_SHIFT;
+    }
+
+    /** Pack object information into one representative value (HQ, well, island) **/
+    public static int packObject(RobotController rc, MapLocation location, int type) throws GameActionException {
+        int packedCoordinates = packCoordinates(rc, location);
+        return (packedCoordinates & 0xFFF) << BIT_SHIFT | (type & 0xF);
+    }
+
+    /** Unpack object information from one representative value **/
+    public static int[] unpackObject(RobotController rc, int valueToUnpack) throws GameActionException {
+        int mapValue = (valueToUnpack >> BIT_SHIFT) & 0xFFF;
+        int typeValue = valueToUnpack & 0xF;
+        MapLocation mapLocation = unpackCoordinates(rc, mapValue);
+        return new int[] {mapLocation.x, mapLocation.y, typeValue};
+    }
+
+    /** Return number to represent well type **/
+    public static int wellTypeNum(ResourceType wellType) {
+        if (wellType == ResourceType.ADAMANTIUM) {
+            return 1;
+        }
+        if (wellType == ResourceType.MANA) {
+            return 2;
+        }
+        return 3; // Must be Elixir
+    }
+
+    /** Return number to represent island state **/
+    public static int islandStateNum(Team myTeam, Team islandTeam) {
+        if (islandTeam == Team.NEUTRAL) {
+            return 0;
+        }
+        if (myTeam == islandTeam) {
+            return 1;
+        }
+        return 2;
+    }
 }
