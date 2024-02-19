@@ -28,7 +28,7 @@ public class Amplifier {
             wellLocation = Communication.readWell(rc, 0);
         }
 
-        // If the closest island has not been found, locate it.
+        // If the closest unoccupied island has not been found, locate it.
         if (islandLocation == null) {
             islandLocation = Communication.readIsland(rc, 0);
         }

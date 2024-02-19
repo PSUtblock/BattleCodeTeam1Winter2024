@@ -12,7 +12,7 @@ import java.util.Set;
  *      Up to 12 wells stored from indices 4 to 15
  *      - x, y coordinate converted into number and bitwise shifted left with well type (1 - Adamantium, 2 - Mana, 3 - Elixir)
  *      Up to 30 islands (>75% of max) from indices 16 to 45
- *      - uses same format as wells, but instead of containing type, it contains whether it is occupied (1 - yes, 0 - no)
+ *      - uses same format as wells, but instead of containing type, it contains whether it is occupied (0 - No, 1 - Yes/Team, 2 - Yes/Opponent)
  *      Index 46 is reserved for which resource to prioritize
  **/
 public class Communication {
@@ -139,30 +139,29 @@ public class Communication {
     /** Write island location to array. For Carrier and Launcher use. **/
     public static void writeIslands(RobotController rc) throws GameActionException {
         int[] islands = rc.senseNearbyIslands();
-        Set<MapLocation> closestIslands = new HashSet<>();
+        Team myTeam = rc.getTeam();
+        Set<Integer> islandsToStore = new HashSet<>();
+
         for (int id : islands) {
-            // Check if island is unoccupied first.
-            if (rc.senseTeamOccupyingIsland(id) == Team.NEUTRAL) {
-                MapLocation[] thisIslandLocs = rc.senseNearbyIslandLocations(id);
-                // Add the closest parts of each island.
-                if (thisIslandLocs.length > 0) {
-                    closestIslands.add(Movement.getClosestLocation(rc, thisIslandLocs));
-                }
-            }
+            // Check if island is occupied first.
+            int islandState = islandStateNum(myTeam, rc.senseTeamOccupyingIsland(id));
+            MapLocation[] thisIslandLocs = rc.senseNearbyIslandLocations(id);
+            // Keep the closest parts of each island.
+            MapLocation closestIsland = Movement.getClosestLocation(rc, thisIslandLocs);
+            islandsToStore.add(packObject(rc, closestIsland, islandState));
         }
         // Add as many islands as possible.
-        if (!closestIslands.isEmpty()) {
-            for (MapLocation island : closestIslands) {
+        if (!islandsToStore.isEmpty()) {
+            for (Integer island : islandsToStore) {
                 // Write location into first available index.
                 for (int i = START_ISLAND_IDX; i < PRIORITY_IDX; ++i) {
                     if (rc.readSharedArray(i) == 0) {
-                        if (rc.canWriteSharedArray(i, island.x)) {
-                            rc.writeSharedArray(i, island.x);
-                            rc.writeSharedArray(i + 1, island.y); // Guaranteed to be open.
+                        if (rc.canWriteSharedArray(i, island)) {
+                            rc.writeSharedArray(i, island);
                             break;
                         }
                     }
-                    else if (rc.readSharedArray(i) == island.x && rc.readSharedArray(i + 1) == island.y) {
+                    else if (rc.readSharedArray(i) == island) {
                         // If island already exists, skip this iteration.
                         break;
                     }
@@ -172,13 +171,19 @@ public class Communication {
     }
 
     /** Update array of islands, removing any that are now occupied. **/
-    public static void updateIslands(RobotController rc, MapLocation island) throws GameActionException {
-        // Island is in array, remove it.
+    public static void updateIslands(RobotController rc, MapLocation island, int islandState) throws GameActionException {
+        // If island is in array, update it.
         for (int i = START_ISLAND_IDX; i < PRIORITY_IDX; ++i) {
-            if (rc.readSharedArray(i) == island.x && rc.readSharedArray(i + 1) == island.y) {
-                if (rc.canWriteSharedArray(i, 0)) {
-                    rc.writeSharedArray(i, 0);
-                    rc.writeSharedArray(i + 1, 0);
+            int[] islandSpecs = unpackObject(rc, rc.readSharedArray(i));
+            int xCoord = islandSpecs[0];
+            int yCoord = islandSpecs[1];
+            int stateValue = islandSpecs[2];
+
+            // If island is found and not the same state as the parameter, update it.
+            if (xCoord == island.x && yCoord == island.y && stateValue != islandState) {
+                int updatedValue = packObject(rc, island, islandState);
+                if (rc.canWriteSharedArray(i, updatedValue)) {
+                    rc.writeSharedArray(i, updatedValue);
                 }
             }
         }
@@ -238,5 +243,16 @@ public class Communication {
             return 2;
         }
         return 3; // Must be Elixir
+    }
+
+    /** Return number to represent island state **/
+    public static int islandStateNum(Team myTeam, Team islandTeam) {
+        if (islandTeam == Team.NEUTRAL) {
+            return 0;
+        }
+        if (myTeam == islandTeam) {
+            return 1;
+        }
+        return 2;
     }
 }

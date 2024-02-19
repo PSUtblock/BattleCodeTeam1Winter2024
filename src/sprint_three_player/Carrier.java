@@ -30,7 +30,7 @@ public class Carrier {
             wellLocation = Communication.readWell(rc, 0);
         }
 
-        // If the closest island has not been found, locate it.
+        // If the closest unoccupied island has not been found, locate it.
         Communication.writeIslands(rc);
         if (islandLocation == null) {
             islandLocation = Communication.readIsland(rc, 0);
@@ -52,8 +52,8 @@ public class Carrier {
                 if (rc.canPlaceAnchor()) {
                     rc.placeAnchor();
                     rc.setIndicatorString("Huzzah, placed anchor!");
-                    // Removes island from shared array.
-                    Communication.updateIslands(rc, islandLocation);
+                    // Updates if island to be occupied by team.
+                    Communication.updateIslands(rc, islandLocation, 1);
                     islandLocation = null;
                 }
             }
