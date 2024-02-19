@@ -104,7 +104,7 @@ public class Launcher {
     private static void updateWellLocation(RobotController rc) throws GameActionException {
         // Refresh well locations and guard if on a well
         sprint_two_player.Communication.writeWells(rc);
-        wellLocation = Communication.readWell(rc);
+        wellLocation = Communication.readWell(rc, 0);
         if (rc.getLocation().equals(wellLocation)) {
             wellGuardTurns = 5; // Start guarding for 5 turns
         }

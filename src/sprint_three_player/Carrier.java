@@ -27,13 +27,13 @@ public class Carrier {
         // If the closest well has not been found, locate it.
         Communication.writeWells(rc);
         if (wellLocation == null) {
-            wellLocation = Communication.readWell(rc);
+            wellLocation = Communication.readWell(rc, 0);
         }
 
         // If the closest island has not been found, locate it.
         Communication.writeIslands(rc);
         if (islandLocation == null) {
-            islandLocation = Communication.readIsland(rc);
+            islandLocation = Communication.readIsland(rc, 0);
         }
 
         // If the robot does not have an anchor, try to collect one.

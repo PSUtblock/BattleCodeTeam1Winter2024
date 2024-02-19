@@ -25,12 +25,12 @@ public class Amplifier {
 
         // If the closest well has not been found, locate it.
         if (wellLocation == null) {
-            wellLocation = Communication.readWell(rc);
+            wellLocation = Communication.readWell(rc, 0);
         }
 
         // If the closest island has not been found, locate it.
         if (islandLocation == null) {
-            islandLocation = Communication.readIsland(rc);
+            islandLocation = Communication.readIsland(rc, 0);
         }
 
         RobotInfo[] nearbyRobots = rc.senseNearbyRobots();
