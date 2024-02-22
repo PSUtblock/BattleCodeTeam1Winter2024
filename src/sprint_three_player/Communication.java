@@ -320,14 +320,15 @@ public class Communication {
     }
 
     /** Add carrier ID to array of carrier ID's **/
-    public static void addCarrierID(RobotController rc) throws GameActionException {
+    public static boolean addCarrierID(RobotController rc) throws GameActionException {
         int id = rc.getID();
         for (int i = 0; i < NUM_CARRIERS; ++i) {
             if (carrierIDs[i] == 0) {
                 carrierIDs[i] = id;
-                break;
+                return true;
             }
         }
+        return false;
     }
 
     /** Get index of carrier within ID tracking array **/

@@ -1027,18 +1027,50 @@ public class CommunicationTest {
         assertArrayEquals(validArray, rc.getArray());
     }
 
-    // Testing add and getting a Carrier's ID to tracking array.
+    // Testing add a Carrier's ID to tracking array can add.
     @Test
-    public void testAddAndGetCarrierID() throws GameActionException {
+    public void testCanAddCarrierID() throws GameActionException {
         CommunicationRobotController rc = new CommunicationRobotController();
-        Communication.addCarrierID(rc);
+        assertTrue(Communication.addCarrierID(rc));
+        Communication.removeCarrierID(rc);
+    }
+
+    // Testing add a Carrier's ID to tracking array cannot add.
+    @Test
+    public void testCannotAddCarrierID() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        boolean result = true;
+        for (int i = 0; i < 17; ++i) {
+            rc.setMyID(13000 + i);
+            result = Communication.addCarrierID(rc);
+        }
+        assertTrue(result);
+        rc.setMyID(15000);
+        assertFalse(Communication.addCarrierID(rc));
+        for (int i = 0; i < 17; ++i) {
+            rc.setMyID(13000 + i);
+            Communication.removeCarrierID(rc);
+        }
+    }
+
+    // Testing getting a Carrier's index from tracking array.
+    @Test
+    public void testGetCarrierIndex() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        assertEquals(-1, Communication.getCarrierIndex(rc));
+        boolean result = Communication.addCarrierID(rc);
+        assertTrue(result);
         assertEquals(0, Communication.getCarrierIndex(rc));
+        Communication.removeCarrierID(rc);
     }
 
     // Testing removing and not getting a Carrier's ID to tracking array.
     @Test
     public void testRemoveAndNotGetCarrierID() throws GameActionException {
         CommunicationRobotController rc = new CommunicationRobotController();
+        boolean result = Communication.addCarrierID(rc);
+        assertTrue(result);
+        assertEquals(0, Communication.getCarrierIndex(rc));
         Communication.removeCarrierID(rc);
         assertEquals(-1, Communication.getCarrierIndex(rc));
     }
