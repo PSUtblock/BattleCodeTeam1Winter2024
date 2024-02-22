@@ -2,6 +2,7 @@ package sprint_three_player;
 
 import battlecode.common.*;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -288,33 +289,51 @@ public class Communication {
      * Write carrier location to array when carrying anchor.
      * Reserved for Carrier use only, so no sensing is required.
      * **/
-    public static void writeCarrier(RobotController rc) throws GameActionException {
+    public static void initializeCarrier(RobotController rc) throws GameActionException {
         MapLocation carrierLoc = rc.getLocation();
         if (carrierLoc != null) {
             int packedValue = packObject(rc, carrierLoc);
-            // Write location into first available index.
-            for (int i = START_CARRIER_IDX; i < PRIORITY_IDX; ++i) {
-                if (rc.readSharedArray(i) == 0 && rc.canWriteSharedArray(i, packedValue)) {
-                    rc.writeSharedArray(i, packedValue);
-                    break;
+            // Try adding carrier to tracking array.
+            if (addCarrierID(rc)) {
+                // Write carrier to shared array with respect to index in tracking array.
+                int index = getCarrierIndex(rc) + START_CARRIER_IDX;
+                if (rc.readSharedArray(index) == 0 && rc.canWriteSharedArray(index, packedValue)) {
+                    rc.writeSharedArray(index, packedValue);
+                }
+                else {
+                    removeCarrierID(rc);
+                }
+            }
+        }
+    }
+
+    /**
+     * Update carrier location to array when carrying anchor.
+     * Reserved for Carrier use only, so no sensing is required.
+     * **/
+    public static void updateCarrier(RobotController rc) throws GameActionException {
+        MapLocation carrierLoc = rc.getLocation();
+        if (carrierLoc != null) {
+            int packedValue = packObject(rc, carrierLoc);
+            int lookupIndex = getCarrierIndex(rc);
+            if (lookupIndex > -1) {
+                int index = lookupIndex + START_CARRIER_IDX;
+                if (rc.canWriteSharedArray(index, packedValue)) {
+                    rc.writeSharedArray(index, packedValue);
                 }
             }
         }
     }
 
     /** Update array of carriers, removing any that no longer have an anchor. **/
-    public static void updateCarriers(RobotController rc, MapLocation carrierLoc) throws GameActionException {
+    public static void removeCarrier(RobotController rc) throws GameActionException {
         // If carrierLoc is in array, remove it.
-        for (int i = START_CARRIER_IDX; i < PRIORITY_IDX; ++i) {
-            int[] islandSpecs = unpackObject(rc, rc.readSharedArray(i));
-            int xCoord = islandSpecs[0];
-            int yCoord = islandSpecs[1];
-
-            // If carrierLoc is found and not the same state as the parameter, update it.
-            if (xCoord == carrierLoc.x && yCoord == carrierLoc.y) {
-                if (rc.canWriteSharedArray(i, 0)) {
-                    rc.writeSharedArray(i, 0);
-                }
+        int lookupIndex = getCarrierIndex(rc);
+        if (lookupIndex > -1) {
+            int index = lookupIndex + START_CARRIER_IDX;
+            if (rc.canWriteSharedArray(index, 0)) {
+                rc.writeSharedArray(index, 0);
+                removeCarrierID(rc);
             }
         }
     }
@@ -351,5 +370,10 @@ public class Communication {
                 break;
             }
         }
+    }
+
+    /** Remove all carriers from ID tracking array **/
+    public static void removeAllCarrierIDs() {
+        Arrays.fill(carrierIDs, 0);
     }
 }
