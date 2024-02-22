@@ -34,10 +34,12 @@ public class Communication {
     // Bit shift amount for storage.
     private static final int BIT_SHIFT = 4;
 
+    // Array to hold ID'd carriers up to number of max carriers in shared array (for tracking location).
+    private static int[] carrierIDs = new int[NUM_CARRIERS];
+
     // Counters for objects in shared array.
     private static int well_count = 0;
     private static int island_count = 0;
-    private static int carrier_count = 0;
 
     /** Read headquarter location closest to robot. **/
     public static MapLocation readHQ(RobotController rc) throws GameActionException {
@@ -313,6 +315,39 @@ public class Communication {
                 if (rc.canWriteSharedArray(i, 0)) {
                     rc.writeSharedArray(i, 0);
                 }
+            }
+        }
+    }
+
+    /** Add carrier ID to array of carrier ID's **/
+    public static void addCarrierID(RobotController rc) throws GameActionException {
+        int id = rc.getID();
+        for (int i = 0; i < NUM_CARRIERS; ++i) {
+            if (carrierIDs[i] == 0) {
+                carrierIDs[i] = id;
+                break;
+            }
+        }
+    }
+
+    /** Get index of carrier within ID tracking array **/
+    public static int getCarrierIndex(RobotController rc) throws GameActionException {
+        int id = rc.getID();
+        for (int i = 0; i < NUM_CARRIERS; ++i) {
+            if (carrierIDs[i] == id) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /** Remove carrier from ID tracking array **/
+    public static void removeCarrierID(RobotController rc) throws GameActionException {
+        int id = rc.getID();
+        for (int i = 0; i < NUM_CARRIERS; ++i) {
+            if (carrierIDs[i] == id) {
+                carrierIDs[i] = 0;
+                break;
             }
         }
     }

@@ -1026,19 +1026,36 @@ public class CommunicationTest {
         Communication.updateCarriers(rc, new MapLocation(1, 1));
         assertArrayEquals(validArray, rc.getArray());
     }
+
+    // Testing add and getting a Carrier's ID to tracking array.
+    @Test
+    public void testAddAndGetCarrierID() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        Communication.addCarrierID(rc);
+        assertEquals(0, Communication.getCarrierIndex(rc));
+    }
+
+    // Testing removing and not getting a Carrier's ID to tracking array.
+    @Test
+    public void testRemoveAndNotGetCarrierID() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        Communication.removeCarrierID(rc);
+        assertEquals(-1, Communication.getCarrierIndex(rc));
+    }
 }
 
 /**
  * Implements a simple mock RobotController for testing. Has to implement all methods, but the only affected methods
- * are getMapWidth, getMapHeight, getLocation, getTeam, senseNearbyWells, senseNearbyIslands, senseTeamOccupyingIsland, and
- * senseNearbyIslandLocations. New methods for testing include setSharedArray, setCanWriteResult, setLocation, getArray,
- * setWells, setCurrentIslands, setCurrentTeam, setCurrentIslandLocations, setTeam, and reset.
+ * are getMapWidth, getMapHeight, getID, getLocation, getTeam, senseNearbyWells, senseNearbyIslands, senseTeamOccupyingIsland,
+ * and senseNearbyIslandLocations. New methods for testing include setSharedArray, setCanWriteResult, setLocation, getArray,
+ * setWells, setCurrentIslands, setCurrentTeam, setCurrentIslandLocations, setTeam, reset, and setMyID.
  **/
 class CommunicationRobotController implements RobotController {
     MapLocation currentLocation = new MapLocation(0, 0);
     WellInfo[] currentWells = new WellInfo[] {};
     Team myTeam = Team.A;
     int[] currentIslands = new int[] {0, 1, 2};
+    int myID = 15421;
     Team[] currentTeam = new Team[] {Team.NEUTRAL, Team.A, Team.B};
     MapLocation[] islandLocations = new MapLocation[] {new MapLocation(1, 1), new MapLocation(1, 2), new MapLocation(2, 2)};
     boolean canWriteResult = true;
@@ -1098,11 +1115,19 @@ class CommunicationRobotController implements RobotController {
         };
     }
 
+    public void setMyID(int id) {
+        myID = id;
+    }
+
     @Override
     public Team getTeam() {
         return myTeam;
     }
 
+    @Override
+    public int getID() {
+        return myID;
+    }
 
     @Override
     public int[] senseNearbyIslands() {
@@ -1177,11 +1202,6 @@ class CommunicationRobotController implements RobotController {
 
     @Override
     public int getRobotCount() {
-        return 0;
-    }
-
-    @Override
-    public int getID() {
         return 0;
     }
 
