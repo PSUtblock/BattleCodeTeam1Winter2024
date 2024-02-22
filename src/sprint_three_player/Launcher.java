@@ -17,22 +17,19 @@ public class Launcher {
      * This code is wrapped inside the infinite loop in run(), so it is called once per turn.
      */
     static int wellGuardTurns = 0;
-    static boolean isChasing = false; // New variable to track if we are chasing an enemy
-    static MapLocation wellLocation = null; // New variable to remember the well location
+    static boolean isChasing = false;
+    static MapLocation wellLocation = null;
     public static void runLauncher(RobotController rc) throws GameActionException {
-        int behaviorMode = (rc.getRoundNum() / 10) % 2;
+        followAndProtectCarrier(rc);
 
-        if (behaviorMode == 0) {
-            // Follow ally carrier
-            followAllyCarrier(rc);
-        } else {
-            // Attack enemy robots
-            attackEnemies(rc);
-        }
+        attackWithPriority(rc);
+
+        attackEnemies(rc);
+
+        followAndGuardAlly(rc);
+
         if (wellGuardTurns > 0 || isChasing) {
             wellGuardTurns = isChasing ? wellGuardTurns : wellGuardTurns - 1;
-            System.out.println("Guarding well at " + wellLocation + ", turns left: " + wellGuardTurns);
-            // Sense for enemies while guarding the well
             RobotInfo[] enemiesTeam = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
             if (enemiesTeam.length > 0) {
                 MapLocation enemyLocation = enemiesTeam[0].location;
@@ -54,12 +51,6 @@ public class Launcher {
                 return; // Skip rest of the turn if still guarding
             }
         }
-        attackWithPriority(rc);
-
-        // Attack logic
-        attackEnemies(rc);
-
-        followAndGuardAlly(rc);
 
         // Also try to move randomly.
         Direction dir = directions[rng.nextInt(directions.length)];
@@ -67,29 +58,43 @@ public class Launcher {
         updateWellLocation(rc);
 
     }
-    /**
-     * Tracks and moves towards the nearest ally Carrier.
-     */
-    private static void followAllyCarrier(RobotController rc) throws GameActionException {
-        RobotInfo[] nearbyRobots = rc.senseNearbyRobots(); // Gets all robots within vision radius
-        MapLocation closestCarrierLocation = null;
 
-        if (nearbyRobots.length > 0) {
-            Set<MapLocation> alliedCarriers = new HashSet<>();
-            for (RobotInfo robot : nearbyRobots) {
-                if (robot.getType() == RobotType.CARRIER && robot.getTeam() == rc.getTeam()) {
-                    alliedCarriers.add(robot.getLocation());
+    private static void followAndProtectCarrier(RobotController rc) throws GameActionException {
+        RobotInfo[] nearbyRobots = rc.senseNearbyRobots();
+        MapLocation closestCarrierLocation = null;
+        boolean carrierHasAnchors = false;
+
+        // First, find the closest carrier with anchors
+        for (RobotInfo robot : nearbyRobots) {
+            if (robot.getType() == RobotType.CARRIER && robot.getTeam() == rc.getTeam()) {
+                // Assuming getAnchor() method exists and indicates whether the carrier has anchors
+                int anchorCount = robot.getTotalAnchors();
+                if (anchorCount > 0) {
+                    System.out.println("anchor count" +anchorCount);
+                    closestCarrierLocation = robot.getLocation();
+                    carrierHasAnchors = true;
+                    break; // Found the carrier to follow
                 }
             }
-            closestCarrierLocation = Movement.getClosestLocation(rc, alliedCarriers);
         }
 
-        // If a Carrier is found, move towards it
-        if (closestCarrierLocation != null && rc.isMovementReady()) {
-            Direction directionToMove = rc.getLocation().directionTo(closestCarrierLocation);
-            Movement.moveToLocation(rc, directionToMove);
+        // If a carrier with anchors is found, attempt to move towards it or protect it
+        if (carrierHasAnchors) {
+            // Simultaneously check for and attack enemies if any are within action radius
+            RobotInfo[] enemies = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
+            if (enemies.length > 0) {
+                // Prioritize attacking
+                attackWithPriority(rc);
+            } else {
+                // After attempting an attack, continue moving towards the carrier
+                if (closestCarrierLocation != null && rc.isMovementReady()) {
+                    Direction directionToMove = rc.getLocation().directionTo(closestCarrierLocation);
+                    Movement.moveToLocation(rc, directionToMove);
+                }
+            }
         }
     }
+
     private static void attackEnemies(RobotController rc) throws GameActionException {
         RobotInfo[] enemies = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
         if (enemies.length > 0) {
@@ -194,5 +199,4 @@ public class Launcher {
             attackWithPriority(rc);
         }
     }
-
 }
