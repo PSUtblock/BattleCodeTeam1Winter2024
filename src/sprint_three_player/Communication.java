@@ -2,6 +2,7 @@ package sprint_three_player;
 
 import battlecode.common.*;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -13,22 +14,33 @@ import java.util.Set;
  *      - x, y coordinate converted into number and bitwise shifted left with well type (1 - Adamantium, 2 - Mana, 3 - Elixir)
  *      Up to 30 islands (>75% of max) from indices 16 to 45
  *      - uses same format as wells, but instead of containing type, it contains whether it is occupied (0 - No, 1 - Yes/Team, 2 - Yes/Opponent)
- *      Index 46 is reserved for which resource to prioritize
+ *      Up to 17 carriers with anchors from indices 46 to 62
+ *      - uses same format as headquarters
+ *      Index 63 is reserved for which resource to prioritize
  **/
 public class Communication {
     // Number of headquarters, wells, and islands allowed in communication array.
     private static final int NUM_HQ = GameConstants.MAX_STARTING_HEADQUARTERS;
     private static final int NUM_WELLS = 12;
     private static final int NUM_ISLANDS = 30;
+    private static final int NUM_CARRIERS = 17;
 
     // Starting index for reading and writing from specified location types.
     private static final int START_HQ_IDX = 0;
     private static final int START_WELL_IDX = NUM_HQ;
     private static final int START_ISLAND_IDX = START_WELL_IDX + NUM_WELLS;
-    private static final int PRIORITY_IDX = START_ISLAND_IDX + NUM_ISLANDS;
+    private static final int START_CARRIER_IDX = START_ISLAND_IDX + NUM_ISLANDS;
+    private static final int PRIORITY_IDX = START_CARRIER_IDX + NUM_CARRIERS;
 
     // Bit shift amount for storage.
     private static final int BIT_SHIFT = 4;
+
+    // Array to hold ID'd carriers up to number of max carriers in shared array (for tracking location).
+    private static int[] carrierIDs = new int[NUM_CARRIERS];
+
+    // Counters for objects in shared array.
+    private static int well_count = 0;
+    private static int island_count = 0;
 
     /** Read headquarter location closest to robot. **/
     public static MapLocation readHQ(RobotController rc) throws GameActionException {
@@ -118,7 +130,7 @@ public class Communication {
     public static MapLocation readIsland(RobotController rc, int type) throws GameActionException {
         Set<MapLocation> islandLocations = new HashSet<>();
         // Read all islands.
-        for (int i = START_ISLAND_IDX; i < PRIORITY_IDX; ++i) {
+        for (int i = START_ISLAND_IDX; i < START_CARRIER_IDX; ++i) {
             int valueToUnpack = rc.readSharedArray(i);
             if (valueToUnpack != 0) {
                 int[] unpackedValue = unpackObject(rc, valueToUnpack);
@@ -154,7 +166,7 @@ public class Communication {
         if (!islandsToStore.isEmpty()) {
             for (Integer island : islandsToStore) {
                 // Write location into first available index.
-                for (int i = START_ISLAND_IDX; i < PRIORITY_IDX; ++i) {
+                for (int i = START_ISLAND_IDX; i < START_CARRIER_IDX; ++i) {
                     if (rc.readSharedArray(i) == 0) {
                         if (rc.canWriteSharedArray(i, island)) {
                             rc.writeSharedArray(i, island);
@@ -173,7 +185,7 @@ public class Communication {
     /** Update array of islands, removing any that are now occupied. **/
     public static void updateIslands(RobotController rc, MapLocation island, int islandState) throws GameActionException {
         // If island is in array, update it.
-        for (int i = START_ISLAND_IDX; i < PRIORITY_IDX; ++i) {
+        for (int i = START_ISLAND_IDX; i < START_CARRIER_IDX; ++i) {
             int[] islandSpecs = unpackObject(rc, rc.readSharedArray(i));
             int xCoord = islandSpecs[0];
             int yCoord = islandSpecs[1];
@@ -254,5 +266,114 @@ public class Communication {
             return 1;
         }
         return 2;
+    }
+
+    /** Read carrier location closest to robot. **/
+    public static MapLocation readCarrier(RobotController rc) throws GameActionException {
+        Set<MapLocation> carrierLocs = new HashSet<>();
+        // Read all carriers.
+        for (int i = START_CARRIER_IDX; i < PRIORITY_IDX; ++i) {
+            int valueToUnpack = rc.readSharedArray(i);
+            if (valueToUnpack != 0) {
+                int[] unpackedValue = unpackObject(rc, valueToUnpack);
+                int hqX = unpackedValue[0];
+                int hqY = unpackedValue[1];
+                carrierLocs.add(new MapLocation(hqX, hqY));
+            }
+        }
+        // Return the closest carrier or return null.
+        return Movement.getClosestLocation(rc, carrierLocs);
+    }
+
+    /**
+     * Write carrier location to array when carrying anchor.
+     * Reserved for Carrier use only, so no sensing is required.
+     * **/
+    public static void initializeCarrier(RobotController rc) throws GameActionException {
+        MapLocation carrierLoc = rc.getLocation();
+        if (carrierLoc != null) {
+            int packedValue = packObject(rc, carrierLoc);
+            // Try adding carrier to tracking array.
+            if (addCarrierID(rc)) {
+                // Write carrier to shared array with respect to index in tracking array.
+                int index = getCarrierIndex(rc) + START_CARRIER_IDX;
+                if (rc.readSharedArray(index) == 0 && rc.canWriteSharedArray(index, packedValue)) {
+                    rc.writeSharedArray(index, packedValue);
+                }
+                else {
+                    removeCarrierID(rc);
+                }
+            }
+        }
+    }
+
+    /**
+     * Update carrier location to array when carrying anchor.
+     * Reserved for Carrier use only, so no sensing is required.
+     * **/
+    public static void updateCarrier(RobotController rc) throws GameActionException {
+        MapLocation carrierLoc = rc.getLocation();
+        if (carrierLoc != null) {
+            int packedValue = packObject(rc, carrierLoc);
+            int lookupIndex = getCarrierIndex(rc);
+            if (lookupIndex > -1) {
+                int index = lookupIndex + START_CARRIER_IDX;
+                if (rc.canWriteSharedArray(index, packedValue)) {
+                    rc.writeSharedArray(index, packedValue);
+                }
+            }
+        }
+    }
+
+    /** Update array of carriers, removing any that no longer have an anchor. **/
+    public static void removeCarrier(RobotController rc) throws GameActionException {
+        // If carrierLoc is in array, remove it.
+        int lookupIndex = getCarrierIndex(rc);
+        if (lookupIndex > -1) {
+            int index = lookupIndex + START_CARRIER_IDX;
+            if (rc.canWriteSharedArray(index, 0)) {
+                rc.writeSharedArray(index, 0);
+                removeCarrierID(rc);
+            }
+        }
+    }
+
+    /** Add carrier ID to array of carrier ID's **/
+    public static boolean addCarrierID(RobotController rc) throws GameActionException {
+        int id = rc.getID();
+        for (int i = 0; i < NUM_CARRIERS; ++i) {
+            if (carrierIDs[i] == 0) {
+                carrierIDs[i] = id;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Get index of carrier within ID tracking array **/
+    public static int getCarrierIndex(RobotController rc) throws GameActionException {
+        int id = rc.getID();
+        for (int i = 0; i < NUM_CARRIERS; ++i) {
+            if (carrierIDs[i] == id) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /** Remove carrier from ID tracking array **/
+    public static void removeCarrierID(RobotController rc) throws GameActionException {
+        int id = rc.getID();
+        for (int i = 0; i < NUM_CARRIERS; ++i) {
+            if (carrierIDs[i] == id) {
+                carrierIDs[i] = 0;
+                break;
+            }
+        }
+    }
+
+    /** Remove all carriers from ID tracking array **/
+    public static void removeAllCarrierIDs() {
+        Arrays.fill(carrierIDs, 0);
     }
 }

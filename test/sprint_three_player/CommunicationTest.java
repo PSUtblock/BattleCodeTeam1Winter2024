@@ -658,9 +658,9 @@ public class CommunicationTest {
                 1, 1, 1, 1, 1, 1, 1, 1,
                 1, 1, 1, 1, 1, 1, 1, 1,
                 1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 1, 1, 2, 1,
                 1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 1, 1, 1, 1
+                1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 2
         };
         rc.setSharedArray(initialArray);
         int priorityResult = Communication.readPriority(rc);
@@ -696,9 +696,9 @@ public class CommunicationTest {
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 1, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 1
         };
         int[] validArray = new int[] {
                 0, 0, 0, 0, 0, 0, 0, 0,
@@ -706,9 +706,9 @@ public class CommunicationTest {
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 2, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 2
         };
         rc.setSharedArray(initialArray);
         Communication.writePriority(rc, 2);
@@ -788,19 +788,470 @@ public class CommunicationTest {
         CommunicationRobotController rc = new CommunicationRobotController();
         assertEquals(2, Communication.islandStateNum(rc.getTeam(), Team.B));
     }
+
+    // Testing reading a Carrier from an empty shared array.
+    @Test
+    public void testReadCarrierWithEmptySharedArray() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        MapLocation closestCarrier = Communication.readCarrier(rc);
+        // Assert that location is null.
+        assertNull(closestCarrier);
+    }
+
+    // Testing reading the closest Carrier from a shared array with one Carrier.
+    @Test
+    public void testReadCarrierWithOneCarrier() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] oneCarrierInArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 144, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        rc.setSharedArray(oneCarrierInArray);
+        MapLocation carrierLocation = Communication.readCarrier(rc);
+        assertEquals(new MapLocation(2, 2), carrierLocation);
+    }
+
+    // Testing reading the closest Carrier from a shared array with multiple Carrier's.
+    @Test
+    public void testReadCarrierWithMultipleCarrier() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] multiCarrierInArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 112, 80,
+                128, 144, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        rc.setSharedArray(multiCarrierInArray);
+        MapLocation closestCarrier = Communication.readCarrier(rc);
+        assertEquals(new MapLocation(1, 1), closestCarrier);
+    }
+
+    // Testing initializing a Carrier that is null.
+    @Test
+    public void testInitializeNullCarrier() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        rc.setLocation(null);
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+
+        Communication.initializeCarrier(rc);
+        assertArrayEquals(validArray, rc.getArray());
+    }
+
+    // Testing initializing a Carrier to an empty shared array when it can write.
+    @Test
+    public void testInitializeCarrierToEmptyArrayCanWrite() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        rc.setLocation(new MapLocation(1, 1));
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 80, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+
+        Communication.initializeCarrier(rc);
+        assertArrayEquals(validArray, rc.getArray());
+        Communication.removeAllCarrierIDs();
+    }
+
+    // Testing initializing a Carrier to an empty shared array when it cannot write.
+    @Test
+    public void testInitializeCarrierToEmptyArrayCannotWrite() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        rc.setLocation(new MapLocation(1, 1));
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+
+        rc.setCanWriteResult(false);
+        Communication.initializeCarrier(rc);
+        assertArrayEquals(validArray, rc.getArray());
+    }
+
+    // Testing initializing a Carrier to a shared array with one Carrier.
+    @Test
+    public void testInitializeCarrierWithOneCarrierInArray() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        rc.setLocation(new MapLocation(2, 2));
+        rc.setMyID(11000);
+        Communication.addCarrierID(rc);
+        rc.setLocation(new MapLocation(1, 1));
+        rc.setMyID(12000);
+        int[] existingArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 144, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 144, 80,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+
+        rc.setSharedArray(existingArray);
+
+        Communication.initializeCarrier(rc);
+        assertArrayEquals(validArray, rc.getArray());
+        Communication.removeAllCarrierIDs();
+    }
+
+    // Testing initializing a Carrier to a shared array with multiple Carrier.
+    @Test
+    public void testInitializeCarrierWithMultipleCarrierInArray() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        rc.setLocation(new MapLocation(2, 2));
+        rc.setMyID(11000);
+        Communication.addCarrierID(rc);
+        rc.setLocation(new MapLocation(1, 2));
+        rc.setMyID(12000);
+        Communication.addCarrierID(rc);
+        rc.setLocation(new MapLocation(2, 1));
+        rc.setMyID(13000);
+        Communication.addCarrierID(rc);
+        rc.setLocation(new MapLocation(1, 1));
+        rc.setMyID(14000);
+        int[] existingArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 144, 112,
+                128, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 144, 112,
+                128, 80, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+
+        rc.setSharedArray(existingArray);
+        Communication.initializeCarrier(rc);
+        assertArrayEquals(validArray, rc.getArray());
+        Communication.removeAllCarrierIDs();
+    }
+
+    // Testing initializing a Carrier to a shared array that is full.
+    @Test
+    public void testInitializeCarrierFull() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        for (int i = 0; i < 17; ++i) {
+            rc.setMyID(14000 + i);
+            Communication.addCarrierID(rc);
+        }
+        rc.setMyID(16000);
+        rc.setLocation(new MapLocation(1, 1));
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 144, 112,
+                128, 23, 24, 25, 26, 48, 94, 99,
+                54, 30, 1, 2, 1000, 939, 324, 0
+        };
+        rc.setSharedArray(validArray);
+        Communication.initializeCarrier(rc);
+        assertArrayEquals(validArray, rc.getArray());
+        Communication.removeAllCarrierIDs();
+    }
+
+    // Testing updating a Carrier that is null.
+    @Test
+    public void testUpdateNullCarrier() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        rc.setLocation(null);
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+
+        Communication.updateCarrier(rc);
+        assertArrayEquals(validArray, rc.getArray());
+    }
+
+    // Testing updating a Carrier that does not exist.
+    @Test
+    public void testUpdateCarrierDoesNotExist() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        rc.setMyID(11000);
+        Communication.addCarrierID(rc);
+        rc.setMyID(14000);
+        rc.setLocation(new MapLocation(1, 1));
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 144, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        rc.setSharedArray(validArray);
+        Communication.updateCarrier(rc);
+        assertArrayEquals(validArray, rc.getArray());
+        Communication.removeAllCarrierIDs();
+    }
+
+    // Testing updating a Carrier cannot write.
+    @Test
+    public void testUpdateCarrierCannotWrite() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        rc.setMyID(11000);
+        Communication.addCarrierID(rc);
+        rc.setLocation(new MapLocation(1, 1));
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 144, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        rc.setSharedArray(validArray);
+        rc.setCanWriteResult(false);
+        Communication.updateCarrier(rc);
+        assertArrayEquals(validArray, rc.getArray());
+        Communication.removeAllCarrierIDs();
+    }
+
+    // Testing updating a Carrier can write.
+    @Test
+    public void testUpdateCarrierCanWrite() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        rc.setMyID(11000);
+        Communication.addCarrierID(rc);
+        rc.setLocation(new MapLocation(1, 1));
+        int[] existingArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 144, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 80, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        rc.setSharedArray(existingArray);
+        Communication.updateCarrier(rc);
+        assertArrayEquals(validArray, rc.getArray());
+        Communication.removeAllCarrierIDs();
+    }
+
+    // Testing removing carriers when carrier does not exist.
+    @Test
+    public void testRemoveCarriersDoesNotExist() throws GameActionException{
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        Communication.removeCarrier(rc);
+        assertArrayEquals(validArray, rc.getArray());
+    }
+
+    // Testing removing carriers when robot cannot write.
+    @Test
+    public void testRemoveCarriersCannotWrite() throws GameActionException{
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 80, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        rc.setSharedArray(validArray);
+        rc.setCanWriteResult(false);
+        Communication.removeCarrier(rc);
+        assertArrayEquals(validArray, rc.getArray());
+    }
+
+    // Testing remove carriers when robot can write.
+    @Test
+    public void testUpdateCarriersCanWrite() throws GameActionException{
+        CommunicationRobotController rc = new CommunicationRobotController();
+        Communication.addCarrierID(rc);
+        int[] initialArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 80, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        rc.setSharedArray(initialArray);
+        Communication.removeCarrier(rc);
+        assertArrayEquals(validArray, rc.getArray());
+    }
+
+    // Testing add a Carrier's ID to tracking array can add.
+    @Test
+    public void testCanAddCarrierID() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        assertTrue(Communication.addCarrierID(rc));
+        Communication.removeCarrierID(rc);
+    }
+
+    // Testing add a Carrier's ID to tracking array cannot add.
+    @Test
+    public void testCannotAddCarrierID() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        boolean result = true;
+        for (int i = 0; i < 17; ++i) {
+            rc.setMyID(13000 + i);
+            result = Communication.addCarrierID(rc);
+        }
+        assertTrue(result);
+        rc.setMyID(15000);
+        assertFalse(Communication.addCarrierID(rc));
+        for (int i = 0; i < 17; ++i) {
+            rc.setMyID(13000 + i);
+            Communication.removeCarrierID(rc);
+        }
+    }
+
+    // Testing getting a Carrier's index from tracking array.
+    @Test
+    public void testGetCarrierIndex() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        assertEquals(-1, Communication.getCarrierIndex(rc));
+        boolean result = Communication.addCarrierID(rc);
+        assertTrue(result);
+        assertEquals(0, Communication.getCarrierIndex(rc));
+        Communication.removeCarrierID(rc);
+    }
+
+    // Testing removing and not getting a Carrier's ID to tracking array.
+    @Test
+    public void testRemoveAndNotGetCarrierID() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        boolean result = Communication.addCarrierID(rc);
+        assertTrue(result);
+        assertEquals(0, Communication.getCarrierIndex(rc));
+        Communication.removeCarrierID(rc);
+        assertEquals(-1, Communication.getCarrierIndex(rc));
+    }
+
+    // Testing removing all carriers from ID tracking array.
+    @Test
+    public void testRemoveAllCarrierIDs() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        for (int i = 0; i < 17; ++i) {
+            rc.setMyID(14000 + i);
+            assertTrue(Communication.addCarrierID(rc));
+        }
+        for (int i = 0; i < 17; ++i) {
+            rc.setMyID(14000 + i);
+            assertNotEquals(-1, Communication.getCarrierIndex(rc));
+        }
+        Communication.removeAllCarrierIDs();
+        for (int i = 0; i < 17; ++i) {
+            rc.setMyID(14000 + i);
+            assertEquals(-1, Communication.getCarrierIndex(rc));
+        }
+    }
 }
 
 /**
  * Implements a simple mock RobotController for testing. Has to implement all methods, but the only affected methods
- * are getMapWidth, getMapHeight, getLocation, getTeam, senseNearbyWells, senseNearbyIslands, senseTeamOccupyingIsland, and
- * senseNearbyIslandLocations. New methods for testing include setSharedArray, setCanWriteResult, setLocation, getArray,
- * setWells, setCurrentIslands, setCurrentTeam, setCurrentIslandLocations, setTeam, and reset.
+ * are getMapWidth, getMapHeight, getID, getLocation, getTeam, senseNearbyWells, senseNearbyIslands, senseTeamOccupyingIsland,
+ * and senseNearbyIslandLocations. New methods for testing include setSharedArray, setCanWriteResult, setLocation, getArray,
+ * setWells, setCurrentIslands, setCurrentTeam, setCurrentIslandLocations, setTeam, reset, and setMyID.
  **/
 class CommunicationRobotController implements RobotController {
     MapLocation currentLocation = new MapLocation(0, 0);
     WellInfo[] currentWells = new WellInfo[] {};
     Team myTeam = Team.A;
     int[] currentIslands = new int[] {0, 1, 2};
+    int myID = 15421;
     Team[] currentTeam = new Team[] {Team.NEUTRAL, Team.A, Team.B};
     MapLocation[] islandLocations = new MapLocation[] {new MapLocation(1, 1), new MapLocation(1, 2), new MapLocation(2, 2)};
     boolean canWriteResult = true;
@@ -860,11 +1311,19 @@ class CommunicationRobotController implements RobotController {
         };
     }
 
+    public void setMyID(int id) {
+        myID = id;
+    }
+
     @Override
     public Team getTeam() {
         return myTeam;
     }
 
+    @Override
+    public int getID() {
+        return myID;
+    }
 
     @Override
     public int[] senseNearbyIslands() {
@@ -939,11 +1398,6 @@ class CommunicationRobotController implements RobotController {
 
     @Override
     public int getRobotCount() {
-        return 0;
-    }
-
-    @Override
-    public int getID() {
         return 0;
     }
 
