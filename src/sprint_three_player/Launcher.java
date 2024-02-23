@@ -22,40 +22,42 @@ public class Launcher {
     public static void runLauncher(RobotController rc) throws GameActionException {
         followAndProtectCarrier(rc);
 
+        moveTowardsOccupiedIslandsAndAttack(rc);
+
         attackWithPriority(rc);
 
         attackEnemies(rc);
 
-        followAndGuardAlly(rc);
+//        followAndGuardAlly(rc);
 
-        if (wellGuardTurns > 0 || isChasing) {
-            wellGuardTurns = isChasing ? wellGuardTurns : wellGuardTurns - 1;
-            RobotInfo[] enemiesTeam = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-            if (enemiesTeam.length > 0) {
-                MapLocation enemyLocation = enemiesTeam[0].location;
-                isChasing = true; // Start chasing
-                //System.out.println("Chasing enemy at " + enemyLocation);
-                Movement.moveToLocation(rc, rc.getLocation().directionTo(enemyLocation));
-                if (rc.getLocation().isAdjacentTo(enemyLocation) && rc.canAttack(enemyLocation)) {
-                    rc.attack(enemyLocation);
-                }
-                return; // Skip rest of the turn if chasing or guarding
-            } else if (isChasing) {
-                // Return to well and reset the guard timer
-                if (rc.getLocation().equals(wellLocation)) {
-                    wellGuardTurns = 5;
-                    isChasing = false;
-                } else {
-                    Movement.moveToLocation(rc, rc.getLocation().directionTo(wellLocation));
-                }
-                return; // Skip rest of the turn if still guarding
-            }
-        }
+//        if (wellGuardTurns > 0 || isChasing) {
+//            wellGuardTurns = isChasing ? wellGuardTurns : wellGuardTurns - 1;
+//            RobotInfo[] enemiesTeam = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
+//            if (enemiesTeam.length > 0) {
+//                MapLocation enemyLocation = enemiesTeam[0].location;
+//                isChasing = true; // Start chasing
+//                //System.out.println("Chasing enemy at " + enemyLocation);
+//                Movement.moveToLocation(rc, rc.getLocation().directionTo(enemyLocation));
+//                if (rc.getLocation().isAdjacentTo(enemyLocation) && rc.canAttack(enemyLocation)) {
+//                    rc.attack(enemyLocation);
+//                }
+//                return; // Skip rest of the turn if chasing or guarding
+//            } else if (isChasing) {
+//                // Return to well and reset the guard timer
+//                if (rc.getLocation().equals(wellLocation)) {
+//                    wellGuardTurns = 5;
+//                    isChasing = false;
+//                } else {
+//                    Movement.moveToLocation(rc, rc.getLocation().directionTo(wellLocation));
+//                }
+//                return; // Skip rest of the turn if still guarding
+//            }
+//        }
 
         // Also try to move randomly.
         Direction dir = directions[rng.nextInt(directions.length)];
         Movement.moveToLocation(rc, dir);
-        updateWellLocation(rc);
+//        updateWellLocation(rc);
 
     }
 
@@ -70,7 +72,7 @@ public class Launcher {
                 // Assuming getAnchor() method exists and indicates whether the carrier has anchors
                 int anchorCount = robot.getTotalAnchors();
                 if (anchorCount > 0) {
-                    System.out.println("anchor count" +anchorCount);
+//                    System.out.println("anchor count" +anchorCount);
                     closestCarrierLocation = robot.getLocation();
                     carrierHasAnchors = true;
                     break; // Found the carrier to follow
@@ -199,4 +201,53 @@ public class Launcher {
             attackWithPriority(rc);
         }
     }
+    private static void moveTowardsOccupiedIslandsAndAttack(RobotController rc) throws GameActionException {
+        MapLocation closestOccupiedIsland = null;
+        double closestDistance = Double.MAX_VALUE;
+
+        for (int i = 16; i < 46; i++) {
+            int data = rc.readSharedArray(i);
+            if (data != 0) {
+                int[] unpackedData = Communication.unpackObject(rc, data);
+                if (unpackedData.length >= 3) {
+                    int x = unpackedData[0];
+                    int y = unpackedData[1];
+                    int state = unpackedData[2];
+
+                    if (state == 1) {
+                        MapLocation islandLocation = new MapLocation(x, y);
+                        double distance = rc.getLocation().distanceSquaredTo(islandLocation);
+                        if (distance < closestDistance) {
+                            closestDistance = distance;
+                            closestOccupiedIsland = islandLocation;
+                        }
+                    }
+                }
+            }
+        }
+        if (closestOccupiedIsland != null) {
+            // Sense nearby allied launchers
+            RobotInfo[] nearbyAllies = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam());
+            int allyLauncherCount = 0;
+            for (RobotInfo ally : nearbyAllies) {
+                if (ally.type == RobotType.LAUNCHER) {
+                    allyLauncherCount++;
+                }
+            }
+
+            if (allyLauncherCount <=5) {
+                Direction toIsland = rc.getLocation().directionTo(closestOccupiedIsland);
+                if (rc.isMovementReady() && rc.canMove(toIsland)) {
+                    rc.move(toIsland);
+                }
+            }
+            else{
+                Direction dir = directions[rng.nextInt(directions.length)];
+                Movement.moveToLocation(rc, dir);
+            }
+            attackWithPriority(rc);
+        }
+
+    }
+
 }
