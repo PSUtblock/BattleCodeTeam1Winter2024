@@ -5,6 +5,9 @@ import battlecode.common.*;
 import java.util.HashSet;
 import java.util.Set;
 
+import static sprint_three_player.RobotPlayer.directions;
+import static sprint_three_player.RobotPlayer.rng;
+
 public class Amplifier {
     private static final int UNIT_SPACING = RobotType.AMPLIFIER.actionRadiusSquared; // Buffer spacing between amplifiers.
 
@@ -13,8 +16,6 @@ public class Amplifier {
         boolean isAmplified = false;
 
         Communication.writeWells(rc);
-        // Locate closest well.
-        // Map locations to store headquarters, closest well, and island positions.
         MapLocation wellLocation = Communication.readWell(rc, 0);
 
         Communication.writeIslands(rc);
@@ -29,25 +30,22 @@ public class Amplifier {
         }
 
         if (wellLocation != null) {
-            if (myLocation.distanceSquaredTo(wellLocation) > UNIT_SPACING){
-                for (MapLocation robot : allyAmplifiers) {
-                    if (robot.distanceSquaredTo(wellLocation) < myLocation.distanceSquaredTo(wellLocation)) {
-                        isAmplified = true;
-                        break;
-                    }
+            for (MapLocation robot : allyAmplifiers) {
+                if (robot.distanceSquaredTo(wellLocation) < myLocation.distanceSquaredTo(wellLocation)) {
+                    isAmplified = true;
+                    break;
                 }
-                if (isAmplified) {
-                    Movement.explore(rc);
-                }
-                else {
+            }
+            if (isAmplified) {
+                Movement.explore(rc);
+            }
+            else {
+                if (!myLocation.isWithinDistanceSquared(wellLocation, UNIT_SPACING)) {
                     Movement.moveToLocation(rc, wellLocation);
                 }
             }
-            else {
-                Movement.explore(rc);
-            }
         }
-        else if (islandLocation != null && myLocation.distanceSquaredTo(islandLocation) > UNIT_SPACING) {
+        else if (islandLocation != null) {
             for (MapLocation robot : allyAmplifiers) {
                 if (robot.distanceSquaredTo(islandLocation) < myLocation.distanceSquaredTo(islandLocation)) {
                     isAmplified = true;
@@ -58,7 +56,9 @@ public class Amplifier {
                 Movement.explore(rc);
             }
             else {
-                Movement.moveToLocation(rc, islandLocation);
+                if (!myLocation.isWithinDistanceSquared(islandLocation, UNIT_SPACING)) {
+                    Movement.moveToLocation(rc, islandLocation);
+                }
             }
         }
         else {
