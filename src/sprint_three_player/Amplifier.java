@@ -1,8 +1,6 @@
 package sprint_three_player;
 
 import battlecode.common.*;
-import sprint_three_player.Communication;
-import sprint_three_player.Movement;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -10,52 +8,61 @@ import java.util.Set;
 public class Amplifier {
     private static final int UNIT_SPACING = RobotType.AMPLIFIER.actionRadiusSquared; // Buffer spacing between amplifiers.
 
-    // Map locations to store headquarters, closest well, and island positions.
-    private static MapLocation hqLocation;
-    private static MapLocation wellLocation;
-    private static MapLocation islandLocation;
-
     public static void runAmplifier(RobotController rc) throws GameActionException {
         MapLocation myLocation = rc.getLocation();
+        boolean isAmplified = false;
 
-        // If the headquarters have not already been found, locate the closest one.
-        if (hqLocation == null) {
-            hqLocation = Communication.readHQ(rc);
-        }
+        Communication.writeWells(rc);
+        // Locate closest well.
+        // Map locations to store headquarters, closest well, and island positions.
+        MapLocation wellLocation = Communication.readWell(rc, 0);
 
-        // If the closest well has not been found, locate it.
-        if (wellLocation == null) {
-            wellLocation = Communication.readWell(rc, 0);
-        }
+        Communication.writeIslands(rc);
+        MapLocation islandLocation = Communication.readIsland(rc, 0);
 
-        // If the closest unoccupied island has not been found, locate it.
-        if (islandLocation == null) {
-            islandLocation = Communication.readIsland(rc, 0);
-        }
-
-        RobotInfo[] nearbyRobots = rc.senseNearbyRobots();
-        Set<MapLocation> allyRobots = new HashSet<>();
-        MapLocation closestAlly;
-        for (RobotInfo robot : nearbyRobots) {
-            if (robot.getTeam().isPlayer()
-                    && (robot.getType() == RobotType.AMPLIFIER
-                    || robot.getType() == RobotType.CARRIER
-                    || robot.getType() == RobotType.LAUNCHER)) {
-                allyRobots.add(robot.getLocation());
+        RobotInfo[] robots = rc.senseNearbyRobots();
+        Set<MapLocation> allyAmplifiers = new HashSet<>();
+        for (RobotInfo robot : robots) {
+            if (robot.getType() == RobotType.AMPLIFIER && robot.getTeam() == rc.getTeam()) {
+                allyAmplifiers.add(robot.getLocation());
             }
         }
-        closestAlly = Movement.getClosestLocation(rc, allyRobots);
 
-        if (closestAlly != null) {
-            if (myLocation.distanceSquaredTo(closestAlly) > UNIT_SPACING) {
-                Movement.moveToLocation(rc, closestAlly);
+        if (wellLocation != null) {
+            if (myLocation.distanceSquaredTo(wellLocation) > UNIT_SPACING){
+                for (MapLocation robot : allyAmplifiers) {
+                    if (robot.distanceSquaredTo(wellLocation) < myLocation.distanceSquaredTo(wellLocation)) {
+                        isAmplified = true;
+                        break;
+                    }
+                }
+                if (isAmplified) {
+                    Movement.explore(rc);
+                }
+                else {
+                    Movement.moveToLocation(rc, wellLocation);
+                }
             }
             else {
-                int oppositeX = myLocation.directionTo(closestAlly).opposite().getDeltaX();
-                int oppositeY = myLocation.directionTo(closestAlly).opposite().getDeltaY();
-                MapLocation oppositeLoc = new MapLocation(myLocation.x + oppositeX, myLocation.y + oppositeY);
-                Movement.moveToLocation(rc, oppositeLoc);
+                Movement.explore(rc);
             }
+        }
+        else if (islandLocation != null && myLocation.distanceSquaredTo(islandLocation) > UNIT_SPACING) {
+            for (MapLocation robot : allyAmplifiers) {
+                if (robot.distanceSquaredTo(islandLocation) < myLocation.distanceSquaredTo(islandLocation)) {
+                    isAmplified = true;
+                    break;
+                }
+            }
+            if (isAmplified) {
+                Movement.explore(rc);
+            }
+            else {
+                Movement.moveToLocation(rc, islandLocation);
+            }
+        }
+        else {
+            Movement.explore(rc);
         }
     }
 }

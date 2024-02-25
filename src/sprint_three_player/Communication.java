@@ -79,7 +79,8 @@ public class Communication {
 
     /** Read well location of a certain type. **/
     public static MapLocation readWell(RobotController rc, int type) throws GameActionException {
-        Set<MapLocation> wellLocations = new HashSet<>();
+        Set<MapLocation> wellLocationsMatch = new HashSet<>();
+        Set<MapLocation> wellLocationsNoMatch = new HashSet<>();
         // Read all wells.
         for (int i = START_WELL_IDX; i < START_ISLAND_IDX; ++i) {
             int valueToUnpack = rc.readSharedArray(i);
@@ -90,13 +91,21 @@ public class Communication {
                 int typeValue = unpackedValue[2];
                 // Break out of loop if type of object is found.
                 if (typeValue == type) {
-                    return new MapLocation(xCoord, yCoord);
+                    wellLocationsMatch.add(new MapLocation(xCoord, yCoord));
                 }
-                wellLocations.add(new MapLocation(xCoord, yCoord));
+                else {
+                    wellLocationsNoMatch.add(new MapLocation(xCoord, yCoord));
+                }
             }
         }
         // Return the closest well or return null.
-        return Movement.getClosestLocation(rc, wellLocations);
+        if (!wellLocationsMatch.isEmpty()) {
+            return Movement.getClosestLocation(rc, wellLocationsMatch);
+        }
+        if (!wellLocationsNoMatch.isEmpty()) {
+            return Movement.getClosestLocation(rc, wellLocationsNoMatch);
+        }
+        return null;
     }
 
     /** Write well location to array. For Carrier and Launcher use. **/
@@ -128,7 +137,8 @@ public class Communication {
 
     /** Read island location closest to robot. **/
     public static MapLocation readIsland(RobotController rc, int type) throws GameActionException {
-        Set<MapLocation> islandLocations = new HashSet<>();
+        Set<MapLocation> islandLocationsMatch = new HashSet<>();
+        Set<MapLocation> islandLocationsNoMatch = new HashSet<>();
         // Read all islands.
         for (int i = START_ISLAND_IDX; i < START_CARRIER_IDX; ++i) {
             int valueToUnpack = rc.readSharedArray(i);
@@ -139,13 +149,21 @@ public class Communication {
                 int typeValue = unpackedValue[2];
                 // Break out of loop if type of object is found.
                 if (typeValue == type) {
-                    return new MapLocation(xCoord, yCoord);
+                    islandLocationsMatch.add(new MapLocation(xCoord, yCoord));
                 }
-                islandLocations.add(new MapLocation(xCoord, yCoord));
+                else {
+                    islandLocationsNoMatch.add(new MapLocation(xCoord, yCoord));
+                }
             }
         }
         // Return the closest island or return null.
-        return Movement.getClosestLocation(rc, islandLocations);
+        if (!islandLocationsMatch.isEmpty()) {
+            return Movement.getClosestLocation(rc, islandLocationsMatch);
+        }
+        if (!islandLocationsNoMatch.isEmpty()) {
+            return Movement.getClosestLocation(rc, islandLocationsNoMatch);
+        }
+        return null;
     }
 
     /** Write island location to array. For Carrier and Launcher use. **/
