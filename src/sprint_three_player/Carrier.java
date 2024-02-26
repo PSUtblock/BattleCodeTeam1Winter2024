@@ -1,8 +1,6 @@
 package sprint_three_player;
 
 import battlecode.common.*;
-import sprint_three_player.Communication;
-import sprint_three_player.Movement;
 
 public class Carrier {
     // Map locations to store headquarters, closest well, and island positions.
@@ -10,7 +8,6 @@ public class Carrier {
     private static MapLocation wellLocation;
     private static MapLocation islandLocation;
     private static MapLocation myLocation;
-//    private static boolean recordedHQ = false;
 
     /**
      * Run a single turn for a Carrier.
@@ -20,21 +17,15 @@ public class Carrier {
         myLocation = rc.getLocation();                                  // Get robot's current location.
 
         // If the headquarters have not already been found, locate the closest one.
-        if (hqLocation == null) {
-            hqLocation = Communication.readHQ(rc);
-        }
+        hqLocation = Communication.readHQ(rc);
 
         // If the closest well has not been found, locate it.
         Communication.writeWells(rc);
-        if (wellLocation == null) {
-            wellLocation = Communication.readWell(rc, 0);
-        }
+        wellLocation = Communication.readWell(rc, 0);
 
         // If the closest unoccupied island has not been found, locate it.
         Communication.writeIslands(rc);
-        if (islandLocation == null) {
-            islandLocation = Communication.readIsland(rc, 0);
-        }
+        islandLocation = Communication.readIsland(rc, 0);
 
         // If the robot does not have an anchor, try to collect one.
         if (rc.getAnchor() == null) {
@@ -54,8 +45,10 @@ public class Carrier {
                     rc.setIndicatorString("Huzzah, placed anchor!");
                     // Updates if island to be occupied by team.
                     Communication.updateIslands(rc, islandLocation, 1);
-                    islandLocation = null;
                 }
+            }
+            else {
+                Movement.explore(rc);
             }
         }
         // If there is capacity, then go collect resources.
@@ -70,8 +63,7 @@ public class Carrier {
             else {
                 // If no well located, just make sure to head away from HQ.
                 if (hqLocation != null) {
-                    Direction awayFromHQ = myLocation.directionTo(hqLocation).opposite();
-                    Movement.moveToLocation(rc, awayFromHQ);
+                    Movement.explore(rc);
                     myLocation = rc.getLocation();
                 }
             }
@@ -89,7 +81,6 @@ public class Carrier {
                 depositResource(rc, ResourceType.MANA);
                 depositResource(rc, ResourceType.ADAMANTIUM);
                 collectAnchor(rc);
-                Movement.moveToLocation(rc, myLocation.directionTo(hqLocation).opposite());
             }
         }
     }

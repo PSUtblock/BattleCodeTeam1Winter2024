@@ -1,11 +1,6 @@
 package sprint_three_player;
 
 import battlecode.common.*;
-import sprint_three_player.Communication;
-import sprint_three_player.Movement;
-
-import java.util.HashSet;
-import java.util.Set;
 
 import static sprint_three_player.RobotPlayer.directions;
 import static sprint_three_player.RobotPlayer.rng;
@@ -20,6 +15,8 @@ public class Launcher {
     static boolean isChasing = false;
     static MapLocation wellLocation = null;
     public static void runLauncher(RobotController rc) throws GameActionException {
+        Communication.writeWells(rc);
+        Communication.writeIslands(rc);
         followAndProtectCarrier(rc);
 
         moveTowardsOccupiedIslandsAndAttack(rc);
@@ -88,11 +85,7 @@ public class Launcher {
                 // Prioritize attacking
                 attackWithPriority(rc);
             } else {
-                // After attempting an attack, continue moving towards the carrier
-                if (closestCarrierLocation != null && rc.isMovementReady()) {
-                    Direction directionToMove = rc.getLocation().directionTo(closestCarrierLocation);
-                    Movement.moveToLocation(rc, directionToMove);
-                }
+                Movement.moveToLocation(rc, closestCarrierLocation);
             }
         }
     }
@@ -110,7 +103,7 @@ public class Launcher {
 
     private static void updateWellLocation(RobotController rc) throws GameActionException {
         // Refresh well locations and guard if on a well
-        sprint_two_player.Communication.writeWells(rc);
+        Communication.writeWells(rc);
         wellLocation = Communication.readWell(rc, 0);
         if (rc.getLocation().equals(wellLocation)) {
             wellGuardTurns = 5; // Start guarding for 5 turns
@@ -236,10 +229,7 @@ public class Launcher {
             }
 
             if (allyLauncherCount <=5) {
-                Direction toIsland = rc.getLocation().directionTo(closestOccupiedIsland);
-                if (rc.isMovementReady() && rc.canMove(toIsland)) {
-                    rc.move(toIsland);
-                }
+                Movement.moveToLocation(rc, closestOccupiedIsland);
             }
             else{
                 Direction dir = directions[rng.nextInt(directions.length)];
