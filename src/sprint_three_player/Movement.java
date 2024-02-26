@@ -16,7 +16,7 @@ import static sprint_three_player.RobotPlayer.rng;
 public class Movement {
     private static final int NUM_DIRS = 8;                                   // Total number of directions not including CENTER.
     private static Direction currentDir = null;                              // Holds the direction robot is facing.
-    private static Set<MapLocation> visitedLocs = new HashSet<>();           // Reduces location repeats.
+    private static Set<MapLocation> visitedLocations = new HashSet<>();      // Reduces location repeats.
     private static List<MapLocation> potentialLandmarks = new ArrayList<>(); // Holds potential landmarks to explore.
     private static Set<MapLocation> visitedLandmarks = new HashSet<>();      // Reduces landmark repeats.
     private static MapLocation locToExplore = null;                          // Holds a location to explore.
@@ -33,7 +33,7 @@ public class Movement {
     /** Move the robot to a given target. **/
     public static void moveToLocation(RobotController rc, MapLocation target) throws GameActionException {
         MapLocation currentLoc = rc.getLocation();
-        visitedLocs.add(currentLoc);
+        visitedLocations.add(currentLoc);
 
         // If at target or cannot move, get out of method.
         if (currentLoc.equals(target) || !rc.isMovementReady()) {
@@ -46,10 +46,10 @@ public class Movement {
             if (rc.canMove(dir)) {
                 // If next location is adjacent to target, clear the visited log.
                 if (nextLocation.isAdjacentTo(target)) {
-                    visitedLocs.clear();
+                    visitedLocations.clear();
                 }
                 // If the location has not been visited, move to it.
-                if (!visitedLocs.contains(nextLocation)) {
+                if (!visitedLocations.contains(nextLocation)) {
                     rc.move(dir);
                     return;
                 }
@@ -62,7 +62,7 @@ public class Movement {
             for (int i = 0; i < NUM_DIRS; ++i) {
                 nextLocation = currentLoc.add(currentDir);
                 // If no obstacle, move and rotate right to face toward target again.
-                if (rc.canMove(currentDir) && !visitedLocs.contains(nextLocation)) {
+                if (rc.canMove(currentDir) && !visitedLocations.contains(nextLocation)) {
                     rc.move(currentDir);
                     currentDir = currentDir.rotateRight();
                     return;
@@ -75,7 +75,7 @@ public class Movement {
             if (rc.canMove(randDir)) {
                 rc.move(randDir);
                 rc.setIndicatorString("Moving Randomly");
-                visitedLocs.clear();
+                visitedLocations.clear();
             }
         }
         catch (GameActionException e) {
@@ -83,33 +83,33 @@ public class Movement {
         }
     }
 
-    /** Turn clockwise around an obstacle **/
-    public static Direction moveClockwise(RobotController rc) throws GameActionException{
-        currentDir = rc.getLocation().directionTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2));
-        for (int i = 0; i < NUM_DIRS; ++i) {
+//    /** Turn clockwise around an obstacle **/
+//    public static Direction moveClockwise(RobotController rc) throws GameActionException{
+//        currentDir = rc.getLocation().directionTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2));
+//        for (int i = 0; i < NUM_DIRS; ++i) {
             // If no obstacle, return direction.
-            if (rc.canMove(currentDir)) {
-                return currentDir;
-            }
+//            if (rc.canMove(currentDir)) {
+//                return currentDir;
+//            }
             // Otherwise, turn right to go around the obstacle clockwise.
-            currentDir = currentDir.rotateRight();
-        }
-        return currentDir;
-    }
+//            currentDir = currentDir.rotateRight();
+//        }
+//        return currentDir;
+//    }
 
-    /** Turn counterclockwise around an obstacle **/
-    public static Direction moveCounterClockwise(RobotController rc) throws GameActionException{
-        currentDir = rc.getLocation().directionTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2));
-        for (int i = 0; i < NUM_DIRS; ++i) {
+//    /** Turn counterclockwise around an obstacle **/
+//    public static Direction moveCounterClockwise(RobotController rc) throws GameActionException{
+//        currentDir = rc.getLocation().directionTo(new MapLocation(rc.getMapWidth() / 2, rc.getMapHeight() / 2));
+//        for (int i = 0; i < NUM_DIRS; ++i) {
             // If no obstacle, return direction.
-            if (rc.canMove(currentDir)) {
-                return currentDir;
-            }
+//            if (rc.canMove(currentDir)) {
+//                return currentDir;
+//            }
             // Otherwise, turn left to go around the obstacle clockwise.
-            currentDir = currentDir.rotateLeft();
-        }
-        return currentDir;
-    }
+//            currentDir = currentDir.rotateLeft();
+//        }
+//        return currentDir;
+//    }
 
     /** Return the closest location with respect to robot's current location. Uses an array of MapLocations as a parameter. **/
     public static MapLocation getClosestLocation(RobotController rc, MapLocation[] locations) {
@@ -158,7 +158,7 @@ public class Movement {
 
         // Fill potential landmarks.
         if (potentialLandmarks.isEmpty()) {
-            potentialLandmarks = getPossibleLandmarks(mapWidth, mapHeight, radius);
+            getPossibleLandmarks(rc, mapWidth, mapHeight, radius);
         }
 
         // If potential landmark not locked find one not already visited.
@@ -173,7 +173,7 @@ public class Movement {
         }
 
         if (locToExplore != null) {
-            // If near the target, stop travelling to it and add it to visited.
+            // If near the target, stop travelling to it and add to visit.
             if (rc.getLocation().isAdjacentTo(locToExplore)) {
                 visitedLandmarks.add(locToExplore);
                 targetLocked = false;
@@ -186,13 +186,37 @@ public class Movement {
     }
 
     /** Fills a list with possible landmarks spaced out by 100 units **/
-    private static List<MapLocation> getPossibleLandmarks(int mapWidth, int mapHeight, int radius) {
+    private static void getPossibleLandmarks(RobotController rc, int mapWidth, int mapHeight, int radius) throws GameActionException {
         for (int x = 0; x < mapWidth; x += radius) {
             for (int y = 0; y < mapHeight; y += radius) {
                 MapLocation potentialLocation = new MapLocation(x, y);
                 potentialLandmarks.add(potentialLocation);
             }
         }
-        return potentialLandmarks;
+        sortLocations(rc, potentialLandmarks);
+    }
+
+    /** Sorts locations with respect to distance from a headquarters **/
+    private static void sortLocations(RobotController rc, List<MapLocation> locations) throws GameActionException {
+        MapLocation hqLoc = Communication.readHQ(rc);
+        locations.sort(new DistanceComparator(hqLoc));
+    }
+}
+
+class DistanceComparator implements Comparator<MapLocation> {
+    private final MapLocation targetLocation;
+
+    public DistanceComparator(MapLocation targetLocation) {
+        this.targetLocation = targetLocation;
+    }
+
+    @Override
+    public int compare(MapLocation location1, MapLocation location2) {
+        // Compare based on distanceSquaredTo the target location
+        int distance1 = location1.distanceSquaredTo(targetLocation);
+        int distance2 = location2.distanceSquaredTo(targetLocation);
+
+        // Use Integer.compare for natural order (smallest to largest)
+        return Integer.compare(distance1, distance2);
     }
 }
