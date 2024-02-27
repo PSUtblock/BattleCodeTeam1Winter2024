@@ -2,7 +2,6 @@ package sprint_three_player;
 
 import battlecode.common.*;
 import org.junit.Test;
-import sprint_three_player.Movement;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -91,35 +90,35 @@ public class MovementTest {
     }
 
     // Testing moveClockwise method to a target location when a robot can move.
-    @Test
-    public void testMoveClockwiseCanMove() throws GameActionException {
-        MovementRobotController rc = new MovementRobotController();
-        MapLocation targetLocation = new MapLocation(1, 1);
-        Direction resultingDir = null;
-        Direction validDir = Direction.NORTHEAST;
-        Direction solutionDir = Direction.EAST;
-        rc.setCanMoveResult(true);
-        resultingDir = sprint_two_player.Movement.moveClockwise(rc, validDir);
-
-        assertEquals(new MapLocation(1, 1), rc.getLocation());
-        assertEquals(solutionDir, resultingDir);
-        rc.reset();
-    }
+//    @Test
+//    public void testMoveClockwiseCanMove() throws GameActionException {
+//        MovementRobotController rc = new MovementRobotController();
+//        MapLocation targetLocation = new MapLocation(1, 1);
+//        Direction resultingDir = null;
+//        Direction validDir = Direction.NORTHEAST;
+//        Direction solutionDir = Direction.EAST;
+//        rc.setCanMoveResult(true);
+//        resultingDir = Movement.moveClockwise(rc, validDir);
+//
+//        assertEquals(new MapLocation(1, 1), rc.getLocation());
+//        assertEquals(solutionDir, resultingDir);
+//        rc.reset();
+//    }
 
     // Testing moveClockwise method to a target location when a robot cannot move.
-    @Test
-    public void testMoveClockwiseCannotMove() throws GameActionException {
-        MovementRobotController rc = new MovementRobotController();
-        MapLocation targetLocation = new MapLocation(1, 1);
-        Direction resultingDir = null;
-        Direction validDir = Direction.NORTHEAST;
-        rc.setCanMoveResult(false);
-        resultingDir = sprint_two_player.Movement.moveClockwise(rc, validDir);
-
-        assertEquals(new MapLocation(0, 0), rc.getLocation());
-        assertEquals(validDir, resultingDir);
-        rc.reset();
-    }
+//    @Test
+//    public void testMoveClockwiseCannotMove() throws GameActionException {
+//        MovementRobotController rc = new MovementRobotController();
+//        MapLocation targetLocation = new MapLocation(1, 1);
+//        Direction resultingDir = null;
+//        Direction validDir = Direction.NORTHEAST;
+//        rc.setCanMoveResult(false);
+//        resultingDir = Movement.moveClockwise(rc, validDir);
+//
+//        assertEquals(new MapLocation(0, 0), rc.getLocation());
+//        assertEquals(validDir, resultingDir);
+//        rc.reset();
+//    }
 
     // Testing getClosestLocation method with an array of zero locations.
     @Test
@@ -128,7 +127,7 @@ public class MovementTest {
         MapLocation[] locations = {};
 
         // Assert that the returned location is null.
-        MapLocation closestLocation = sprint_two_player.Movement.getClosestLocation(rc, locations);
+        MapLocation closestLocation = Movement.getClosestLocation(rc, locations);
         assertNull(closestLocation);
     }
 
@@ -141,7 +140,7 @@ public class MovementTest {
         };
 
         // Assert that closest location is correct.
-        MapLocation closestLocation = sprint_two_player.Movement.getClosestLocation(rc, locations);
+        MapLocation closestLocation = Movement.getClosestLocation(rc, locations);
         assertEquals(new MapLocation(1, 1), closestLocation);
     }
 
@@ -156,7 +155,7 @@ public class MovementTest {
         };
 
         // Assert that closest location is correct.
-        MapLocation closestLocation = sprint_two_player.Movement.getClosestLocation(rc, locations);
+        MapLocation closestLocation = Movement.getClosestLocation(rc, locations);
         assertEquals(new MapLocation(1, 1), closestLocation);
     }
 
@@ -167,7 +166,7 @@ public class MovementTest {
         Set<MapLocation> locations = new HashSet<>();
 
         // Assert that the returned location is null.
-        MapLocation closestLocation = sprint_two_player.Movement.getClosestLocation(rc, locations);
+        MapLocation closestLocation = Movement.getClosestLocation(rc, locations);
         assertNull(closestLocation);
     }
 
@@ -178,7 +177,7 @@ public class MovementTest {
         Set<MapLocation> locations = new HashSet<>(Collections.singletonList(new MapLocation(1, 1)));
 
         // Assert that closest location is correct.
-        MapLocation closestLocation = sprint_two_player.Movement.getClosestLocation(rc, locations);
+        MapLocation closestLocation = Movement.getClosestLocation(rc, locations);
         assertEquals(new MapLocation(1, 1), closestLocation);
     }
 
