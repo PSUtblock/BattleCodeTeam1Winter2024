@@ -1,95 +1,44 @@
 package sprint_three_player;
 
 import battlecode.common.*;
-import org.junit.Before;
+import battlecode.world.Inventory;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class LauncherTest {
 
-    private LauncherRobotController rc;
-
-    @Before
-    public void setUp() {
-        rc = new LauncherRobotController();
-    }
-
     // Testing canAttack at a specific location
     @Test
     public void testAttackEnemiesWhenCanAttackAtLocation() throws GameActionException {
-        rc.setCanAttack(true);
-        rc.attack(rc.lastAttackLocation); // Simulate attacking
-
-        assertNotNull("Attack location should not be null after attack", rc.getLastAttackLocation());
-    }
-
-    //Testing canAttack condition
-    @Test
-    public void testAttackEnemiesWhenCanAttack() throws GameActionException {
-        rc.setCanAttack(true);
-        assertTrue("Should be able to attack", rc.canAttack(rc.attackLocation));
-    }
-
-    // Directly testing the stubbed movement readiness
-    @Test
-    public void testCanMoveToLocation() throws GameActionException {
-        assertTrue("Should be ready to move", rc.isMovementReady());
-    }
-
-
-    @Test
-    public void testSuccessfulMovement() throws GameActionException {
-        Direction moveDirection = Direction.NORTH;
-        rc.setReadyToMove(true); // Simulate being ready to move
-
-        rc.move(moveDirection); // Attempt to move
-
-        assertEquals("Robot should have moved to the expected direction", moveDirection, rc.getLastMoveDirection());
-    }
-
-    @Test
-    public void testMovementWhenNotReady() throws GameActionException {
-        Direction moveDirection = Direction.NORTH;
-        rc.setReadyToMove(false); // Not ready to move
-
-        rc.move(moveDirection); // Attempt to move
-
-        assertNull("Robot should not move when not ready", rc.getLastMoveDirection());
+        LauncherRobotController rc = new LauncherRobotController();
+        rc.canAttack(rc.toAttack);
+        rc.attack(rc.toAttack);
+        rc.senseNearbyRobots();
+        sprint_three_player.Launcher.attackEnemies(rc);
+        assertEquals(rc.enemies[0].location, rc.attackLocation);
     }
 }
 
 
 class LauncherRobotController implements RobotController {
     public MapLocation attackLocation = new MapLocation(5, 5);
-    public boolean canAttack = false;
-    public MapLocation lastAttackLocation = new MapLocation(5, 5); // Track the last attack location for verification
+    RobotInfo[] enemies = new RobotInfo[]{new RobotInfo(1, Team.B, RobotType.CARRIER, new Inventory(), 150, attackLocation)};
 
-    public Direction lastMoveDirection = null;
-    public boolean readyToMove = false;
+    public MapLocation toAttack = enemies[0].location;
+
+    public Direction lastMoveDirection = Direction.SOUTH;
+    public boolean readyToMove = true;
     public void setReadyToMove(boolean readyToMove) {
         this.readyToMove = readyToMove;
-    }
-    public Direction getLastMoveDirection() {
-        return lastMoveDirection;
-    }
-    // Additional setters for testing
-    public void setCanAttack(boolean canAttack) {
-        this.canAttack = canAttack;
-    }
-
-    public MapLocation getLastAttackLocation() {
-        return lastAttackLocation;
     }
 
     @Override
     public boolean canAttack(MapLocation loc) {
-        return canAttack;
+        return true;
     }
     @Override
     public void attack(MapLocation loc) throws GameActionException {
-        if (canAttack) {
-            lastAttackLocation = loc; // Store the location to verify it was "attacked"
-        }
+
     }
     @Override
     public int getRoundNum() {
@@ -118,17 +67,17 @@ class LauncherRobotController implements RobotController {
 
     @Override
     public int getID() {
-        return 0;
+        return 1;
     }
 
     @Override
     public Team getTeam() {
-        return null;
+        return Team.A;
     }
 
     @Override
     public RobotType getType() {
-        return null;
+        return RobotType.LAUNCHER;
     }
 
     @Override
@@ -203,12 +152,12 @@ class LauncherRobotController implements RobotController {
 
     @Override
     public RobotInfo[] senseNearbyRobots() {
-        return new RobotInfo[0];
+        return enemies;
     }
 
     @Override
     public RobotInfo[] senseNearbyRobots(int radiusSquared) throws GameActionException {
-        return new RobotInfo[0];
+        return enemies;
     }
 
     @Override
