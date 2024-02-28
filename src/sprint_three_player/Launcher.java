@@ -97,7 +97,7 @@ public class Launcher {
         }
     }
 
-    private static void attackEnemies(RobotController rc) throws GameActionException {
+    public static void attackEnemies(RobotController rc) throws GameActionException {
         RobotInfo[] enemies = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
         if (enemies.length > 0) {
             MapLocation toAttack = enemies[0].location;
