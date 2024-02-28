@@ -163,6 +163,10 @@ public class Movement {
             if (rc.getLocation().isAdjacentTo(locToExplore)) {
                 visitedLandmarks.add(locToExplore);
                 targetLocked = false;
+                // If all locations have been added, start over.
+                if (visitedLandmarks.size() == potentialLandmarks.size()) {
+                    visitedLandmarks.clear();
+                }
             }
             else {
                 // Otherwise, move to the location.
@@ -173,8 +177,8 @@ public class Movement {
 
     /** Fills a list with possible landmarks spaced out by 100 units **/
     private static void getPossibleLandmarks(RobotController rc, int mapWidth, int mapHeight, int radius) throws GameActionException {
-        for (int x = 0; x < mapWidth; x += radius) {
-            for (int y = 0; y < mapHeight; y += radius) {
+        for (int x = 0; x < mapWidth; x += radius - 1) {
+            for (int y = 0; y < mapHeight; y += radius - 1) {
                 MapLocation potentialLocation = new MapLocation(x, y);
                 potentialLandmarks.add(potentialLocation);
             }
@@ -182,10 +186,13 @@ public class Movement {
         sortLocations(rc, potentialLandmarks);
     }
 
-    /** Sorts locations with respect to distance from a headquarters **/
+    /** Sorts locations with respect to distance from a headquarters or from self if necessary **/
     private static void sortLocations(RobotController rc, List<MapLocation> locations) throws GameActionException {
-        MapLocation hqLoc = Communication.readHQ(rc);
-        locations.sort(new DistanceComparator(hqLoc));
+        MapLocation centerLoc = Communication.readHQ(rc);
+        if (centerLoc == null) {
+            centerLoc = rc.getLocation();
+        }
+        locations.sort(new DistanceComparator(centerLoc));
     }
 }
 
