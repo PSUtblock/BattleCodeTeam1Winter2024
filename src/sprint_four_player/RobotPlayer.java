@@ -4,10 +4,6 @@ import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
-import sprint_four_player.Amplifier;
-import sprint_four_player.Carrier;
-import sprint_four_player.Headquarters;
-import sprint_four_player.Launcher;
 
 import java.util.Random;
 //import java.util.Set;
@@ -80,8 +76,8 @@ public strictfp class RobotPlayer {
                     case HEADQUARTERS:     Headquarters.runHeadquarters(rc) ;  break;
                     case CARRIER:      Carrier.runCarrier(rc);   break;
                     case LAUNCHER: Launcher.runLauncher(rc); break;
-                    case BOOSTER: // Examplefuncsplayer doesn't use any of these robot types below.
-                    case DESTABILIZER: // You might want to give them a try!
+                    case BOOSTER: TemporalBoosters.runTemporalBoosters(rc); break;
+                    case DESTABILIZER: Destabilizer.runDestabilizer(rc); break;
                     case AMPLIFIER: Amplifier.runAmplifier(rc); break;
                 }
 
