@@ -1,11 +1,8 @@
 package sprint_four_player;
 
 import battlecode.common.*;
-import sprint_three_player.Communication;
-
 import static sprint_four_player.RobotPlayer.directions;
 import static sprint_four_player.RobotPlayer.rng;
-//import java.util.Set;
 
 public class Headquarters {
     /**
