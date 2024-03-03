@@ -130,7 +130,7 @@ public class Movement {
                 }
             } else {
                 // Otherwise, move to the location.
-                Movement.moveToLocation(rc, locToExplore);
+                moveToLocation(rc, locToExplore);
             }
         }
     }
