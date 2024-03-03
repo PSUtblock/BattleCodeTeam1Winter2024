@@ -3,8 +3,6 @@ package sprint_four_player;
 import battlecode.common.*;
 import org.junit.Test;
 
-import java.util.*;
-
 import static org.junit.Assert.*;
 
 /**
@@ -14,7 +12,7 @@ public class MovementTest {
 
     // Testing moveToLocation method when robot can move in a direction.
     @Test
-    public void testMoveToLocationDirCanMove() throws GameActionException{
+    public void testMoveToLocationDirCanMove() throws GameActionException {
         MovementRobotController rc = new MovementRobotController();
         Direction validDir = Direction.NORTH;
 
@@ -26,7 +24,7 @@ public class MovementTest {
 
     // Testing moveToLocation method when robot cannot move in a direction.
     @Test
-    public void testMoveToLocationDirCannotMove() throws GameActionException{
+    public void testMoveToLocationDirCannotMove() throws GameActionException {
         MovementRobotController rc = new MovementRobotController();
         Direction validDir = Direction.NORTH;
 
@@ -35,22 +33,6 @@ public class MovementTest {
         Movement.moveToLocation(rc, validDir);
         assertNotEquals(new MapLocation(0, 1), rc.getLocation());
     }
-
-    // Testing moveToLocation method with exception.
-//    @Test
-//    public void testMoveToLocationWithException() {
-//        MovementRobotController rc = new MovementRobotController();
-//        MovementRobotController rc2 = new MovementRobotController();
-//        rc.setLocation(new MapLocation(1, 1));
-//        rc2.setLocation(new MapLocation(1, 2));
-//        try {
-//            Movement.moveToLocation(rc, new MapLocation(2, 2));
-//            Movement.moveToLocation(rc2, new MapLocation(2, 2));
-//        }
-//        catch (GameActionException e) {
-//            assertEquals("Cannot Move", rc.getIndicatorString());
-//        }
-//    }
 
     // Testing moveToLocation method when a robot's location is equal to the target
     // location.
@@ -206,90 +188,18 @@ public class MovementTest {
         assertEquals(new MapLocation(0, 0), rc.getLocation());
     }
 
-    // Testing getClosestLocation method with an array of zero locations.
-    @Test
-    public void testGetClosestLocationWithEmptyArray() throws GameActionException {
-        MovementRobotController rc = new MovementRobotController();
-        MapLocation[] locations = {};
-
-        // Assert that the returned location is null.
-        MapLocation closestLocation = Movement.getClosestLocation(rc, locations);
-        assertNull(closestLocation);
-    }
-
-    // Testing getClosestLocation method with an array of one location.
-    @Test
-    public void testGetClosestLocationWithSingleLocation() throws GameActionException {
-        MovementRobotController rc = new MovementRobotController();
-        MapLocation[] locations = {
-                new MapLocation(1, 1)
-        };
-
-        // Assert that closest location is correct.
-        MapLocation closestLocation = Movement.getClosestLocation(rc, locations);
-        assertEquals(new MapLocation(1, 1), closestLocation);
-    }
-
-    // Testing getClosestLocation method with an array of multiple locations.
-    @Test
-    public void testGetClosestLocationWithMultipleLocations() throws GameActionException {
-        MovementRobotController rc = new MovementRobotController();
-        MapLocation[] locations = {
-                new MapLocation(2, 2),
-                new MapLocation(1, 1),
-                new MapLocation(2, 0)
-        };
-
-        // Assert that closest location is correct.
-        MapLocation closestLocation = Movement.getClosestLocation(rc, locations);
-        assertEquals(new MapLocation(1, 1), closestLocation);
-    }
-
-    // Testing getClosestLocation method with a set of zero locations.
-    @Test
-    public void testGetClosestLocationWithEmptySet() throws GameActionException {
-        MovementRobotController rc = new MovementRobotController();
-        Set<MapLocation> locations = new HashSet<>();
-
-        // Assert that the returned location is null.
-        MapLocation closestLocation = Movement.getClosestLocation(rc, locations);
-        assertNull(closestLocation);
-    }
-
-    // Testing getClosestLocation method with an array of one location.
-    @Test
-    public void testGetClosestLocationWithSingleLocationSet() throws GameActionException {
-        MovementRobotController rc = new MovementRobotController();
-        Set<MapLocation> locations = new HashSet<>(Collections.singletonList(new MapLocation(1, 1)));
-
-        // Assert that closest location is correct.
-        MapLocation closestLocation = Movement.getClosestLocation(rc, locations);
-        assertEquals(new MapLocation(1, 1), closestLocation);
-    }
-
-    // Testing getClosestLocation method with an array of multiple locations.
-    @Test
-    public void testGetClosestLocationWithMultipleLocationsSet() throws GameActionException {
-        MovementRobotController rc = new MovementRobotController();
-        Set<MapLocation> locations = new HashSet<>(
-                Arrays.asList(new MapLocation(2, 2), new MapLocation(1, 1), new MapLocation(2, 0)));
-
-        // Assert that closest location is correct.
-        MapLocation closestLocation = Movement.getClosestLocation(rc, locations);
-        assertEquals(new MapLocation(1, 1), closestLocation);
-    }
-
     // Testing explore if target not locked.
     @Test
     public void testExploreNotLocked() throws GameActionException {
-        MovementRobotController rc = new MovementRobotController();
+        MappingRobotController rc = new MappingRobotController();
         resetVisitLandmarks(rc);
         rc.setLocation(new MapLocation(5, 5));
         Movement.explore(rc);
         assertEquals(new MapLocation(6, 6), rc.getLocation());
     }
 
-    private void resetVisitLandmarks(MovementRobotController rc) throws GameActionException {
+    // Helper function for testing exploration.
+    private void resetVisitLandmarks(MappingRobotController rc) throws GameActionException {
         int count = 0;
         boolean visitedOne = false;
         boolean visitedTwo = false;
@@ -316,21 +226,10 @@ public class MovementTest {
         }
     }
 
-    // Testing explore if target locked.
-//    @Test
-//    public void testExploreLocked() throws GameActionException {
-//        MovementRobotController rc = new MovementRobotController();
-//        resetVisitLandmarks(rc);
-//        rc.setLocation(new MapLocation(5, 5));
-//        Movement.explore(rc);
-//        Movement.explore(rc);
-//        assertEquals(new MapLocation(3, 3), rc.getLocation());
-//    }
-
     // Testing explore if location to explore is null.
     @Test
     public void testExploreLocationToExploreNull() throws GameActionException {
-        MovementRobotController rc = new MovementRobotController();
+        MappingRobotController rc = new MappingRobotController();
         rc.setMapWidthAndHeight(-1, -1);
         rc.setLocation(new MapLocation(5, 5));
         Movement.explore(rc);
@@ -340,7 +239,7 @@ public class MovementTest {
     // Testing explore if adjacent to location.
     @Test
     public void testExploreAdjacentToLocation() throws GameActionException {
-        MovementRobotController rc = new MovementRobotController();
+        MappingRobotController rc = new MappingRobotController();
         rc.setLocation(new MapLocation(5, 5));
         Movement.explore(rc); // to (6, 6)
         assertEquals(new MapLocation(6, 6), rc.getLocation());
@@ -355,20 +254,14 @@ public class MovementTest {
     // Testing explore if visited all.
     @Test
     public void testExploreVisitedAll() throws GameActionException {
-        MovementRobotController rc = new MovementRobotController();
+        MappingRobotController rc = new MappingRobotController();
         rc.setLocation(new MapLocation(5, 5));
         resetVisitLandmarks(rc); //Visits all locations
         assertEquals(new MapLocation(1, 0), rc.getLocation());
     }
 
-    // Testing DistanceComparator comparing distances.
-    @Test
-    public void testSetLocationDistanceComparator() {
-        DistanceComparator dc = new DistanceComparator(new MapLocation(0, 0));
-        Integer shortest = dc.compare(new MapLocation(3, 3), new MapLocation(1, 1));
-        assertEquals(shortest, (Integer) 1);
-    }
 }
+
 
 /**
  * Implements a simple mock RobotController for testing. Has to implement all methods, but the only affected methods
@@ -379,7 +272,7 @@ public class MovementTest {
 class MovementRobotController implements RobotController{
     private boolean canMoveResult = true; // Controls canMove result
     private boolean movementReadyResult = true; // Controls isMovementReady result
-    private String indicator = new String();
+    private String indicator = "";
     private MapLocation currentLocation = new MapLocation(0, 0);
     private int mapWidth = 11;
     private int mapHeight = 11;
@@ -392,18 +285,8 @@ class MovementRobotController implements RobotController{
         currentLocation = location;
     }
 
-    public void setMapWidthAndHeight(int width, int height) {
-        mapWidth = width;
-        mapHeight = height;
-    }
-
     public String getIndicatorString() {
         return indicator;
-    }
-
-    public void reset() {
-        canMoveResult = true;
-        currentLocation = new MapLocation(0, 0);
     }
 
     public void setMovementReady(boolean movementReady) {
