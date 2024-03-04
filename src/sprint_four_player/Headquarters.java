@@ -34,6 +34,9 @@ public class Headquarters {
     private static void spawnTemporalBoosters(RobotController rc, MapLocation newLoc)throws GameActionException{
         rc.buildRobot(RobotType.BOOSTER, newLoc);
     }
+    private static void spawnDestabilizer(RobotController rc, MapLocation newLoc)throws GameActionException{
+        rc.buildRobot(RobotType.DESTABILIZER, newLoc);
+    }
     public static void runHeadquarters(RobotController rc) throws GameActionException {
         // Pick a direction to build in.
         MapLocation hqLoc = rc.getLocation();
@@ -44,12 +47,15 @@ public class Headquarters {
         int spawn_interval_carrier = 10;
         int spawn_interval_launcher = 6;
         int spawn_interval_amplifier = 50;
-        int spawn_interval_booster = 50;
+        int spawn_interval_booster = 500;
+        int spawn_interval_destabilizer = 500;
         int spawn_anchor_fail = 0;
         int spawn_carrier_fail = 0;
         int spawn_launcher_fail = 0;
         int spawn_amplifier_fail = 0;
         int spawn_booster_fail = 0;
+        int spawn_destabilizer_fail = 0;
+
 
 
         // Write Headquarters location to shared array if first turn.
@@ -112,7 +118,7 @@ public class Headquarters {
             }
         }
         /**
-         * For every 50 rounds, create a temporal booster
+         * For every 500 rounds, create a temporal booster
          */
         if(roundNum % spawn_interval_booster == 0 ){
             // Let's try to build a carrier.
@@ -122,6 +128,19 @@ public class Headquarters {
             }
             else{
                 spawn_booster_fail ++;
+            }
+        }
+        /**
+         * For every 500 rounds, create a temporal destabilizer
+         */
+        if(roundNum % spawn_interval_destabilizer == 0 ){
+            // Let's try to build a carrier.
+            rc.setIndicatorString("Trying to build a temporal booster");
+            if (rc.canBuildRobot(RobotType.DESTABILIZER, newLoc)) {
+                spawnDestabilizer(rc, newLoc);
+            }
+            else{
+                spawn_destabilizer_fail ++;
             }
         }
 
