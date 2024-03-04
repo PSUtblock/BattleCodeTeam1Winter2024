@@ -201,7 +201,7 @@ public class Launcher {
         for (int i = 16; i < 46; i++) {
             int data = rc.readSharedArray(i);
             if (data != 0) {
-                int[] unpackedData = Communication.unpackObject(rc, data);
+                int[] unpackedData = Packing.unpackObject(rc, data);
                 if (unpackedData.length >= 3) {
                     int x = unpackedData[0];
                     int y = unpackedData[1];
