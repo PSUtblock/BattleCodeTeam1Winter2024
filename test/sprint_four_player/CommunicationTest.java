@@ -717,10 +717,7 @@ public class CommunicationTest {
 }
 
 /**
- * Implements a simple mock RobotController for testing. Has to implement all methods, but the only affected methods
- * are getMapWidth, getMapHeight, getID, getLocation, getTeam, senseNearbyWells, senseNearbyIslands, senseTeamOccupyingIsland,
- * and senseNearbyIslandLocations. New methods for testing include setSharedArray, setCanWriteResult, setLocation, getArray,
- * setWells, setCurrentIslands, setCurrentTeam, setCurrentIslandLocations, setTeam, reset, and setMyID.
+ * Implements a simple mock RobotController for testing Communication related functionality.
  **/
 class CommunicationRobotController implements RobotController {
     MapLocation currentLocation = new MapLocation(0, 0);
@@ -1222,5 +1219,4 @@ class CommunicationRobotController implements RobotController {
     public void setIndicatorLine(MapLocation startLoc, MapLocation endLoc, int red, int green, int blue) {
 
     }
-
 }

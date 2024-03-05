@@ -264,10 +264,7 @@ public class MovementTest {
 
 
 /**
- * Implements a simple mock RobotController for testing. Has to implement all methods, but the only affected methods
- * are getMapWidth, getMapHeight, getLocation, canMove, move, canWriteSharedArray, setIndicatorString, and
- * isMovementReady. New methods for testing include getIndicatorString, setCanMoveResult, setLocation,
- * setMapWidthAndHeight, and reset.
+ * Implements a simple mock RobotController for testing Movement functionality.
  **/
 class MovementRobotController implements RobotController{
     private boolean canMoveResult = true; // Controls canMove result
