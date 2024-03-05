@@ -2,6 +2,8 @@ package sprint_four_player;
 
 import battlecode.common.*;
 
+import java.util.HashSet;
+
 public class Packing {
     private static final int BIT_SHIFT = 4; // Bit shift amount for storage.
 

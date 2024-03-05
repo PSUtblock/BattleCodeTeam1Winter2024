@@ -46,10 +46,10 @@ public class Communication {
         for (int i = START_HQ_IDX; i < START_WELL_IDX; ++i) {
             int valueToUnpack = rc.readSharedArray(i);
             if (valueToUnpack != 0) {
+                // Indices 0 and 1 of unpacked value are x and y values.
                 int[] unpackedValue = Packing.unpackObject(rc, valueToUnpack);
-                int hqX = unpackedValue[0];
-                int hqY = unpackedValue[1];
-                hqLocations.add(new MapLocation(hqX, hqY));
+                MapLocation locToAdd = new MapLocation(unpackedValue[0], unpackedValue[1]);
+                hqLocations.add(locToAdd);
             }
         }
         // Return the closest headquarters or return null.
@@ -82,16 +82,16 @@ public class Communication {
         for (int i = START_WELL_IDX; i < START_ISLAND_IDX; ++i) {
             int valueToUnpack = rc.readSharedArray(i);
             if (valueToUnpack != 0) {
+                // Indices 0 and 1 of unpackedValue are x and y values.
                 int[] unpackedValue = Packing.unpackObject(rc, valueToUnpack);
-                int xCoord = unpackedValue[0];
-                int yCoord = unpackedValue[1];
+                MapLocation locToAdd = new MapLocation(unpackedValue[0], unpackedValue[1]);
                 int typeValue = unpackedValue[2];
                 // Break out of loop if type of object is found.
                 if (typeValue == type) {
-                    wellLocationsMatch.add(new MapLocation(xCoord, yCoord));
+                    wellLocationsMatch.add(locToAdd);
                 }
                 else {
-                    wellLocationsNoMatch.add(new MapLocation(xCoord, yCoord));
+                    wellLocationsNoMatch.add(locToAdd);
                 }
             }
         }
@@ -140,16 +140,16 @@ public class Communication {
         for (int i = START_ISLAND_IDX; i < START_CARRIER_IDX; ++i) {
             int valueToUnpack = rc.readSharedArray(i);
             if (valueToUnpack != 0) {
+                // Indices 0 and 1 of unpackedValue are x and y values.
                 int[] unpackedValue = Packing.unpackObject(rc, valueToUnpack);
-                int xCoord = unpackedValue[0];
-                int yCoord = unpackedValue[1];
+                MapLocation locToAdd = new MapLocation(unpackedValue[0], unpackedValue[1]);
                 int typeValue = unpackedValue[2];
                 // Break out of loop if type of object is found.
                 if (typeValue == type) {
-                    islandLocationsMatch.add(new MapLocation(xCoord, yCoord));
+                    islandLocationsMatch.add(locToAdd);
                 }
                 else {
-                    islandLocationsNoMatch.add(new MapLocation(xCoord, yCoord));
+                    islandLocationsNoMatch.add(locToAdd);
                 }
             }
         }
