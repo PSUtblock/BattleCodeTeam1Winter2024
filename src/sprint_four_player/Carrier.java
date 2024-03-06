@@ -4,7 +4,6 @@ import battlecode.common.*;
 
 public class Carrier {
     // Map locations to store headquarters, closest well, and island positions.
-    private static MapLocation hqLocation;
     private static MapLocation myLocation;
     private static MapLocation wellLocation;
     private static Anchor hasAnchorType = null;
@@ -17,10 +16,8 @@ public class Carrier {
         myLocation = rc.getLocation();        // Get robot's current location.
         int roundNum = rc.getRoundNum();
 
-        // If the headquarters have not already been found, locate the closest one.
-        if (hqLocation == null) {
-            hqLocation = Communication.readHQ(rc);
-        }
+        // Locate the closest HQ.
+        MapLocation hqLocation = Communication.readHQ(rc);
 
         // Record wells and islands.
         Communication.writeWells(rc);
@@ -36,7 +33,7 @@ public class Carrier {
 
         // If the robot does not have an anchor, try to collect one.
         if (hasAnchorType == null) {
-            collectAnchor(rc);
+            collectAnchor(rc, hqLocation);
         }
 
         // If the robot has an anchor singularly focus on getting it to the first island it sees.
@@ -62,15 +59,13 @@ public class Carrier {
         else if (rc.getWeight() < GameConstants.CARRIER_CAPACITY) {
             if (wellLocation != null) {
                 // First check if still next to HQ and deposit anything.
-                depositAtHQ(rc);
+                depositResource(rc, hqLocation, ResourceType.ADAMANTIUM, rc.getResourceAmount(ResourceType.ADAMANTIUM));
+                depositResource(rc, hqLocation, ResourceType.MANA, rc.getResourceAmount(ResourceType.MANA));
 
                 rc.setIndicatorString("Moving towards well at: " + wellLocation);
                 Movement.moveToLocation(rc, wellLocation);
-                myLocation = rc.getLocation();
-                if (myLocation.isAdjacentTo(wellLocation) || myLocation.equals(wellLocation)) {
-                    // -1 indicates to collect all.
-                    collectFromWell(rc, wellLocation, -1);
-                }
+                // -1 indicates to collect all.
+                collectFromWell(rc, wellLocation, -1);
             }
             else {
                 // Try to collect a well anyway, in case there is one, while exploring.
@@ -81,10 +76,24 @@ public class Carrier {
         // Head to HQ if your resources are full.
         else if (hqLocation != null) {
             Movement.moveToLocation(rc, hqLocation);
-            // Deposit resources and try to collect an anchor immediately.
-            depositAtHQ(rc);
+            // Deposit resources.
+            depositResource(rc, hqLocation, ResourceType.ADAMANTIUM, rc.getResourceAmount(ResourceType.ADAMANTIUM));
+            depositResource(rc, hqLocation, ResourceType.MANA, rc.getResourceAmount(ResourceType.MANA));
             wellLocation = null;
         }
+    }
+
+    /** Sense number of carriers at well location **/
+    public static int numCarriersAtWell(RobotController rc) throws GameActionException {
+        RobotInfo[] nearbyCarriers = Mapping.getNearbyAllyCarriers(rc);
+        int carrierCount = 0;
+        for (RobotInfo carrierRobot : nearbyCarriers) {
+            MapLocation carrierLoc = carrierRobot.getLocation();
+            if (carrierLoc.isWithinDistanceSquared(wellLocation, rc.getType().actionRadiusSquared)) {
+                ++carrierCount;
+            }
+        }
+        return carrierCount;
     }
 
     /** Get specific standard well based on round number **/
@@ -97,12 +106,15 @@ public class Carrier {
         return Communication.readWell(rc, 2);
     }
 
-    /** Deposit everything at HQ **/
-    public static void depositAtHQ(RobotController rc) throws GameActionException {
-        if (myLocation.isAdjacentTo(hqLocation)) {
-            // If next to headquarters, deposit everything from the carrier.
-            depositResource(rc, ResourceType.MANA);
-            depositResource(rc, ResourceType.ADAMANTIUM);
+    /** Deposit all resources of a certain type to headquarters. **/
+    public static void depositResource(RobotController rc, MapLocation location, ResourceType type, int amount) throws GameActionException {
+        // If robot has any resources, deposit all of it.
+        if ((amount > 0) && rc.canTransferResource(location, type, amount)) {
+            rc.transferResource(location, type, amount);
+            rc.setIndicatorString("Depositing, now have, AD:" +
+                    rc.getResourceAmount(ResourceType.ADAMANTIUM) +
+                    " MN: " + rc.getResourceAmount(ResourceType.MANA) +
+                    " EX: " + rc.getResourceAmount(ResourceType.ELIXIR));
         }
     }
 
@@ -128,28 +140,14 @@ public class Carrier {
     }
 
     /** Collect an anchor from headquarters. **/
-    public static void collectAnchor(RobotController rc) throws GameActionException {
-        if (rc.canTakeAnchor(hqLocation, Anchor.STANDARD)) {
-            rc.takeAnchor(hqLocation, Anchor.STANDARD);
+    public static void collectAnchor(RobotController rc, MapLocation location) throws GameActionException {
+        if (rc.canTakeAnchor(location, Anchor.STANDARD)) {
+            rc.takeAnchor(location, Anchor.STANDARD);
             hasAnchorType = rc.getAnchor();
             rc.setIndicatorString("Taking anchor, now have, Anchor: " + rc.getAnchor());
         }
         else {
             rc.setIndicatorString("Unable to collect anchor.");
-        }
-    }
-
-    /** Deposit all resources of a certain type to headquarters. **/
-    public static void depositResource(RobotController rc, ResourceType type) throws GameActionException {
-        int amount = rc.getResourceAmount(type);
-
-        // If robot has any resources, deposit all of it.
-        if ((amount > 0) && rc.canTransferResource(hqLocation, type, amount)) {
-            rc.transferResource(hqLocation, type, amount);
-            rc.setIndicatorString("Depositing, now have, AD:" +
-                    rc.getResourceAmount(ResourceType.ADAMANTIUM) +
-                    " MN: " + rc.getResourceAmount(ResourceType.MANA) +
-                    " EX: " + rc.getResourceAmount(ResourceType.ELIXIR));
         }
     }
 }

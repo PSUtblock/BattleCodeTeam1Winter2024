@@ -92,6 +92,21 @@ public class Mapping {
         locations.sort(new DistanceComparator(centerLoc));
         return locations;
     }
+
+    /** Find all nearby ally Carriers **/
+    public static RobotInfo[] getNearbyAllyCarriers(RobotController rc) {
+        RobotInfo[] nearbyRobots = rc.senseNearbyRobots();
+        Team myTeam = rc.getTeam();
+        RobotInfo[] nearbyCarriers = new RobotInfo[nearbyRobots.length];
+        int carrierCount = 0;
+        for (RobotInfo robot : nearbyRobots) {
+            if (robot.getType() == RobotType.CARRIER && robot.getTeam() == myTeam) {
+                nearbyCarriers[carrierCount] = robot;
+                ++carrierCount;
+            }
+        }
+        return nearbyCarriers;
+    }
 }
 
 class DistanceComparator implements Comparator<MapLocation> {
