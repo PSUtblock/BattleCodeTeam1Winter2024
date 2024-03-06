@@ -1,12 +1,13 @@
 package sprint_four_player;
 
 import battlecode.common.*;
+import static sprint_four_player.RobotPlayer.rng;
 
 public class Carrier {
     // Map locations to store headquarters, closest well, and island positions.
     private static MapLocation myLocation;
-    private static MapLocation wellLocation;
     private static Anchor hasAnchorType = null;
+    private static boolean isElixirBuilder = rng.nextBoolean();
 
     /**
      * Run a single turn for a Carrier.
@@ -14,7 +15,10 @@ public class Carrier {
      */
     public static void runCarrier(RobotController rc) throws GameActionException {
         myLocation = rc.getLocation();        // Get robot's current location.
-        int roundNum = rc.getRoundNum();
+//        int roundNum = rc.getRoundNum();
+        if (Communication.updatePriority(rc)) {
+            isElixirBuilder = false;
+        }
 
         // Locate the closest HQ.
         MapLocation hqLocation = Communication.readHQ(rc);
@@ -24,9 +28,10 @@ public class Carrier {
         Communication.writeIslands(rc);
 
         // Depending on round number, collect specific resource type.
-        if (wellLocation == null) {
-            wellLocation = getStandardWell(rc, roundNum);
-        }
+//        if (wellLocation == null) {
+//            wellLocation = getStandardWell(rc, roundNum);
+//        }
+        MapLocation wellLocation = Communication.readWell(rc, 0);
 
         // If the closest unoccupied island has not been found, locate it.
         MapLocation islandLocation = Communication.readIsland(rc, 0);
@@ -75,36 +80,54 @@ public class Carrier {
         }
         // Head to HQ if your resources are full.
         else if (hqLocation != null) {
-            Movement.moveToLocation(rc, hqLocation);
-            // Deposit resources.
-            depositResource(rc, hqLocation, ResourceType.ADAMANTIUM, rc.getResourceAmount(ResourceType.ADAMANTIUM));
-            depositResource(rc, hqLocation, ResourceType.MANA, rc.getResourceAmount(ResourceType.MANA));
-            wellLocation = null;
-        }
-    }
-
-    /** Sense number of carriers at well location **/
-    public static int numCarriersAtWell(RobotController rc) throws GameActionException {
-        RobotInfo[] nearbyCarriers = Mapping.getNearbyAllyCarriers(rc);
-        int carrierCount = 0;
-        for (RobotInfo carrierRobot : nearbyCarriers) {
-            MapLocation carrierLoc = carrierRobot.getLocation();
-            if (carrierLoc.isWithinDistanceSquared(wellLocation, rc.getType().actionRadiusSquared)) {
-                ++carrierCount;
+            if (isElixirBuilder) {
+                Movement.moveToLocation(rc, wellLocation);
+                buildElixirWell(rc, wellLocation);
+            }
+            else {
+                Movement.moveToLocation(rc, hqLocation);
+                // Deposit resources.
+                depositResource(rc, hqLocation, ResourceType.ADAMANTIUM, rc.getResourceAmount(ResourceType.ADAMANTIUM));
+                depositResource(rc, hqLocation, ResourceType.MANA, rc.getResourceAmount(ResourceType.MANA));
             }
         }
-        return carrierCount;
     }
 
-    /** Get specific standard well based on round number **/
-    public static MapLocation getStandardWell(RobotController rc, int roundNum) throws GameActionException {
-        if (roundNum % 2 == 0) {
-            // Collect Adamantium on even rounds.
-            return Communication.readWell(rc, 1);
+    /** Get well type from well location. **/
+    public static void buildElixirWell(RobotController rc, MapLocation wellLocation) throws GameActionException {
+        if (myLocation.isAdjacentTo(wellLocation) || myLocation.equals(wellLocation)) {
+            ResourceType wellType = rc.senseWell(wellLocation).getResourceType();
+            if (wellType == ResourceType.ADAMANTIUM) {
+                depositResource(rc, wellLocation, ResourceType.MANA, rc.getResourceAmount(ResourceType.MANA));
+            }
+            else if (wellType == ResourceType.MANA) {
+                depositResource(rc, wellLocation, ResourceType.ADAMANTIUM, rc.getResourceAmount(ResourceType.ADAMANTIUM));
+            }
         }
-        // Collect Mana on odd rounds.
-        return Communication.readWell(rc, 2);
     }
+
+//    /** Sense number of carriers at well location **/
+//    public static int numCarriersAtWell(RobotController rc, MapLocation wellLocation) throws GameActionException {
+//        RobotInfo[] nearbyCarriers = Mapping.getNearbyAllyCarriers(rc);
+//        int carrierCount = 0;
+//        for (RobotInfo carrierRobot : nearbyCarriers) {
+//            MapLocation carrierLoc = carrierRobot.getLocation();
+//            if (carrierLoc.isWithinDistanceSquared(wellLocation, rc.getType().actionRadiusSquared)) {
+//                ++carrierCount;
+//            }
+//        }
+//        return carrierCount;
+//    }
+
+//    /** Get specific standard well based on round number **/
+//    public static MapLocation getStandardWell(RobotController rc, int roundNum) throws GameActionException {
+//        if (roundNum % 2 == 0) {
+//            // Collect Adamantium on even rounds.
+//            return Communication.readWell(rc, 1);
+//        }
+//        // Collect Mana on odd rounds.
+//        return Communication.readWell(rc, 2);
+//    }
 
     /** Deposit all resources of a certain type to headquarters. **/
     public static void depositResource(RobotController rc, MapLocation location, ResourceType type, int amount) throws GameActionException {
