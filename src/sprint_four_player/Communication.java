@@ -31,13 +31,13 @@ public class Communication {
     private static final int START_CARRIER_IDX = START_ISLAND_IDX + NUM_ISLANDS;
     private static final int PRIORITY_IDX = START_CARRIER_IDX + NUM_CARRIERS;
 
-
-    // Array to hold ID'd carriers up to number of max carriers in shared array (for tracking location).
-//    private static int[] carrierIDs = new int[NUM_CARRIERS];
-
     // Counters for objects in shared array.
-    private static int well_count = 0;
-    private static int island_count = 0;
+//    private static int numOfManaWells = 0;
+//    private static int numOfAdamantiumWells = 0;
+//    private static int manaWellCount = 0;
+//    private static int adamantiumWellCount = 0;
+//    private static int numOfIslands = 0;
+//    private static int islandCount = 0;
 
     /** Read headquarter location closest to robot. **/
     public static MapLocation readHQ(RobotController rc) throws GameActionException {
@@ -78,6 +78,7 @@ public class Communication {
     public static MapLocation readWell(RobotController rc, int type) throws GameActionException {
         Set<MapLocation> wellLocationsMatch = new HashSet<>();
         Set<MapLocation> wellLocationsNoMatch = new HashSet<>();
+
         // Read all wells.
         for (int i = START_WELL_IDX; i < START_ISLAND_IDX; ++i) {
             int valueToUnpack = rc.readSharedArray(i);
@@ -120,6 +121,12 @@ public class Communication {
                     if (rc.readSharedArray(j) == 0) {
                         if (rc.canWriteSharedArray(j, wellSpecs[i])) {
                             rc.writeSharedArray(j, wellSpecs[i]);
+//                            if (type == 1) {
+//                                ++numOfAdamantiumWells;
+//                            }
+//                            else if (type == 2) {
+//                                ++numOfManaWells;
+//                            }
                             break;
                         }
                     }

@@ -6,6 +6,7 @@ public class Carrier {
     // Map locations to store headquarters, closest well, and island positions.
     private static MapLocation hqLocation;
     private static MapLocation myLocation;
+    private static MapLocation wellLocation;
     private static Anchor hasAnchorType = null;
 
     /**
@@ -14,18 +15,23 @@ public class Carrier {
      */
     public static void runCarrier(RobotController rc) throws GameActionException {
         myLocation = rc.getLocation();        // Get robot's current location.
+        int roundNum = rc.getRoundNum();
 
         // If the headquarters have not already been found, locate the closest one.
         if (hqLocation == null) {
             hqLocation = Communication.readHQ(rc);
         }
 
-        // If the closest well has not been found, locate it.
+        // Record wells and islands.
         Communication.writeWells(rc);
-        MapLocation wellLocation = Communication.readWell(rc, 0);
+        Communication.writeIslands(rc);
+
+        // Depending on round number, collect specific resource type.
+        if (wellLocation == null) {
+            wellLocation = getStandardWell(rc, roundNum);
+        }
 
         // If the closest unoccupied island has not been found, locate it.
-        Communication.writeIslands(rc);
         MapLocation islandLocation = Communication.readIsland(rc, 0);
 
         // If the robot does not have an anchor, try to collect one.
@@ -42,6 +48,7 @@ public class Carrier {
                 }
                 if (rc.canPlaceAnchor()) {
                     rc.placeAnchor();
+                    hasAnchorType = null;
                     rc.setIndicatorString("Huzzah, placed anchor!");
                     // Updates if island to be occupied by team.
                     Communication.updateIslands(rc, islandLocation, 1);
@@ -76,7 +83,18 @@ public class Carrier {
             Movement.moveToLocation(rc, hqLocation);
             // Deposit resources and try to collect an anchor immediately.
             depositAtHQ(rc);
+            wellLocation = null;
         }
+    }
+
+    /** Get specific standard well based on round number **/
+    public static MapLocation getStandardWell(RobotController rc, int roundNum) throws GameActionException {
+        if (roundNum % 2 == 0) {
+            // Collect Adamantium on even rounds.
+            return Communication.readWell(rc, 1);
+        }
+        // Collect Mana on odd rounds.
+        return Communication.readWell(rc, 2);
     }
 
     /** Deposit everything at HQ **/
