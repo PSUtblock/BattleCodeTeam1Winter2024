@@ -121,23 +121,18 @@ public class Communication {
                     if (rc.readSharedArray(j) == 0) {
                         if (rc.canWriteSharedArray(j, wellSpecs[i])) {
                             rc.writeSharedArray(j, wellSpecs[i]);
+//                            if (type == 1) {
+//                                ++numOfAdamantiumWells;
+//                            }
+//                            else if (type == 2) {
+//                                ++numOfManaWells;
+//                            }
                             break;
                         }
                     }
                     else if (rc.readSharedArray(j) == wellSpecs[i]) {
                         // If well already exists in array, break out of loop.
                         break;
-                    }
-                    else {
-                        // Essentially updates the well.
-                        int[] existingWellInfo = Packing.unpackObject(rc, rc.readSharedArray(j));
-                        MapLocation existingWellLoc = new MapLocation(existingWellInfo[0], existingWellInfo[1]);
-                        if (existingWellLoc.equals(wells[i].getMapLocation()) && type != existingWellInfo[2]) {
-                            if (rc.canWriteSharedArray(j, wellSpecs[i])) {
-                                rc.writeSharedArray(j, wellSpecs[i]);
-                                break;
-                            }
-                        }
                     }
                 }
             }
@@ -238,25 +233,5 @@ public class Communication {
         if (rc.canWriteSharedArray(PRIORITY_IDX, priorityType)) {
             rc.writeSharedArray(PRIORITY_IDX, priorityType);
         }
-    }
-
-    /** Update priority if Elixir well exists. **/
-    public static boolean updatePriority(RobotController rc) throws GameActionException {
-        for (int i = START_WELL_IDX; i < START_ISLAND_IDX; ++i) {
-            int valueToUnpack = rc.readSharedArray(i);
-            if (valueToUnpack != 0) {
-                // Indices 0 and 1 of unpackedValue are x and y values.
-                int[] unpackedValue = Packing.unpackObject(rc, valueToUnpack);
-                int typeValue = unpackedValue[2];
-                // Break out of loop if type of object is found.
-                if (typeValue == 3) {
-                    if (rc.canWriteSharedArray(PRIORITY_IDX, typeValue)) {
-                        rc.writeSharedArray(PRIORITY_IDX, typeValue);
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
     }
 }
