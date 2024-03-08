@@ -6,7 +6,11 @@ public class Carrier {
     // Map locations to store headquarters, closest well, and island positions.
     private static MapLocation myLocation;
     private static MapLocation wellLocation;
-    private static Anchor hasAnchorType = null;
+    private static MapLocation designatedElixirWell;
+    private static int designatedWellType;
+    private static MapLocation islandLocation;
+    private static Anchor hasAnchorType;
+    private static boolean isDepositingAtHQ = false;
 
     /**
      * Run a single turn for a Carrier.
@@ -24,12 +28,22 @@ public class Carrier {
         Communication.writeIslands(rc);
 
         // Depending on round number, collect specific resource type.
-        if (wellLocation == null) {
-            wellLocation = getStandardWell(rc, roundNum);
+        wellLocation = Communication.readWell(rc, 0);
+
+        if (designatedElixirWell == null) {
+            int[] wellProperties = Communication.findFirstWell(rc);
+            if (wellProperties != null) {
+                // Indices 0 and 1 represent x and y coordinates.
+                designatedElixirWell = new MapLocation(wellProperties[0], wellProperties[1]);
+                // Index 2 represents the well type.
+                designatedWellType = wellProperties[2];
+            }
         }
 
         // If the closest unoccupied island has not been found, locate it.
-        MapLocation islandLocation = Communication.readIsland(rc, 0);
+        if (islandLocation == null) {
+            islandLocation = Communication.readIsland(rc, 0);
+        }
 
         // If the robot does not have an anchor, try to collect one.
         if (hasAnchorType == null) {
@@ -49,6 +63,7 @@ public class Carrier {
                     rc.setIndicatorString("Huzzah, placed anchor!");
                     // Updates if island to be occupied by team.
                     Communication.updateIslands(rc, islandLocation, 1);
+                    islandLocation = null;
                 }
             }
             else {
@@ -56,11 +71,11 @@ public class Carrier {
             }
         }
         // If there is capacity, then go collect resources.
-        else if (rc.getWeight() < GameConstants.CARRIER_CAPACITY) {
+        else if (rc.getWeight() < GameConstants.CARRIER_CAPACITY && !isDepositingAtHQ) {
             if (wellLocation != null) {
                 // First check if still next to HQ and deposit anything.
-                depositResource(rc, hqLocation, ResourceType.ADAMANTIUM, rc.getResourceAmount(ResourceType.ADAMANTIUM));
-                depositResource(rc, hqLocation, ResourceType.MANA, rc.getResourceAmount(ResourceType.MANA));
+//                depositResource(rc, hqLocation, ResourceType.ADAMANTIUM, rc.getResourceAmount(ResourceType.ADAMANTIUM));
+//                depositResource(rc, hqLocation, ResourceType.MANA, rc.getResourceAmount(ResourceType.MANA));
 
                 rc.setIndicatorString("Moving towards well at: " + wellLocation);
                 Movement.moveToLocation(rc, wellLocation);
@@ -75,11 +90,24 @@ public class Carrier {
         }
         // Head to HQ if your resources are full.
         else if (hqLocation != null) {
-            Movement.moveToLocation(rc, hqLocation);
-            // Deposit resources.
-            depositResource(rc, hqLocation, ResourceType.ADAMANTIUM, rc.getResourceAmount(ResourceType.ADAMANTIUM));
-            depositResource(rc, hqLocation, ResourceType.MANA, rc.getResourceAmount(ResourceType.MANA));
-            wellLocation = null;
+            if (canBuildElixirWell(rc)) {
+                Movement.moveToLocation(rc, designatedElixirWell);
+                buildElixirWell(rc);
+            }
+//            wellLocation = null;
+            else {
+                isDepositingAtHQ = true;
+                Movement.moveToLocation(rc, hqLocation);
+                // Deposit resources.
+                depositResource(rc, hqLocation, ResourceType.ADAMANTIUM, rc.getResourceAmount(ResourceType.ADAMANTIUM));
+                depositResource(rc, hqLocation, ResourceType.MANA, rc.getResourceAmount(ResourceType.MANA));
+                if (Communication.isElixirSatisfied(rc)) {
+                    depositResource(rc, hqLocation, ResourceType.ELIXIR, rc.getResourceAmount(ResourceType.ELIXIR));
+                }
+                if (rc.getWeight() == 0) {
+                    isDepositingAtHQ = false;
+                }
+            }
         }
     }
 
@@ -106,10 +134,34 @@ public class Carrier {
         return Communication.readWell(rc, 2);
     }
 
+    /** Deposit opposite resource to create Elixir well **/
+    public static void buildElixirWell(RobotController rc) throws GameActionException {
+        int amountToDeposit;
+        if (designatedWellType == 1) {
+            amountToDeposit = rc.getResourceAmount(ResourceType.MANA);
+            depositResource(rc, designatedElixirWell, ResourceType.MANA, amountToDeposit);
+            Communication.updateElixirAmount(rc, amountToDeposit);
+        }
+        else {
+            amountToDeposit = rc.getResourceAmount(ResourceType.ADAMANTIUM);
+            depositResource(rc, designatedElixirWell, ResourceType.ADAMANTIUM, amountToDeposit);
+            Communication.updateElixirAmount(rc, amountToDeposit);
+        }
+    }
+
+    /** Check if Carrier can build Elixir **/
+    public static boolean canBuildElixirWell(RobotController rc) throws GameActionException {
+        if (!Communication.isElixirSatisfied(rc)) {
+            return (designatedWellType == 1 && rc.getResourceAmount(ResourceType.MANA) > 0)
+                    || (designatedWellType == 2 && rc.getResourceAmount(ResourceType.ADAMANTIUM) > 0);
+        }
+        return false;
+    }
+
     /** Deposit all resources of a certain type to headquarters. **/
     public static void depositResource(RobotController rc, MapLocation location, ResourceType type, int amount) throws GameActionException {
         // If robot has any resources, deposit all of it.
-        if ((amount > 0) && rc.canTransferResource(location, type, amount)) {
+        if (amount > 0 && rc.canTransferResource(location, type, amount)) {
             rc.transferResource(location, type, amount);
             rc.setIndicatorString("Depositing, now have, AD:" +
                     rc.getResourceAmount(ResourceType.ADAMANTIUM) +

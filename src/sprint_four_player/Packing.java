@@ -21,8 +21,7 @@ public class Packing {
 
     /** Pack object information into one representative value with no type value **/
     public static int packObject(RobotController rc, MapLocation location) throws GameActionException {
-        int packedCoordinates = packCoordinates(rc, location);
-        return (packedCoordinates & 0xFFF) << BIT_SHIFT;
+        return packObject(rc, location, 0);
     }
 
     /** Pack object information into one representative value (HQ, well, island) **/

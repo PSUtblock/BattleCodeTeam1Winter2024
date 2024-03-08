@@ -32,9 +32,9 @@ public class Communication {
     private static final int PRIORITY_IDX = START_CARRIER_IDX + NUM_CARRIERS;
 
     // Counters for objects in shared array.
-//    private static int numOfManaWells = 0;
+    private static int numOfWells = 0;
 //    private static int numOfAdamantiumWells = 0;
-//    private static int manaWellCount = 0;
+    private static int wellCount = 0;
 //    private static int adamantiumWellCount = 0;
 //    private static int numOfIslands = 0;
 //    private static int islandCount = 0;
@@ -76,6 +76,18 @@ public class Communication {
 
     /** Read well location of a certain type. **/
     public static MapLocation readWell(RobotController rc, int type) throws GameActionException {
+//        MapLocation wellLocation = null;
+//        if (numOfWells > 0) {
+//            if (wellCount >= numOfWells) {
+//                wellCount = 0;
+//            }
+//            int index = wellCount + START_WELL_IDX;
+//            int valueToUnpack = rc.readSharedArray(index);
+//            int[] unpackedValue = Packing.unpackObject(rc, valueToUnpack);
+//            wellLocation = new MapLocation(unpackedValue[0], unpackedValue[1]);
+//            ++wellCount;
+//        }
+//        return wellLocation;
         Set<MapLocation> wellLocationsMatch = new HashSet<>();
         Set<MapLocation> wellLocationsNoMatch = new HashSet<>();
 
@@ -86,22 +98,31 @@ public class Communication {
                 // Indices 0 and 1 of unpackedValue are x and y values.
                 int[] unpackedValue = Packing.unpackObject(rc, valueToUnpack);
                 MapLocation locToAdd = new MapLocation(unpackedValue[0], unpackedValue[1]);
-                int typeValue = unpackedValue[2];
+//                int typeValue = unpackedValue[2];
                 // Break out of loop if type of object is found.
-                if (typeValue == type) {
+//                if (typeValue == type) {
                     wellLocationsMatch.add(locToAdd);
-                }
-                else {
-                    wellLocationsNoMatch.add(locToAdd);
-                }
+//                }
+//                else {
+//                    wellLocationsNoMatch.add(locToAdd);
+//                }
             }
         }
         // Return the closest well or return null.
-        if (!wellLocationsMatch.isEmpty()) {
+//        if (!wellLocationsMatch.isEmpty()) {
             return Mapping.getClosestLocation(rc, wellLocationsMatch);
-        }
-        if (!wellLocationsNoMatch.isEmpty()) {
-            return Mapping.getClosestLocation(rc, wellLocationsNoMatch);
+//        }
+//        if (!wellLocationsNoMatch.isEmpty()) {
+//            return Mapping.getClosestLocation(rc, wellLocationsNoMatch);
+//        }
+//        return null;
+    }
+
+    /** Find first well, to become Elixir well **/
+    public static int[] findFirstWell(RobotController rc) throws GameActionException {
+        int valueToUnpack = rc.readSharedArray(START_WELL_IDX);
+        if (valueToUnpack != 0) {
+            return Packing.unpackObject(rc, valueToUnpack);
         }
         return null;
     }
@@ -127,12 +148,23 @@ public class Communication {
 //                            else if (type == 2) {
 //                                ++numOfManaWells;
 //                            }
+                            ++numOfWells;
                             break;
                         }
                     }
                     else if (rc.readSharedArray(j) == wellSpecs[i]) {
                         // If well already exists in array, break out of loop.
                         break;
+                    }
+                    else {
+                        int[] existingInfo = Packing.unpackObject(rc, rc.readSharedArray(j));
+                        MapLocation existingLoc = new MapLocation(existingInfo[0], existingInfo[1]);
+                        if (existingLoc.equals(wells[i].getMapLocation()) && existingInfo[2] != type && type == 3) {
+                            if (rc.canWriteSharedArray(j, wellSpecs[i])) {
+                                rc.writeSharedArray(j, wellSpecs[i]);
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -232,6 +264,19 @@ public class Communication {
     public static void writePriority(RobotController rc, int priorityType) throws GameActionException {
         if (rc.canWriteSharedArray(PRIORITY_IDX, priorityType)) {
             rc.writeSharedArray(PRIORITY_IDX, priorityType);
+        }
+    }
+
+    /** Read if Elixir well needs to be built **/
+    public static boolean isElixirSatisfied(RobotController rc) throws GameActionException {
+        return rc.readSharedArray(PRIORITY_IDX) >= 1899;
+    }
+
+    /** Update if Elixir well is needed **/
+    public static void updateElixirAmount(RobotController rc, int amount) throws GameActionException {
+        int newAmount = amount + rc.readSharedArray(PRIORITY_IDX);
+        if (rc.canWriteSharedArray(PRIORITY_IDX, newAmount)) {
+            rc.writeSharedArray(PRIORITY_IDX, newAmount);
         }
     }
 }

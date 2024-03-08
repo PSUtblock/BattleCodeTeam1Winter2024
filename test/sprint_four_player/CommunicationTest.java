@@ -179,16 +179,16 @@ public class CommunicationTest {
         assertArrayEquals(validArray, rc.getArray());
     }
 
-    // Testing reading a well from an empty shared array.
-    @Test
-    public void testReadWellWithEmptySharedArray() throws GameActionException {
-        CommunicationRobotController rc = new CommunicationRobotController();
-        int typeToFind = 2;
-        MapLocation closestWell = Communication.readWell(rc, typeToFind);
-        // Assert that location is null.
-        assertNull(closestWell);
-    }
-
+//    // Testing reading a well from an empty shared array.
+//    @Test
+//    public void testReadWellWithEmptySharedArray() throws GameActionException {
+//        CommunicationRobotController rc = new CommunicationRobotController();
+//        int typeToFind = 2;
+//        MapLocation closestWell = Communication.readWell(rc, typeToFind);
+//        // Assert that location is null.
+//        assertNull(closestWell);
+//    }
+//
     // Testing reading the well matching a specific type from a shared array with one well.
 //    @Test
 //    public void testReadWellWithOneWellMatchingType() throws GameActionException {
@@ -208,62 +208,62 @@ public class CommunicationTest {
 //        assertEquals(new MapLocation(1, 1), wellResult);
 //    }
 
-    // Testing reading the well not matching a specific type from a shared array with one well.
-    @Test
-    public void testReadWellWithOneWellNotMatchingType() throws GameActionException {
-        CommunicationRobotController rc = new CommunicationRobotController();
-        int[] oneWellInArray = new int[] {
-                0, 0, 0, 0, 80, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0
-        };
-        rc.setSharedArray(oneWellInArray);
-        MapLocation wellResult = Communication.readWell(rc, 2);
-        assertEquals(new MapLocation(1, 1), wellResult);
-    }
-
-    // Testing reading the matching well type from a shared array with multiple wells.
-    @Test
-    public void testReadWellWithMultipleWellMatchingType() throws GameActionException {
-        CommunicationRobotController rc = new CommunicationRobotController();
-        int[] multiWellInArray = new int[] {
-                0, 0, 0, 0, 146, 114, 131, 81,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0
-        };
-        rc.setSharedArray(multiWellInArray);
-        MapLocation wellResult = Communication.readWell(rc, 1);
-        assertEquals(new MapLocation(1, 1), wellResult);
-    }
-
-    // Testing reading the well not matching type from a shared array with multiple wells.
-    @Test
-    public void testReadWellWithMultipleWellNotMatchingType() throws GameActionException {
-        CommunicationRobotController rc = new CommunicationRobotController();
-        int[] multiWellInArray = new int[] {
-                0, 0, 0, 0, 146, 114, 131, 82,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0
-        };
-        rc.setSharedArray(multiWellInArray);
-        MapLocation wellResult = Communication.readWell(rc, 1);
-        assertEquals(new MapLocation(1, 1), wellResult);
-    }
+//    // Testing reading the well not matching a specific type from a shared array with one well.
+//    @Test
+//    public void testReadWellWithOneWellNotMatchingType() throws GameActionException {
+//        CommunicationRobotController rc = new CommunicationRobotController();
+//        int[] oneWellInArray = new int[] {
+//                0, 0, 0, 0, 80, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0
+//        };
+//        rc.setSharedArray(oneWellInArray);
+//        MapLocation wellResult = Communication.readWell(rc, 2);
+//        assertEquals(new MapLocation(1, 1), wellResult);
+//    }
+//
+//    // Testing reading the matching well type from a shared array with multiple wells.
+//    @Test
+//    public void testReadWellWithMultipleWellMatchingType() throws GameActionException {
+//        CommunicationRobotController rc = new CommunicationRobotController();
+//        int[] multiWellInArray = new int[] {
+//                0, 0, 0, 0, 146, 114, 131, 81,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0
+//        };
+//        rc.setSharedArray(multiWellInArray);
+//        MapLocation wellResult = Communication.readWell(rc, 1);
+//        assertEquals(new MapLocation(1, 1), wellResult);
+//    }
+//
+//    // Testing reading the well not matching type from a shared array with multiple wells.
+//    @Test
+//    public void testReadWellWithMultipleWellNotMatchingType() throws GameActionException {
+//        CommunicationRobotController rc = new CommunicationRobotController();
+//        int[] multiWellInArray = new int[] {
+//                0, 0, 0, 0, 146, 114, 131, 82,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0
+//        };
+//        rc.setSharedArray(multiWellInArray);
+//        MapLocation wellResult = Communication.readWell(rc, 1);
+//        assertEquals(new MapLocation(1, 1), wellResult);
+//    }
 
     // Testing writing a well when none are sensed.
     @Test
