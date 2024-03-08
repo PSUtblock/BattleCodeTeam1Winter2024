@@ -25,7 +25,7 @@ public class TemporalBoosters {
     /**
      * Random number to define Booster Behavior
      */
-    private static int randomBehavior = new Random().nextInt(3) + 1;
+    private static final int randomBehavior = new Random().nextInt(3) + 1;
 
 
     /**

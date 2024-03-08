@@ -47,7 +47,7 @@ public class Headquarters {
         int spawn_interval_carrier = 10;
         int spawn_interval_launcher = 6;
         int spawn_interval_amplifier = 50;
-        int spawn_interval_booster = 500;
+        int spawn_interval_booster = 70;
         int spawn_interval_destabilizer = 500;
         int spawn_anchor_fail = 0;
         int spawn_carrier_fail = 0;
