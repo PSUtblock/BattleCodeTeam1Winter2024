@@ -1,9 +1,6 @@
 package sprint_four_player;
 
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotController;
-
+import battlecode.common.*;
 import java.util.*;
 
 public class Mapping {
@@ -51,6 +48,26 @@ public class Mapping {
     }
 
     /**
+     * Return the closest location with respect to robot's current location. Uses list of MapLocations as a parameter.
+     **/
+    public static MapLocation getClosestLocation(RobotController rc, List<MapLocation> locations) {
+        if (!locations.isEmpty()) {
+            MapLocation currClosest = locations.iterator().next();
+            MapLocation myLocation = rc.getLocation();
+            int minDistance = myLocation.distanceSquaredTo(currClosest);
+
+            for (MapLocation island : locations) {
+                int currDistance = myLocation.distanceSquaredTo(island);
+                if (minDistance > currDistance) {
+                    minDistance = currDistance;
+                    currClosest = island;
+                }
+            }
+            return currClosest;
+        }
+        return null;
+    }
+    /**
      * Fills a list with possible landmarks spaced out by 100 units
      **/
     public static List<MapLocation> getPossibleLandmarks(RobotController rc, int mapWidth, int mapHeight, int radius) throws GameActionException {
@@ -74,6 +91,21 @@ public class Mapping {
         }
         locations.sort(new DistanceComparator(centerLoc));
         return locations;
+    }
+
+    /** Find all nearby ally Carriers **/
+    public static RobotInfo[] getNearbyAllyCarriers(RobotController rc) {
+        RobotInfo[] nearbyRobots = rc.senseNearbyRobots();
+        Team myTeam = rc.getTeam();
+        RobotInfo[] nearbyCarriers = new RobotInfo[nearbyRobots.length];
+        int carrierCount = 0;
+        for (RobotInfo robot : nearbyRobots) {
+            if (robot.getType() == RobotType.CARRIER && robot.getTeam() == myTeam) {
+                nearbyCarriers[carrierCount] = robot;
+                ++carrierCount;
+            }
+        }
+        return nearbyCarriers;
     }
 }
 

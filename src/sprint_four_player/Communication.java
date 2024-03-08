@@ -31,13 +31,13 @@ public class Communication {
     private static final int START_CARRIER_IDX = START_ISLAND_IDX + NUM_ISLANDS;
     private static final int PRIORITY_IDX = START_CARRIER_IDX + NUM_CARRIERS;
 
-
-    // Array to hold ID'd carriers up to number of max carriers in shared array (for tracking location).
-//    private static int[] carrierIDs = new int[NUM_CARRIERS];
-
     // Counters for objects in shared array.
-    private static int well_count = 0;
-    private static int island_count = 0;
+    private static int numOfWells = 0;
+//    private static int numOfAdamantiumWells = 0;
+    private static int wellCount = 0;
+//    private static int adamantiumWellCount = 0;
+//    private static int numOfIslands = 0;
+//    private static int islandCount = 0;
 
     /** Read headquarter location closest to robot. **/
     public static MapLocation readHQ(RobotController rc) throws GameActionException {
@@ -46,10 +46,10 @@ public class Communication {
         for (int i = START_HQ_IDX; i < START_WELL_IDX; ++i) {
             int valueToUnpack = rc.readSharedArray(i);
             if (valueToUnpack != 0) {
+                // Indices 0 and 1 of unpacked value are x and y values.
                 int[] unpackedValue = Packing.unpackObject(rc, valueToUnpack);
-                int hqX = unpackedValue[0];
-                int hqY = unpackedValue[1];
-                hqLocations.add(new MapLocation(hqX, hqY));
+                MapLocation locToAdd = new MapLocation(unpackedValue[0], unpackedValue[1]);
+                hqLocations.add(locToAdd);
             }
         }
         // Return the closest headquarters or return null.
@@ -76,31 +76,53 @@ public class Communication {
 
     /** Read well location of a certain type. **/
     public static MapLocation readWell(RobotController rc, int type) throws GameActionException {
+//        MapLocation wellLocation = null;
+//        if (numOfWells > 0) {
+//            if (wellCount >= numOfWells) {
+//                wellCount = 0;
+//            }
+//            int index = wellCount + START_WELL_IDX;
+//            int valueToUnpack = rc.readSharedArray(index);
+//            int[] unpackedValue = Packing.unpackObject(rc, valueToUnpack);
+//            wellLocation = new MapLocation(unpackedValue[0], unpackedValue[1]);
+//            ++wellCount;
+//        }
+//        return wellLocation;
         Set<MapLocation> wellLocationsMatch = new HashSet<>();
         Set<MapLocation> wellLocationsNoMatch = new HashSet<>();
+
         // Read all wells.
         for (int i = START_WELL_IDX; i < START_ISLAND_IDX; ++i) {
             int valueToUnpack = rc.readSharedArray(i);
             if (valueToUnpack != 0) {
+                // Indices 0 and 1 of unpackedValue are x and y values.
                 int[] unpackedValue = Packing.unpackObject(rc, valueToUnpack);
-                int xCoord = unpackedValue[0];
-                int yCoord = unpackedValue[1];
-                int typeValue = unpackedValue[2];
+                MapLocation locToAdd = new MapLocation(unpackedValue[0], unpackedValue[1]);
+//                int typeValue = unpackedValue[2];
                 // Break out of loop if type of object is found.
-                if (typeValue == type) {
-                    wellLocationsMatch.add(new MapLocation(xCoord, yCoord));
-                }
-                else {
-                    wellLocationsNoMatch.add(new MapLocation(xCoord, yCoord));
-                }
+//                if (typeValue == type) {
+                    wellLocationsMatch.add(locToAdd);
+//                }
+//                else {
+//                    wellLocationsNoMatch.add(locToAdd);
+//                }
             }
         }
         // Return the closest well or return null.
-        if (!wellLocationsMatch.isEmpty()) {
+//        if (!wellLocationsMatch.isEmpty()) {
             return Mapping.getClosestLocation(rc, wellLocationsMatch);
-        }
-        if (!wellLocationsNoMatch.isEmpty()) {
-            return Mapping.getClosestLocation(rc, wellLocationsNoMatch);
+//        }
+//        if (!wellLocationsNoMatch.isEmpty()) {
+//            return Mapping.getClosestLocation(rc, wellLocationsNoMatch);
+//        }
+//        return null;
+    }
+
+    /** Find first well, to become Elixir well **/
+    public static int[] findFirstWell(RobotController rc) throws GameActionException {
+        int valueToUnpack = rc.readSharedArray(START_WELL_IDX);
+        if (valueToUnpack != 0) {
+            return Packing.unpackObject(rc, valueToUnpack);
         }
         return null;
     }
@@ -120,12 +142,29 @@ public class Communication {
                     if (rc.readSharedArray(j) == 0) {
                         if (rc.canWriteSharedArray(j, wellSpecs[i])) {
                             rc.writeSharedArray(j, wellSpecs[i]);
+//                            if (type == 1) {
+//                                ++numOfAdamantiumWells;
+//                            }
+//                            else if (type == 2) {
+//                                ++numOfManaWells;
+//                            }
+                            ++numOfWells;
                             break;
                         }
                     }
                     else if (rc.readSharedArray(j) == wellSpecs[i]) {
                         // If well already exists in array, break out of loop.
                         break;
+                    }
+                    else {
+                        int[] existingInfo = Packing.unpackObject(rc, rc.readSharedArray(j));
+                        MapLocation existingLoc = new MapLocation(existingInfo[0], existingInfo[1]);
+                        if (existingLoc.equals(wells[i].getMapLocation()) && existingInfo[2] != type && type == 3) {
+                            if (rc.canWriteSharedArray(j, wellSpecs[i])) {
+                                rc.writeSharedArray(j, wellSpecs[i]);
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -140,16 +179,16 @@ public class Communication {
         for (int i = START_ISLAND_IDX; i < START_CARRIER_IDX; ++i) {
             int valueToUnpack = rc.readSharedArray(i);
             if (valueToUnpack != 0) {
+                // Indices 0 and 1 of unpackedValue are x and y values.
                 int[] unpackedValue = Packing.unpackObject(rc, valueToUnpack);
-                int xCoord = unpackedValue[0];
-                int yCoord = unpackedValue[1];
+                MapLocation locToAdd = new MapLocation(unpackedValue[0], unpackedValue[1]);
                 int typeValue = unpackedValue[2];
                 // Break out of loop if type of object is found.
                 if (typeValue == type) {
-                    islandLocationsMatch.add(new MapLocation(xCoord, yCoord));
+                    islandLocationsMatch.add(locToAdd);
                 }
                 else {
-                    islandLocationsNoMatch.add(new MapLocation(xCoord, yCoord));
+                    islandLocationsNoMatch.add(locToAdd);
                 }
             }
         }
@@ -228,112 +267,16 @@ public class Communication {
         }
     }
 
-//    /** Read carrier location closest to robot. **/
-//    public static MapLocation readCarrier(RobotController rc) throws GameActionException {
-//        Set<MapLocation> carrierLocs = new HashSet<>();
-//        // Read all carriers.
-//        for (int i = START_CARRIER_IDX; i < PRIORITY_IDX; ++i) {
-//            int valueToUnpack = rc.readSharedArray(i);
-//            if (valueToUnpack != 0) {
-//                int[] unpackedValue = Packing.unpackObject(rc, valueToUnpack);
-//                int hqX = unpackedValue[0];
-//                int hqY = unpackedValue[1];
-//                carrierLocs.add(new MapLocation(hqX, hqY));
-//            }
-//        }
-//        // Return the closest carrier or return null.
-//        return Mapping.getClosestLocation(rc, carrierLocs);
-//    }
-//
-//    /**
-//     * Write carrier location to array when carrying anchor.
-//     * Reserved for Carrier use only, so no sensing is required.
-//     * **/
-//    public static void initializeCarrier(RobotController rc) throws GameActionException {
-//        MapLocation carrierLoc = rc.getLocation();
-//        if (carrierLoc != null) {
-//            int packedValue = packObject(rc, carrierLoc);
-//            // Try adding carrier to tracking array.
-//            if (addCarrierID(rc)) {
-//                // Write carrier to shared array with respect to index in tracking array.
-//                int index = getCarrierIndex(rc) + START_CARRIER_IDX;
-//                if (rc.readSharedArray(index) == 0 && rc.canWriteSharedArray(index, packedValue)) {
-//                    rc.writeSharedArray(index, packedValue);
-//                }
-//                else {
-//                    removeCarrierID(rc);
-//                }
-//            }
-//        }
-//    }
-//
-//    /**
-//     * Update carrier location to array when carrying anchor.
-//     * Reserved for Carrier use only, so no sensing is required.
-//     * **/
-//    public static void updateCarrier(RobotController rc) throws GameActionException {
-//        MapLocation carrierLoc = rc.getLocation();
-//        if (carrierLoc != null) {
-//            int packedValue = packObject(rc, carrierLoc);
-//            int lookupIndex = getCarrierIndex(rc);
-//            if (lookupIndex > -1) {
-//                int index = lookupIndex + START_CARRIER_IDX;
-//                if (rc.canWriteSharedArray(index, packedValue)) {
-//                    rc.writeSharedArray(index, packedValue);
-//                }
-//            }
-//        }
-//    }
-//
-//    /** Update array of carriers, removing any that no longer have an anchor. **/
-//    public static void removeCarrier(RobotController rc) throws GameActionException {
-//        // If carrierLoc is in array, remove it.
-//        int lookupIndex = getCarrierIndex(rc);
-//        if (lookupIndex > -1) {
-//            int index = lookupIndex + START_CARRIER_IDX;
-//            if (rc.canWriteSharedArray(index, 0)) {
-//                rc.writeSharedArray(index, 0);
-//                removeCarrierID(rc);
-//            }
-//        }
-//    }
-//
-//    /** Add carrier ID to array of carrier ID's **/
-//    public static boolean addCarrierID(RobotController rc) throws GameActionException {
-//        int id = rc.getID();
-//        for (int i = 0; i < NUM_CARRIERS; ++i) {
-//            if (carrierIDs[i] == 0) {
-//                carrierIDs[i] = id;
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
-//
-//    /** Get index of carrier within ID tracking array **/
-//    public static int getCarrierIndex(RobotController rc) throws GameActionException {
-//        int id = rc.getID();
-//        for (int i = 0; i < NUM_CARRIERS; ++i) {
-//            if (carrierIDs[i] == id) {
-//                return i;
-//            }
-//        }
-//        return -1;
-//    }
-//
-//    /** Remove carrier from ID tracking array **/
-//    public static void removeCarrierID(RobotController rc) throws GameActionException {
-//        int id = rc.getID();
-//        for (int i = 0; i < NUM_CARRIERS; ++i) {
-//            if (carrierIDs[i] == id) {
-//                carrierIDs[i] = 0;
-//                break;
-//            }
-//        }
-//    }
-//
-//    /** Remove all carriers from ID tracking array **/
-//    public static void removeAllCarrierIDs() {
-//        Arrays.fill(carrierIDs, 0);
-//    }
+    /** Read if Elixir well needs to be built **/
+    public static boolean isElixirSatisfied(RobotController rc) throws GameActionException {
+        return rc.readSharedArray(PRIORITY_IDX) >= 1899;
+    }
+
+    /** Update if Elixir well is needed **/
+    public static void updateElixirAmount(RobotController rc, int amount) throws GameActionException {
+        int newAmount = amount + rc.readSharedArray(PRIORITY_IDX);
+        if (rc.canWriteSharedArray(PRIORITY_IDX, newAmount)) {
+            rc.writeSharedArray(PRIORITY_IDX, newAmount);
+        }
+    }
 }

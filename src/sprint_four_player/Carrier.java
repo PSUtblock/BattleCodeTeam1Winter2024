@@ -4,47 +4,66 @@ import battlecode.common.*;
 
 public class Carrier {
     // Map locations to store headquarters, closest well, and island positions.
-    private static MapLocation hqLocation;
-    private static MapLocation wellLocation;
-    private static MapLocation islandLocation;
     private static MapLocation myLocation;
+    private static MapLocation wellLocation;
+    private static MapLocation designatedElixirWell;
+    private static int designatedWellType;
+    private static MapLocation islandLocation;
+    private static Anchor hasAnchorType;
+    private static boolean isDepositingAtHQ = false;
 
     /**
      * Run a single turn for a Carrier.
      * This code is wrapped inside the infinite loop in run(), so it is called once per turn.
      */
     public static void runCarrier(RobotController rc) throws GameActionException {
-        myLocation = rc.getLocation();                                  // Get robot's current location.
+        myLocation = rc.getLocation();        // Get robot's current location.
+        int roundNum = rc.getRoundNum();
 
-        // If the headquarters have not already been found, locate the closest one.
-        hqLocation = Communication.readHQ(rc);
+        // Locate the closest HQ.
+        MapLocation hqLocation = Communication.readHQ(rc);
 
-        // If the closest well has not been found, locate it.
+        // Record wells and islands.
         Communication.writeWells(rc);
+        Communication.writeIslands(rc);
+
+        // Depending on round number, collect specific resource type.
         wellLocation = Communication.readWell(rc, 0);
 
+        if (designatedElixirWell == null) {
+            int[] wellProperties = Communication.findFirstWell(rc);
+            if (wellProperties != null) {
+                // Indices 0 and 1 represent x and y coordinates.
+                designatedElixirWell = new MapLocation(wellProperties[0], wellProperties[1]);
+                // Index 2 represents the well type.
+                designatedWellType = wellProperties[2];
+            }
+        }
+
         // If the closest unoccupied island has not been found, locate it.
-        Communication.writeIslands(rc);
-        islandLocation = Communication.readIsland(rc, 0);
+        if (islandLocation == null) {
+            islandLocation = Communication.readIsland(rc, 0);
+        }
 
         // If the robot does not have an anchor, try to collect one.
-        if (rc.getAnchor() == null) {
-            collectAnchor(rc);
+        if (hasAnchorType == null) {
+            collectAnchor(rc, hqLocation);
         }
 
         // If the robot has an anchor singularly focus on getting it to the first island it sees.
-        if (rc.getAnchor() != null || rc.getAnchor() == Anchor.STANDARD || rc.getAnchor() == Anchor.ACCELERATING) {
+        if (hasAnchorType != null) {
             if (islandLocation != null) {
                 rc.setIndicatorString("Moving my anchor towards " + islandLocation);
                 if (!myLocation.equals(islandLocation)) {
                     Movement.moveToLocation(rc, islandLocation);
-                    myLocation = rc.getLocation();
                 }
                 if (rc.canPlaceAnchor()) {
                     rc.placeAnchor();
+                    hasAnchorType = null;
                     rc.setIndicatorString("Huzzah, placed anchor!");
                     // Updates if island to be occupied by team.
                     Communication.updateIslands(rc, islandLocation, 1);
+                    islandLocation = null;
                 }
             }
             else {
@@ -52,77 +71,135 @@ public class Carrier {
             }
         }
         // If there is capacity, then go collect resources.
-        else if (rc.getWeight() < GameConstants.CARRIER_CAPACITY) {
+        else if (rc.getWeight() < GameConstants.CARRIER_CAPACITY && !isDepositingAtHQ) {
             if (wellLocation != null) {
+                // First check if still next to HQ and deposit anything.
+//                depositResource(rc, hqLocation, ResourceType.ADAMANTIUM, rc.getResourceAmount(ResourceType.ADAMANTIUM));
+//                depositResource(rc, hqLocation, ResourceType.MANA, rc.getResourceAmount(ResourceType.MANA));
+
                 rc.setIndicatorString("Moving towards well at: " + wellLocation);
                 Movement.moveToLocation(rc, wellLocation);
-                myLocation = rc.getLocation();
-                // Try to collect whether a well was located or not, in case robot has moved since located.
-                collectFromWell(rc);
+                // -1 indicates to collect all.
+                collectFromWell(rc, wellLocation, -1);
             }
             else {
-                // If no well located, just make sure to head away from HQ.
-                if (hqLocation != null) {
-                    Movement.explore(rc);
-                    myLocation = rc.getLocation();
-                }
+                // Try to collect a well anyway, in case there is one, while exploring.
+                collectFromAnywhere(rc);
+                Movement.explore(rc);
             }
         }
         // Head to HQ if your resources are full.
         else if (hqLocation != null) {
-            wellLocation = null; // Reset well location if full of resources.
-            if (!myLocation.isAdjacentTo(hqLocation)) {
+            if (canBuildElixirWell(rc)) {
+                Movement.moveToLocation(rc, designatedElixirWell);
+                buildElixirWell(rc);
+            }
+//            wellLocation = null;
+            else {
+                isDepositingAtHQ = true;
                 Movement.moveToLocation(rc, hqLocation);
-                myLocation = rc.getLocation();
-            }
-            // Deposit resources and try to collect an anchor immediately.
-            if (myLocation.isAdjacentTo(hqLocation)) {
-                // If next to headquarters, deposit everything from the carrier.
-                depositResource(rc, ResourceType.MANA);
-                depositResource(rc, ResourceType.ADAMANTIUM);
-                collectAnchor(rc);
-            }
-        }
-    }
-
-    /** Collect from well in adjacent squares. **/
-    public static void collectFromWell(RobotController rc) throws GameActionException {
-        for (int dx = -1; dx <= 1; dx++) {
-            for (int dy = -1; dy <= 1; dy++) {
-                MapLocation adjacentLoc = new MapLocation(myLocation.x + dx, myLocation.y + dy);
-                if (rc.canCollectResource(adjacentLoc, -1)) {
-                    rc.collectResource(adjacentLoc, -1);
-                    rc.setIndicatorString("Collecting, now have, AD:" +
-                            rc.getResourceAmount(ResourceType.ADAMANTIUM) +
-                            " MN: " + rc.getResourceAmount(ResourceType.MANA) +
-                            " EX: " + rc.getResourceAmount(ResourceType.ELIXIR));
+                // Deposit resources.
+                depositResource(rc, hqLocation, ResourceType.ADAMANTIUM, rc.getResourceAmount(ResourceType.ADAMANTIUM));
+                depositResource(rc, hqLocation, ResourceType.MANA, rc.getResourceAmount(ResourceType.MANA));
+                if (Communication.isElixirSatisfied(rc)) {
+                    depositResource(rc, hqLocation, ResourceType.ELIXIR, rc.getResourceAmount(ResourceType.ELIXIR));
+                }
+                if (rc.getWeight() == 0) {
+                    isDepositingAtHQ = false;
                 }
             }
         }
     }
 
-    /** Collect an anchor from headquarters. **/
-    public static void collectAnchor(RobotController rc) throws GameActionException {
-        if (hqLocation != null && rc.canTakeAnchor(hqLocation, Anchor.STANDARD)) {
-            rc.takeAnchor(hqLocation, Anchor.STANDARD);
-            rc.setIndicatorString("Taking anchor, now have, Anchor: " + rc.getAnchor());
+    /** Sense number of carriers at well location **/
+    public static int numCarriersAtWell(RobotController rc) throws GameActionException {
+        RobotInfo[] nearbyCarriers = Mapping.getNearbyAllyCarriers(rc);
+        int carrierCount = 0;
+        for (RobotInfo carrierRobot : nearbyCarriers) {
+            MapLocation carrierLoc = carrierRobot.getLocation();
+            if (carrierLoc.isWithinDistanceSquared(wellLocation, rc.getType().actionRadiusSquared)) {
+                ++carrierCount;
+            }
+        }
+        return carrierCount;
+    }
+
+    /** Get specific standard well based on round number **/
+    public static MapLocation getStandardWell(RobotController rc, int roundNum) throws GameActionException {
+        if (roundNum % 2 == 0) {
+            // Collect Adamantium on even rounds.
+            return Communication.readWell(rc, 1);
+        }
+        // Collect Mana on odd rounds.
+        return Communication.readWell(rc, 2);
+    }
+
+    /** Deposit opposite resource to create Elixir well **/
+    public static void buildElixirWell(RobotController rc) throws GameActionException {
+        int amountToDeposit;
+        if (designatedWellType == 1) {
+            amountToDeposit = rc.getResourceAmount(ResourceType.MANA);
+            depositResource(rc, designatedElixirWell, ResourceType.MANA, amountToDeposit);
+            Communication.updateElixirAmount(rc, amountToDeposit);
         }
         else {
-            rc.setIndicatorString("Unable to collect anchor.");
+            amountToDeposit = rc.getResourceAmount(ResourceType.ADAMANTIUM);
+            depositResource(rc, designatedElixirWell, ResourceType.ADAMANTIUM, amountToDeposit);
+            Communication.updateElixirAmount(rc, amountToDeposit);
         }
     }
 
-    /** Deposit all resources of a certain type to headquarters. **/
-    public static void depositResource(RobotController rc, ResourceType type) throws GameActionException {
-        int amount = rc.getResourceAmount(type);
+    /** Check if Carrier can build Elixir **/
+    public static boolean canBuildElixirWell(RobotController rc) throws GameActionException {
+        if (!Communication.isElixirSatisfied(rc)) {
+            return (designatedWellType == 1 && rc.getResourceAmount(ResourceType.MANA) > 0)
+                    || (designatedWellType == 2 && rc.getResourceAmount(ResourceType.ADAMANTIUM) > 0);
+        }
+        return false;
+    }
 
+    /** Deposit all resources of a certain type to headquarters. **/
+    public static void depositResource(RobotController rc, MapLocation location, ResourceType type, int amount) throws GameActionException {
         // If robot has any resources, deposit all of it.
-        if ((amount > 0) && hqLocation != null && rc.canTransferResource(hqLocation, type, amount)) {
-            rc.transferResource(hqLocation, type, amount);
+        if (amount > 0 && rc.canTransferResource(location, type, amount)) {
+            rc.transferResource(location, type, amount);
             rc.setIndicatorString("Depositing, now have, AD:" +
                     rc.getResourceAmount(ResourceType.ADAMANTIUM) +
                     " MN: " + rc.getResourceAmount(ResourceType.MANA) +
                     " EX: " + rc.getResourceAmount(ResourceType.ELIXIR));
+        }
+    }
+
+    /** Collect from adjacent squares. **/
+    public static void collectFromAnywhere(RobotController rc) throws GameActionException {
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                MapLocation adjacentLoc = new MapLocation(myLocation.x + dx, myLocation.y + dy);
+                collectFromWell(rc, adjacentLoc, -1);
+            }
+        }
+    }
+
+    /** Try to collect resource. **/
+    public static void collectFromWell(RobotController rc, MapLocation location, int amount) throws GameActionException {
+        if (rc.canCollectResource(location, amount)) {
+            rc.collectResource(location, amount);
+            rc.setIndicatorString("Collecting, now have, AD:" +
+                    rc.getResourceAmount(ResourceType.ADAMANTIUM) +
+                    " MN: " + rc.getResourceAmount(ResourceType.MANA) +
+                    " EX: " + rc.getResourceAmount(ResourceType.ELIXIR));
+        }
+    }
+
+    /** Collect an anchor from headquarters. **/
+    public static void collectAnchor(RobotController rc, MapLocation location) throws GameActionException {
+        if (rc.canTakeAnchor(location, Anchor.STANDARD)) {
+            rc.takeAnchor(location, Anchor.STANDARD);
+            hasAnchorType = rc.getAnchor();
+            rc.setIndicatorString("Taking anchor, now have, Anchor: " + rc.getAnchor());
+        }
+        else {
+            rc.setIndicatorString("Unable to collect anchor.");
         }
     }
 }

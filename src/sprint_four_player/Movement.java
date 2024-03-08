@@ -41,7 +41,7 @@ public class Movement {
         }
 
         try {
-            Direction dir = rc.getLocation().directionTo(target);
+            Direction dir = currentLoc.directionTo(target);
             MapLocation nextLocation = currentLoc.add(dir);
             if (rc.canMove(dir)) {
                 // If next location is adjacent to target, clear the visited log.
