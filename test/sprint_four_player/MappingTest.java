@@ -88,24 +88,29 @@ public class MappingTest {
         Integer shortest = dc.compare(new MapLocation(3, 3), new MapLocation(1, 1));
         assertEquals(shortest, (Integer) 1);
     }
+
+    // Testing getPossibleLandmarks with respect to a map size of 11x11.
+    @Test
+    public void testGetLandmarks() throws GameActionException {
+        MappingRobotController rc = new MappingRobotController();
+        List<MapLocation> validLandmarks = new ArrayList<>();
+        validLandmarks.add(new MapLocation(0, 0));
+        validLandmarks.add(new MapLocation(9, 0));
+        validLandmarks.add(new MapLocation(0, 9));
+        validLandmarks.add(new MapLocation(9, 9));
+        rc.setLocation(new MapLocation(1, 0));
+        assertEquals(validLandmarks, Mapping.getPossibleLandmarks(rc, rc.getMapWidth(), rc.getMapHeight(), 10));
+    }
 }
 /**
- * Implements a simple mock RobotController for testing. Has to implement all methods, but the only affected methods
- * are getMapWidth, getMapHeight, getLocation, canMove, move, canWriteSharedArray, setIndicatorString, and
- * isMovementReady. New methods for testing include getIndicatorString, setCanMoveResult, setLocation,
- * setMapWidthAndHeight, and reset.
+ * Implements a simple mock RobotController for testing Mapping functionality.
  **/
 class MappingRobotController implements RobotController{
     private boolean canMoveResult = true; // Controls canMove result
     private boolean movementReadyResult = true; // Controls isMovementReady result
-    private String indicator = new String();
     private MapLocation currentLocation = new MapLocation(0, 0);
     private int mapWidth = 11;
     private int mapHeight = 11;
-
-    public void setCanMoveResult(boolean moveResult) {
-        canMoveResult = moveResult;
-    }
 
     public void setLocation(MapLocation location) {
         currentLocation = location;
@@ -114,19 +119,6 @@ class MappingRobotController implements RobotController{
     public void setMapWidthAndHeight(int width, int height) {
         mapWidth = width;
         mapHeight = height;
-    }
-
-    public String getIndicatorString() {
-        return indicator;
-    }
-
-    public void reset() {
-        canMoveResult = true;
-        currentLocation = new MapLocation(0, 0);
-    }
-
-    public void setMovementReady(boolean movementReady) {
-        movementReadyResult = movementReady;
     }
 
     @Override
@@ -141,7 +133,6 @@ class MappingRobotController implements RobotController{
 
     @Override
     public void setIndicatorString(String string) {
-        indicator = string;
     }
 
     @Override

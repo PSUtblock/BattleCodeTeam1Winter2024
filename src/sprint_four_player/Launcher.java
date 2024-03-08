@@ -11,12 +11,11 @@ public class Launcher {
      * Run a single turn for a Launcher.
      * This code is wrapped inside the infinite loop in run(), so it is called once per turn.
      */
-    static int wellGuardTurns = 0;
-    static boolean isChasing = false;
-    static MapLocation wellLocation = null;
     public static void runLauncher(RobotController rc) throws GameActionException {
         Communication.writeWells(rc);
+
         Communication.writeIslands(rc);
+
         followAndProtectCarrier(rc);
 
         moveTowardsOccupiedIslandsAndAttack(rc);
@@ -25,37 +24,9 @@ public class Launcher {
 
         attackEnemies(rc);
 
-//        followAndGuardAlly(rc);
-
-//        if (wellGuardTurns > 0 || isChasing) {
-//            wellGuardTurns = isChasing ? wellGuardTurns : wellGuardTurns - 1;
-//            RobotInfo[] enemiesTeam = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
-//            if (enemiesTeam.length > 0) {
-//                MapLocation enemyLocation = enemiesTeam[0].location;
-//                isChasing = true; // Start chasing
-//                //System.out.println("Chasing enemy at " + enemyLocation);
-//                Movement.moveToLocation(rc, rc.getLocation().directionTo(enemyLocation));
-//                if (rc.getLocation().isAdjacentTo(enemyLocation) && rc.canAttack(enemyLocation)) {
-//                    rc.attack(enemyLocation);
-//                }
-//                return; // Skip rest of the turn if chasing or guarding
-//            } else if (isChasing) {
-//                // Return to well and reset the guard timer
-//                if (rc.getLocation().equals(wellLocation)) {
-//                    wellGuardTurns = 5;
-//                    isChasing = false;
-//                } else {
-//                    Movement.moveToLocation(rc, rc.getLocation().directionTo(wellLocation));
-//                }
-//                return; // Skip rest of the turn if still guarding
-//            }
-//        }
-
         // Also try to move randomly.
         Direction dir = directions[rng.nextInt(directions.length)];
         Movement.moveToLocation(rc, dir);
-//        updateWellLocation(rc);
-
     }
 
     private static void followAndProtectCarrier(RobotController rc) throws GameActionException {
@@ -101,15 +72,6 @@ public class Launcher {
         }
     }
 
-    private static void updateWellLocation(RobotController rc) throws GameActionException {
-        // Refresh well locations and guard if on a well
-        Communication.writeWells(rc);
-        wellLocation = Communication.readWell(rc, 0);
-        if (rc.getLocation().equals(wellLocation)) {
-            wellGuardTurns = 5; // Start guarding for 5 turns
-        }
-    }
-
     private static void attackWithPriority(RobotController rc) throws GameActionException {
         RobotInfo[] enemies = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
         // Group enemies by type with predefined priorities
@@ -146,54 +108,6 @@ public class Launcher {
         }
     }
 
-    private static MapLocation lastAmplifierLocation = null;
-    private static boolean isAssignedToAmplifier = false;
-
-    private static void followAndGuardAlly(RobotController rc) throws GameActionException {
-        RobotInfo[] nearbyRobots = rc.senseNearbyRobots();
-
-        // Find the closest Amplifier if not already assigned
-        if (!isAssignedToAmplifier) {
-            RobotInfo closestAmplifier = null;
-            for (RobotInfo robot : nearbyRobots) {
-                if (robot.getType() == RobotType.AMPLIFIER && robot.getTeam() == rc.getTeam()) {
-                    if (closestAmplifier == null || rc.getLocation().distanceSquaredTo(robot.getLocation()) < rc.getLocation().distanceSquaredTo(closestAmplifier.getLocation())) {
-                        closestAmplifier = robot;
-                        isAssignedToAmplifier = true;
-                    }
-                }
-            }
-
-            if (closestAmplifier != null) {
-                lastAmplifierLocation = closestAmplifier.getLocation();
-            }
-        }
-
-        // If assigned to an Amplifier, check if it has moved
-        if (isAssignedToAmplifier && lastAmplifierLocation != null) {
-            RobotInfo currentAmplifier = null;
-            for (RobotInfo robot : nearbyRobots) {
-                if (robot.getType() == RobotType.AMPLIFIER && robot.getLocation().equals(lastAmplifierLocation)) {
-                    currentAmplifier = robot;
-                    break;
-                }
-            }
-
-            // If the Amplifier is no longer at the last known location, it has moved
-            if (currentAmplifier == null) {
-                // Attempt to find and follow the Amplifier again
-                isAssignedToAmplifier = false;
-                lastAmplifierLocation = null;
-                followAndGuardAlly(rc); // Retry finding an Amplifier
-            } else {
-                // Stay and guard the Amplifier
-                attackWithPriority(rc); // Attack nearby enemies
-            }
-        } else {
-            // No Amplifier to follow; engage in other behaviors
-            attackWithPriority(rc);
-        }
-    }
     private static void moveTowardsOccupiedIslandsAndAttack(RobotController rc) throws GameActionException {
         MapLocation closestOccupiedIsland = null;
         double closestDistance = Double.MAX_VALUE;
@@ -237,7 +151,5 @@ public class Launcher {
             }
             attackWithPriority(rc);
         }
-
     }
-
 }
