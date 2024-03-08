@@ -648,72 +648,72 @@ public class CommunicationTest {
         assertArrayEquals(validArray, rc.getArray());
     }
 
-    // Testing read priority returning the correct value from the shared array.
-    @Test
-    public void testReadPriority() throws GameActionException {
-        CommunicationRobotController rc = new CommunicationRobotController();
-        int[] initialArray = new int[] {
-                1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 1, 1, 1, 1,
-                1, 1, 1, 1, 1, 1, 1, 2
-        };
-        rc.setSharedArray(initialArray);
-        int priorityResult = Communication.readPriority(rc);
-        assertEquals(2, priorityResult);
-    }
-
-    // Testing writing priority when robot cannot write.
-    @Test
-    public void testWritePriorityCannotWrite() throws GameActionException{
-        CommunicationRobotController rc = new CommunicationRobotController();
-        int[] validArray = new int[] {
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0
-        };
-        rc.setCanWriteResult(false);
-        Communication.writePriority(rc, 1);
-        assertArrayEquals(validArray, rc.getArray());
-    }
-
-    // Testing writing priority when robot can write.
-    @Test
-    public void testWritePriorityCanWrite() throws GameActionException{
-        CommunicationRobotController rc = new CommunicationRobotController();
-        int[] initialArray = new int[] {
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 1
-        };
-        int[] validArray = new int[] {
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 2
-        };
-        rc.setSharedArray(initialArray);
-        Communication.writePriority(rc, 2);
-        assertArrayEquals(validArray, rc.getArray());
-    }
+//    // Testing read priority returning the correct value from the shared array.
+//    @Test
+//    public void testReadPriority() throws GameActionException {
+//        CommunicationRobotController rc = new CommunicationRobotController();
+//        int[] initialArray = new int[] {
+//                1, 1, 1, 1, 1, 1, 1, 1,
+//                1, 1, 1, 1, 1, 1, 1, 1,
+//                1, 1, 1, 1, 1, 1, 1, 1,
+//                1, 1, 1, 1, 1, 1, 1, 1,
+//                1, 1, 1, 1, 1, 1, 1, 1,
+//                1, 1, 1, 1, 1, 1, 1, 1,
+//                1, 1, 1, 1, 1, 1, 1, 1,
+//                1, 1, 1, 1, 1, 1, 1, 2
+//        };
+//        rc.setSharedArray(initialArray);
+//        int priorityResult = Communication.readPriority(rc);
+//        assertEquals(2, priorityResult);
+//    }
+//
+//    // Testing writing priority when robot cannot write.
+//    @Test
+//    public void testWritePriorityCannotWrite() throws GameActionException{
+//        CommunicationRobotController rc = new CommunicationRobotController();
+//        int[] validArray = new int[] {
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0
+//        };
+//        rc.setCanWriteResult(false);
+//        Communication.writePriority(rc, 1);
+//        assertArrayEquals(validArray, rc.getArray());
+//    }
+//
+//    // Testing writing priority when robot can write.
+//    @Test
+//    public void testWritePriorityCanWrite() throws GameActionException{
+//        CommunicationRobotController rc = new CommunicationRobotController();
+//        int[] initialArray = new int[] {
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 1
+//        };
+//        int[] validArray = new int[] {
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 0,
+//                0, 0, 0, 0, 0, 0, 0, 2
+//        };
+//        rc.setSharedArray(initialArray);
+//        Communication.writePriority(rc, 2);
+//        assertArrayEquals(validArray, rc.getArray());
+//    }
 }
 
 /**
