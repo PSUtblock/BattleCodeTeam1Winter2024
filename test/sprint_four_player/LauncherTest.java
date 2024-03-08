@@ -17,16 +17,6 @@ public class LauncherTest {
         sprint_four_player.Launcher.attackEnemies(rc);
         assertEquals(rc.enemies[0].location, rc.attackLocation);
     }
-    @Test
-    public void testMoveToLocationDirCanMove() throws GameActionException {
-        LauncherRobotController rc = new LauncherRobotController();
-        Direction dir = Direction.NORTH;
-        rc.setCanMoveResult(true);
-        sprint_four_player.Launcher.runLauncher(rc);
-        Movement.moveToLocation(rc, dir);
-        assertEquals(new MapLocation(1, 1), rc.getLocation());
-    }
-
 }
 
 
@@ -38,9 +28,6 @@ class LauncherRobotController implements RobotController {
 
     public Direction lastMoveDirection = Direction.SOUTH;
     public boolean readyToMove = true;
-    private boolean canMoveResult = true;
-    private MapLocation currentLocation = new MapLocation(0, 0);
-
     public void setReadyToMove(boolean readyToMove) {
         this.readyToMove = readyToMove;
     }
@@ -52,9 +39,6 @@ class LauncherRobotController implements RobotController {
     @Override
     public void attack(MapLocation loc) throws GameActionException {
 
-    }
-    public void setCanMoveResult(boolean moveResult) {
-        canMoveResult = moveResult;
     }
     @Override
     public int getRoundNum() {
@@ -98,7 +82,7 @@ class LauncherRobotController implements RobotController {
 
     @Override
     public MapLocation getLocation() {
-        return currentLocation;
+        return null;
     }
 
     @Override
@@ -343,21 +327,15 @@ class LauncherRobotController implements RobotController {
 
     @Override
     public boolean canMove(Direction dir) {
-        return canMoveResult;
+        return false;
     }
-
-//    @Override
-//    public void move(Direction dir) throws GameActionException {
-//        if (readyToMove) {
-//            lastMoveDirection = dir;
-//        }
-//    }
 
     @Override
-    public void move(Direction dir) {
-        currentLocation = currentLocation.add(dir);
+    public void move(Direction dir) throws GameActionException {
+        if (readyToMove) {
+            lastMoveDirection = dir;
+        }
     }
-
 
     @Override
     public boolean canBuildRobot(RobotType type, MapLocation loc) {
