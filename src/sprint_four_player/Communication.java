@@ -259,8 +259,7 @@ public class Communication {
     /** Read if Elixir well needs to be built **/
     public static boolean isElixirSatisfied(RobotController rc) throws GameActionException {
         boolean isSatisfied = rc.readSharedArray(ELIXIR_IDX) >= 1899;
-        rc.setIndicatorString("Is satisfied? " + isSatisfied);
-        rc.setIndicatorString("Total amount deposited for Elixir well: " + elixirAmount);
+        rc.setIndicatorString("Is satisfied? " + isSatisfied + ". Total deposited: " + elixirAmount);
         return isSatisfied;
     }
 
