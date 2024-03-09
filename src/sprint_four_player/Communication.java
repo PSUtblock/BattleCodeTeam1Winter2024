@@ -29,9 +29,10 @@ public class Communication {
     private static final int START_WELL_IDX = NUM_HQ;
     private static final int START_ISLAND_IDX = START_WELL_IDX + NUM_WELLS;
     private static final int START_CARRIER_IDX = START_ISLAND_IDX + NUM_ISLANDS;
-    private static final int PRIORITY_IDX = START_CARRIER_IDX + NUM_CARRIERS;
+    private static final int ELIXIR_IDX = START_CARRIER_IDX + NUM_CARRIERS;
 
     // Counters for objects in shared array.
+    private static int elixirAmount = 0;
     private static int numOfWells = 0;
 //    private static int numOfAdamantiumWells = 0;
     private static int wellCount = 0;
@@ -255,28 +256,18 @@ public class Communication {
         }
     }
 
-    /** Read which resource to prioritize. **/
-    public static int readPriority(RobotController rc) throws GameActionException {
-        return rc.readSharedArray(PRIORITY_IDX);
-    }
-
-    /** Write which resource to prioritize. For Headquarters use. **/
-    public static void writePriority(RobotController rc, int priorityType) throws GameActionException {
-        if (rc.canWriteSharedArray(PRIORITY_IDX, priorityType)) {
-            rc.writeSharedArray(PRIORITY_IDX, priorityType);
-        }
-    }
-
     /** Read if Elixir well needs to be built **/
     public static boolean isElixirSatisfied(RobotController rc) throws GameActionException {
-        return rc.readSharedArray(PRIORITY_IDX) >= 1899;
+        boolean isSatisfied = rc.readSharedArray(ELIXIR_IDX) >= 1899;
+        rc.setIndicatorString("Is satisfied? " + isSatisfied + ". Total deposited: " + elixirAmount);
+        return isSatisfied;
     }
 
     /** Update if Elixir well is needed **/
     public static void updateElixirAmount(RobotController rc, int amount) throws GameActionException {
-        int newAmount = amount + rc.readSharedArray(PRIORITY_IDX);
-        if (rc.canWriteSharedArray(PRIORITY_IDX, newAmount)) {
-            rc.writeSharedArray(PRIORITY_IDX, newAmount);
+        elixirAmount += amount;
+        if (rc.canWriteSharedArray(ELIXIR_IDX, elixirAmount)) {
+            rc.writeSharedArray(ELIXIR_IDX, elixirAmount);
         }
     }
 }
