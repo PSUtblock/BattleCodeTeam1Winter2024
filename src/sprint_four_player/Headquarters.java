@@ -9,32 +9,30 @@ public class Headquarters {
      * Run a single turn for a Headquarters.
      * This code is wrapped inside the infinite loop in run(), so it is called once per turn.
      */
-    private static void spawnAnchor(RobotController rc) throws GameActionException{
+    public static void spawnAnchor(RobotController rc) throws GameActionException{
         rc.buildAnchor(Anchor.STANDARD);
         rc.setIndicatorString("Building anchor! " + rc.getNumAnchors(null));
     }
-    private static void spawnCarriers(RobotController rc, MapLocation newLoc)throws GameActionException{
-        //for (int i =0; i<4;i++) {
-          //  MapLocation carrierLoc = new MapLocation(newLoc.x+i, newLoc.y+i);
-            //if (rc.canBuildRobot(RobotType.CARRIER, carrierLoc)){
+    public static void spawnAcceleratingAnchor(RobotController rc) throws GameActionException{
+        rc.buildAnchor(Anchor.ACCELERATING);
+        rc.setIndicatorString("Building accelerating anchor! " + rc.getNumAnchors(null));
+    }
+    public static void spawnCarriers(RobotController rc, MapLocation newLoc)throws GameActionException{
                 rc.buildRobot(RobotType.CARRIER, newLoc );
-            //}
-            //else System.out.println("Carrier spawn fail");
-        //}
     }
 
-    private static void spawnLauncher(RobotController rc, MapLocation newLoc)throws GameActionException{
+    public static void spawnLauncher(RobotController rc, MapLocation newLoc)throws GameActionException{
         rc.buildRobot(RobotType.LAUNCHER, newLoc);
     }
 
-    private static void spawnAmplifier(RobotController rc, MapLocation amplifierLoc) throws GameActionException{
+    public static void spawnAmplifier(RobotController rc, MapLocation amplifierLoc) throws GameActionException{
         rc.buildRobot(RobotType.AMPLIFIER, amplifierLoc);
     }
 
-    private static void spawnTemporalBoosters(RobotController rc, MapLocation newLoc)throws GameActionException{
+    public static void spawnTemporalBoosters(RobotController rc, MapLocation newLoc)throws GameActionException{
         rc.buildRobot(RobotType.BOOSTER, newLoc);
     }
-    private static void spawnDestabilizer(RobotController rc, MapLocation newLoc)throws GameActionException{
+    public static void spawnDestabilizer(RobotController rc, MapLocation newLoc)throws GameActionException{
         rc.buildRobot(RobotType.DESTABILIZER, newLoc);
     }
     public static void runHeadquarters(RobotController rc) throws GameActionException {
@@ -44,6 +42,7 @@ public class Headquarters {
         MapLocation newLoc = rc.getLocation().add(dir);
         int roundNum = rc.getRoundNum();
         int spawn_interval_anchor = 10;
+        int spawn_interval_accelerating_anchor = 85;
         int spawn_interval_carrier = 10;
         int spawn_interval_launcher = 6;
         int spawn_interval_amplifier = 50;
@@ -55,7 +54,6 @@ public class Headquarters {
         int spawn_amplifier_fail = 0;
         int spawn_booster_fail = 0;
         int spawn_destabilizer_fail = 0;
-
 
 
         // Write Headquarters location to shared array if first turn.
@@ -76,7 +74,19 @@ public class Headquarters {
                 spawn_anchor_fail ++;
             }
         }
-        //if (rng.nextBoolean()) {
+        /**
+         * For every 20 rounds, build an accelerating anchor
+         */
+        if(roundNum % spawn_interval_accelerating_anchor == 0){
+            if (rc.canBuildAnchor(Anchor.ACCELERATING)) {
+                // If we can build an anchor do it!
+                spawnAcceleratingAnchor(rc);
+            }
+            else{
+                spawn_interval_accelerating_anchor ++;
+            }
+        }
+
         /**
          * For every 10 rounds, create a carrier
          */

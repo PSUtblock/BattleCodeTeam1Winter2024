@@ -2,11 +2,16 @@ package sprint_four_player;
 
 import battlecode.common.*;
 import org.junit.Test;
+import org.scalactic.Or;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static sprint_four_player.RobotPlayer.directions;
+import static sprint_four_player.RobotPlayer.rng;
 
 public class HeadquartersTest {
+
+    public HeadquartersRobotController rc = new HeadquartersRobotController();
 
     // Testing writing location to shared array if not round 1.
     @Test
@@ -27,6 +32,48 @@ public class HeadquartersTest {
         Headquarters.runHeadquarters(rc);
         assertEquals(new MapLocation(1, 1), Communication.readHQ(rc));
     }
+    @Test
+    public void testSpawnAnchor()throws GameActionException{
+        Headquarters.spawnAnchor(rc);
+        assertNull(rc.getAnchor());
+    }
+    @Test
+    public void testSpawnAcceleratingAnchor() throws GameActionException{
+        Headquarters.spawnAcceleratingAnchor(rc);
+        assertNull(rc.getAnchor());
+    }
+
+    @Test
+    public void testSpawnCarriers()throws GameActionException{
+        Direction dir = directions[rng.nextInt(directions.length)];
+        MapLocation newLoc = rc.getLocation().add(dir);
+        Headquarters.spawnCarriers(rc, newLoc);
+    }
+    @Test
+    public void testSpawnLaunchers()throws GameActionException{
+        Direction dir = directions[rng.nextInt(directions.length)];
+        MapLocation newLoc = rc.getLocation().add(dir);
+        Headquarters.spawnLauncher(rc, newLoc);
+    }
+    @Test
+    public void testSpawnAmplifier() throws GameActionException{
+        Direction dir = directions[rng.nextInt(directions.length)];
+        MapLocation newLoc = rc.getLocation().add(dir);
+        Headquarters.spawnAmplifier(rc, newLoc);
+    }
+    @Test
+    public void testSpawnTemporalBoosters() throws GameActionException{
+        Direction dir = directions[rng.nextInt(directions.length)];
+        MapLocation newLoc = rc.getLocation().add(dir);
+        Headquarters.spawnTemporalBoosters(rc, newLoc);
+    }
+    @Test
+    public void testSpawnDestabilizer()throws GameActionException{
+        Direction dir = directions[rng.nextInt(directions.length)];
+        MapLocation newLoc = rc.getLocation().add(dir);
+        Headquarters.spawnDestabilizer(rc, newLoc);
+    }
+
 }
 
 class HeadquartersRobotController implements RobotController {
@@ -87,6 +134,10 @@ class HeadquartersRobotController implements RobotController {
     public int getMapHeight() {
         return 3;
     }
+    @Override
+    public int getNumAnchors(Anchor anchorType) {
+        return 0;
+    }
 
     @Override
     public int getIslandCount() {
@@ -128,10 +179,7 @@ class HeadquartersRobotController implements RobotController {
         return null;
     }
 
-    @Override
-    public int getNumAnchors(Anchor anchorType) {
-        return 0;
-    }
+
 
     @Override
     public int getWeight() {
