@@ -11,6 +11,7 @@ public class Carrier {
     private static MapLocation islandLocation;
     private static Anchor hasAnchorType;
     private static boolean isDepositingAtHQ = false;
+    private static int elixirDepositHistory = 0;
 
     /**
      * Run a single turn for a Carrier.
@@ -73,10 +74,6 @@ public class Carrier {
         // If there is capacity, then go collect resources.
         else if (rc.getWeight() < GameConstants.CARRIER_CAPACITY && !isDepositingAtHQ) {
             if (wellLocation != null) {
-                // First check if still next to HQ and deposit anything.
-//                depositResource(rc, hqLocation, ResourceType.ADAMANTIUM, rc.getResourceAmount(ResourceType.ADAMANTIUM));
-//                depositResource(rc, hqLocation, ResourceType.MANA, rc.getResourceAmount(ResourceType.MANA));
-
                 rc.setIndicatorString("Moving towards well at: " + wellLocation);
                 Movement.moveToLocation(rc, wellLocation);
                 // -1 indicates to collect all.
@@ -136,16 +133,22 @@ public class Carrier {
 
     /** Deposit opposite resource to create Elixir well **/
     public static void buildElixirWell(RobotController rc) throws GameActionException {
+        boolean deposited;
         int amountToDeposit;
         if (designatedWellType == 1) {
             amountToDeposit = rc.getResourceAmount(ResourceType.MANA);
-            depositResource(rc, designatedElixirWell, ResourceType.MANA, amountToDeposit);
-            Communication.updateElixirAmount(rc, amountToDeposit);
+            deposited = depositResource(rc, designatedElixirWell, ResourceType.MANA, amountToDeposit);
         }
         else {
             amountToDeposit = rc.getResourceAmount(ResourceType.ADAMANTIUM);
-            depositResource(rc, designatedElixirWell, ResourceType.ADAMANTIUM, amountToDeposit);
-            Communication.updateElixirAmount(rc, amountToDeposit);
+            deposited = depositResource(rc, designatedElixirWell, ResourceType.ADAMANTIUM, amountToDeposit);
+        }
+        if (deposited) {
+            elixirDepositHistory += amountToDeposit;
+            boolean elixirUpdated = Communication.updateElixirAmount(rc, elixirDepositHistory);
+            if (elixirUpdated) {
+                elixirDepositHistory = 0;
+            }
         }
     }
 
@@ -159,7 +162,7 @@ public class Carrier {
     }
 
     /** Deposit all resources of a certain type to headquarters. **/
-    public static void depositResource(RobotController rc, MapLocation location, ResourceType type, int amount) throws GameActionException {
+    public static boolean depositResource(RobotController rc, MapLocation location, ResourceType type, int amount) throws GameActionException {
         // If robot has any resources, deposit all of it.
         if (amount > 0 && rc.canTransferResource(location, type, amount)) {
             rc.transferResource(location, type, amount);
@@ -167,7 +170,9 @@ public class Carrier {
                     rc.getResourceAmount(ResourceType.ADAMANTIUM) +
                     " MN: " + rc.getResourceAmount(ResourceType.MANA) +
                     " EX: " + rc.getResourceAmount(ResourceType.ELIXIR));
+            return true;
         }
+        return false;
     }
 
     /** Collect from adjacent squares. **/
