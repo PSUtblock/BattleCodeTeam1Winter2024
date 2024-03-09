@@ -18,13 +18,7 @@ public class Headquarters {
         rc.setIndicatorString("Building accelerating anchor! " + rc.getNumAnchors(null));
     }
     private static void spawnCarriers(RobotController rc, MapLocation newLoc)throws GameActionException{
-        //for (int i =0; i<4;i++) {
-          //  MapLocation carrierLoc = new MapLocation(newLoc.x+i, newLoc.y+i);
-            //if (rc.canBuildRobot(RobotType.CARRIER, carrierLoc)){
                 rc.buildRobot(RobotType.CARRIER, newLoc );
-            //}
-            //else System.out.println("Carrier spawn fail");
-        //}
     }
 
     private static void spawnLauncher(RobotController rc, MapLocation newLoc)throws GameActionException{
@@ -62,7 +56,6 @@ public class Headquarters {
         int spawn_destabilizer_fail = 0;
 
 
-
         // Write Headquarters location to shared array if first turn.
         if (roundNum == 1) {
             Communication.writeHQ(rc);
@@ -93,7 +86,7 @@ public class Headquarters {
                 spawn_interval_accelerating_anchor ++;
             }
         }
-        //if (rng.nextBoolean()) {
+
         /**
          * For every 10 rounds, create a carrier
          */
