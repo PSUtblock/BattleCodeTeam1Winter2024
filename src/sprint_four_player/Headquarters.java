@@ -13,6 +13,10 @@ public class Headquarters {
         rc.buildAnchor(Anchor.STANDARD);
         rc.setIndicatorString("Building anchor! " + rc.getNumAnchors(null));
     }
+    private static void spawnAcceleratingAnchor(RobotController rc) throws GameActionException{
+        rc.buildAnchor(Anchor.ACCELERATING);
+        rc.setIndicatorString("Building accelerating anchor! " + rc.getNumAnchors(null));
+    }
     private static void spawnCarriers(RobotController rc, MapLocation newLoc)throws GameActionException{
         //for (int i =0; i<4;i++) {
           //  MapLocation carrierLoc = new MapLocation(newLoc.x+i, newLoc.y+i);
@@ -44,6 +48,7 @@ public class Headquarters {
         MapLocation newLoc = rc.getLocation().add(dir);
         int roundNum = rc.getRoundNum();
         int spawn_interval_anchor = 10;
+        int spawn_interval_accelerating_anchor = 85;
         int spawn_interval_carrier = 10;
         int spawn_interval_launcher = 6;
         int spawn_interval_amplifier = 50;
@@ -74,6 +79,18 @@ public class Headquarters {
             }
             else{
                 spawn_anchor_fail ++;
+            }
+        }
+        /**
+         * For every 20 rounds, build an accelerating anchor
+         */
+        if(roundNum % spawn_interval_accelerating_anchor == 0){
+            if (rc.canBuildAnchor(Anchor.ACCELERATING)) {
+                // If we can build an anchor do it!
+                spawnAcceleratingAnchor(rc);
+            }
+            else{
+                spawn_interval_accelerating_anchor ++;
             }
         }
         //if (rng.nextBoolean()) {
