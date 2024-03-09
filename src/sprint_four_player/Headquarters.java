@@ -9,30 +9,30 @@ public class Headquarters {
      * Run a single turn for a Headquarters.
      * This code is wrapped inside the infinite loop in run(), so it is called once per turn.
      */
-    private static void spawnAnchor(RobotController rc) throws GameActionException{
+    public static void spawnAnchor(RobotController rc) throws GameActionException{
         rc.buildAnchor(Anchor.STANDARD);
         rc.setIndicatorString("Building anchor! " + rc.getNumAnchors(null));
     }
-    private static void spawnAcceleratingAnchor(RobotController rc) throws GameActionException{
+    public static void spawnAcceleratingAnchor(RobotController rc) throws GameActionException{
         rc.buildAnchor(Anchor.ACCELERATING);
         rc.setIndicatorString("Building accelerating anchor! " + rc.getNumAnchors(null));
     }
-    private static void spawnCarriers(RobotController rc, MapLocation newLoc)throws GameActionException{
+    public static void spawnCarriers(RobotController rc, MapLocation newLoc)throws GameActionException{
                 rc.buildRobot(RobotType.CARRIER, newLoc );
     }
 
-    private static void spawnLauncher(RobotController rc, MapLocation newLoc)throws GameActionException{
+    public static void spawnLauncher(RobotController rc, MapLocation newLoc)throws GameActionException{
         rc.buildRobot(RobotType.LAUNCHER, newLoc);
     }
 
-    private static void spawnAmplifier(RobotController rc, MapLocation amplifierLoc) throws GameActionException{
+    public static void spawnAmplifier(RobotController rc, MapLocation amplifierLoc) throws GameActionException{
         rc.buildRobot(RobotType.AMPLIFIER, amplifierLoc);
     }
 
-    private static void spawnTemporalBoosters(RobotController rc, MapLocation newLoc)throws GameActionException{
+    public static void spawnTemporalBoosters(RobotController rc, MapLocation newLoc)throws GameActionException{
         rc.buildRobot(RobotType.BOOSTER, newLoc);
     }
-    private static void spawnDestabilizer(RobotController rc, MapLocation newLoc)throws GameActionException{
+    public static void spawnDestabilizer(RobotController rc, MapLocation newLoc)throws GameActionException{
         rc.buildRobot(RobotType.DESTABILIZER, newLoc);
     }
     public static void runHeadquarters(RobotController rc) throws GameActionException {
