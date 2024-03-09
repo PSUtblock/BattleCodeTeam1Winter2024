@@ -195,11 +195,14 @@ public class Carrier {
     public static void collectAnchor(RobotController rc, MapLocation location) throws GameActionException {
         if (rc.canTakeAnchor(location, Anchor.STANDARD)) {
             rc.takeAnchor(location, Anchor.STANDARD);
-            hasAnchorType = rc.getAnchor();
-            rc.setIndicatorString("Taking anchor, now have, Anchor: " + rc.getAnchor());
         }
-        else {
-            rc.setIndicatorString("Unable to collect anchor.");
+        else if (rc.canTakeAnchor(location, Anchor.ACCELERATING)) {
+            rc.takeAnchor(location, Anchor.ACCELERATING);
+        }
+        hasAnchorType = rc.getAnchor();
+
+        if (hasAnchorType != null) {
+            rc.setIndicatorString("Taking anchor, now have, Anchor: " + hasAnchorType);
         }
     }
 }
