@@ -1,10 +1,6 @@
 package sprint_four_player;
 
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotController;
-
+import battlecode.common.*;
 import java.util.*;
 
 import static sprint_four_player.RobotPlayer.directions;
@@ -15,6 +11,7 @@ import static sprint_four_player.RobotPlayer.rng;
  */
 public class Movement {
     private static final int NUM_DIRS = 8;                                   // Total number of directions not including CENTER.
+    private static final int RADIUS = 10;                                    // Approximate radius between wells.
     private static Direction currentDir = null;                              // Holds the direction robot is facing.
     private static Set<MapLocation> visitedLocations = new HashSet<>();      // Reduces location repeats.
     private static List<MapLocation> potentialLandmarks = new ArrayList<>(); // Holds potential landmarks to explore.
@@ -54,12 +51,10 @@ public class Movement {
                     return;
                 }
             }
-
             // Otherwise, there is an obstacle we must go around (clockwise).
             if (movedClockwise(rc, dir, currentLoc)) {
                 return;
             }
-
             // If robot still cannot move, move randomly.
             moveRandomly(rc);
         }
@@ -101,11 +96,10 @@ public class Movement {
     public static void explore(RobotController rc) throws GameActionException {
         int mapWidth = rc.getMapWidth();
         int mapHeight = rc.getMapHeight();
-        int radius = 10; // Landmarks are typically within 100 units of each other.
 
         // Fill potential landmarks.
         if (potentialLandmarks.isEmpty()) {
-            potentialLandmarks = Mapping.getPossibleLandmarks(rc, mapWidth, mapHeight, radius);
+            potentialLandmarks = Mapping.getPossibleLandmarks(rc, mapWidth, mapHeight, RADIUS);
         }
 
         // If potential landmark not locked find one not already visited.
