@@ -5,6 +5,27 @@ import java.util.*;
 
 public class Mapping {
     /**
+     * Return the closest location with respect to robot's current location. Uses set of MapLocations as a parameter.
+     **/
+    public static MapLocation getClosestLocation(RobotController rc, Iterable<MapLocation> locations) {
+        if (locations.iterator().hasNext()) {
+            MapLocation currClosest = locations.iterator().next();
+            MapLocation myLocation = rc.getLocation();
+            int minDistance = myLocation.distanceSquaredTo(currClosest);
+
+            for (MapLocation island : locations) {
+                int currDistance = myLocation.distanceSquaredTo(island);
+                if (minDistance > currDistance) {
+                    minDistance = currDistance;
+                    currClosest = island;
+                }
+            }
+            return currClosest;
+        }
+        return null;
+    }
+
+    /**
      * Return the closest location with respect to robot's current location. Uses an array of MapLocations as a parameter.
      **/
     public static MapLocation getClosestLocation(RobotController rc, MapLocation[] locations) {
@@ -26,47 +47,6 @@ public class Mapping {
         return null;
     }
 
-    /**
-     * Return the closest location with respect to robot's current location. Uses set of MapLocations as a parameter.
-     **/
-    public static MapLocation getClosestLocation(RobotController rc, Set<MapLocation> locations) {
-        if (!locations.isEmpty()) {
-            MapLocation currClosest = locations.iterator().next();
-            MapLocation myLocation = rc.getLocation();
-            int minDistance = myLocation.distanceSquaredTo(currClosest);
-
-            for (MapLocation island : locations) {
-                int currDistance = myLocation.distanceSquaredTo(island);
-                if (minDistance > currDistance) {
-                    minDistance = currDistance;
-                    currClosest = island;
-                }
-            }
-            return currClosest;
-        }
-        return null;
-    }
-
-    /**
-     * Return the closest location with respect to robot's current location. Uses list of MapLocations as a parameter.
-     **/
-    public static MapLocation getClosestLocation(RobotController rc, List<MapLocation> locations) {
-        if (!locations.isEmpty()) {
-            MapLocation currClosest = locations.iterator().next();
-            MapLocation myLocation = rc.getLocation();
-            int minDistance = myLocation.distanceSquaredTo(currClosest);
-
-            for (MapLocation island : locations) {
-                int currDistance = myLocation.distanceSquaredTo(island);
-                if (minDistance > currDistance) {
-                    minDistance = currDistance;
-                    currClosest = island;
-                }
-            }
-            return currClosest;
-        }
-        return null;
-    }
     /**
      * Fills a list with possible landmarks spaced out by 100 units
      **/

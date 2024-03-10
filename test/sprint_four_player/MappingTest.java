@@ -58,7 +58,7 @@ public class MappingTest {
         assertNull(closestLocation);
     }
 
-    // Testing getClosestLocation method with an array of one location.
+    // Testing getClosestLocation method with a set of one location.
     @Test
     public void testGetClosestLocationWithSingleLocationSet() throws GameActionException {
         MappingRobotController rc = new MappingRobotController();
@@ -69,11 +69,44 @@ public class MappingTest {
         assertEquals(new MapLocation(1, 1), closestLocation);
     }
 
-    // Testing getClosestLocation method with an array of multiple locations.
+    // Testing getClosestLocation method with a set of multiple locations.
     @Test
     public void testGetClosestLocationWithMultipleLocationsSet() throws GameActionException {
         MappingRobotController rc = new MappingRobotController();
         Set<MapLocation> locations = new HashSet<>(
+                Arrays.asList(new MapLocation(2, 2), new MapLocation(1, 1), new MapLocation(2, 0)));
+
+        // Assert that closest location is correct.
+        MapLocation closestLocation = Mapping.getClosestLocation(rc, locations);
+        assertEquals(new MapLocation(1, 1), closestLocation);
+    }
+    // Testing getClosestLocation method with a list of zero locations.
+    @Test
+    public void testGetClosestLocationWithEmptyList() {
+        MappingRobotController rc = new MappingRobotController();
+        List<MapLocation> locations = new ArrayList<>();
+
+        // Assert that the returned location is null.
+        MapLocation closestLocation = Mapping.getClosestLocation(rc, locations);
+        assertNull(closestLocation);
+    }
+
+    // Testing getClosestLocation method with a list of one location.
+    @Test
+    public void testGetClosestLocationWithSingleLocationList() {
+        MappingRobotController rc = new MappingRobotController();
+        List<MapLocation> locations = new ArrayList<>(Collections.singletonList(new MapLocation(1, 1)));
+
+        // Assert that closest location is correct.
+        MapLocation closestLocation = Mapping.getClosestLocation(rc, locations);
+        assertEquals(new MapLocation(1, 1), closestLocation);
+    }
+
+    // Testing getClosestLocation method with a list of multiple locations.
+    @Test
+    public void testGetClosestLocationWithMultipleLocationsList() {
+        MappingRobotController rc = new MappingRobotController();
+        List<MapLocation> locations = new ArrayList<>(
                 Arrays.asList(new MapLocation(2, 2), new MapLocation(1, 1), new MapLocation(2, 0)));
 
         // Assert that closest location is correct.
