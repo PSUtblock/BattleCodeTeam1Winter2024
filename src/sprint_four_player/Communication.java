@@ -1,7 +1,6 @@
 package sprint_four_player;
 
 import battlecode.common.*;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -13,9 +12,7 @@ import java.util.Set;
  *      - x, y coordinate converted into number and bitwise shifted left with well type (1 - Adamantium, 2 - Mana, 3 - Elixir)
  *      Up to 30 islands (>75% of max) from indices 16 to 45
  *      - uses same format as wells, but instead of containing type, it contains whether it is occupied (0 - No, 1 - Yes/Team, 2 - Yes/Opponent)
- *      Up to 17 carriers with anchors from indices 46 to 62
- *      - uses same format as headquarters
- *      Index 63 is reserved for which resource to prioritize
+ *      Index 63 is reserved for which resource to prioritize such as Elixir well creation
  **/
 public class Communication {
     // Number of headquarters, wells, and islands allowed in communication array.
@@ -31,15 +28,6 @@ public class Communication {
     private static final int START_CARRIER_IDX = START_ISLAND_IDX + NUM_ISLANDS;
     private static final int ELIXIR_IDX = START_CARRIER_IDX + NUM_CARRIERS;
 
-    // Counters for objects in shared array.
-    private static final Object sharedLockObject = new Object();
-    private static int numOfWells = 0;
-//    private static int numOfAdamantiumWells = 0;
-    private static int wellCount = 0;
-//    private static int adamantiumWellCount = 0;
-//    private static int numOfIslands = 0;
-//    private static int islandCount = 0;
-
     /** Read headquarter location closest to robot. **/
     public static MapLocation readHQ(RobotController rc) throws GameActionException {
         Set<MapLocation> hqLocations = new HashSet<>();
@@ -49,8 +37,7 @@ public class Communication {
             if (valueToUnpack != 0) {
                 // Indices 0 and 1 of unpacked value are x and y values.
                 int[] unpackedValue = Packing.unpackObject(rc, valueToUnpack);
-                MapLocation locToAdd = new MapLocation(unpackedValue[0], unpackedValue[1]);
-                hqLocations.add(locToAdd);
+                hqLocations.add(new MapLocation(unpackedValue[0], unpackedValue[1]));
             }
         }
         // Return the closest headquarters or return null.
@@ -77,20 +64,7 @@ public class Communication {
 
     /** Read well location of a certain type. **/
     public static MapLocation readWell(RobotController rc, int type) throws GameActionException {
-//        MapLocation wellLocation = null;
-//        if (numOfWells > 0) {
-//            if (wellCount >= numOfWells) {
-//                wellCount = 0;
-//            }
-//            int index = wellCount + START_WELL_IDX;
-//            int valueToUnpack = rc.readSharedArray(index);
-//            int[] unpackedValue = Packing.unpackObject(rc, valueToUnpack);
-//            wellLocation = new MapLocation(unpackedValue[0], unpackedValue[1]);
-//            ++wellCount;
-//        }
-//        return wellLocation;
-        Set<MapLocation> wellLocationsMatch = new HashSet<>();
-        Set<MapLocation> wellLocationsNoMatch = new HashSet<>();
+        Set<MapLocation> wellLocations = new HashSet<>();
 
         // Read all wells.
         for (int i = START_WELL_IDX; i < START_ISLAND_IDX; ++i) {
@@ -99,33 +73,17 @@ public class Communication {
                 // Indices 0 and 1 of unpackedValue are x and y values.
                 int[] unpackedValue = Packing.unpackObject(rc, valueToUnpack);
                 MapLocation locToAdd = new MapLocation(unpackedValue[0], unpackedValue[1]);
-//                int typeValue = unpackedValue[2];
-                // Break out of loop if type of object is found.
-//                if (typeValue == type) {
-                    wellLocationsMatch.add(locToAdd);
-//                }
-//                else {
-//                    wellLocationsNoMatch.add(locToAdd);
-//                }
+                wellLocations.add(locToAdd);
             }
         }
         // Return the closest well or return null.
-//        if (!wellLocationsMatch.isEmpty()) {
-            return Mapping.getClosestLocation(rc, wellLocationsMatch);
-//        }
-//        if (!wellLocationsNoMatch.isEmpty()) {
-//            return Mapping.getClosestLocation(rc, wellLocationsNoMatch);
-//        }
-//        return null;
+        return Mapping.getClosestLocation(rc, wellLocations);
     }
 
     /** Find first well, to become Elixir well **/
-    public static int[] findFirstWell(RobotController rc) throws GameActionException {
+    public static int[] findPotentialElixirWell(RobotController rc) throws GameActionException {
         int valueToUnpack = rc.readSharedArray(START_WELL_IDX);
-        if (valueToUnpack != 0) {
-            return Packing.unpackObject(rc, valueToUnpack);
-        }
-        return null;
+        return valueToUnpack != 0 ? Packing.unpackObject(rc, valueToUnpack) : null;
     }
 
     /** Write well location to array. For Carrier and Launcher use. **/
@@ -143,13 +101,6 @@ public class Communication {
                     if (rc.readSharedArray(j) == 0) {
                         if (rc.canWriteSharedArray(j, wellSpecs[i])) {
                             rc.writeSharedArray(j, wellSpecs[i]);
-//                            if (type == 1) {
-//                                ++numOfAdamantiumWells;
-//                            }
-//                            else if (type == 2) {
-//                                ++numOfManaWells;
-//                            }
-                            ++numOfWells;
                             break;
                         }
                     }
@@ -194,13 +145,7 @@ public class Communication {
             }
         }
         // Return the closest island or return null.
-        if (!islandLocationsMatch.isEmpty()) {
-            return Mapping.getClosestLocation(rc, islandLocationsMatch);
-        }
-        if (!islandLocationsNoMatch.isEmpty()) {
-            return Mapping.getClosestLocation(rc, islandLocationsNoMatch);
-        }
-        return null;
+        return Mapping.getClosestLocation(rc, islandLocationsMatch.isEmpty() ? islandLocationsNoMatch : islandLocationsMatch);
     }
 
     /** Write island location to array. For Carrier and Launcher use. **/
@@ -222,11 +167,9 @@ public class Communication {
             for (Integer island : islandsToStore) {
                 // Write location into first available index.
                 for (int i = START_ISLAND_IDX; i < START_CARRIER_IDX; ++i) {
-                    if (rc.readSharedArray(i) == 0) {
-                        if (rc.canWriteSharedArray(i, island)) {
-                            rc.writeSharedArray(i, island);
-                            break;
-                        }
+                    if (rc.readSharedArray(i) == 0 && rc.canWriteSharedArray(i, island)) {
+                        rc.writeSharedArray(i, island);
+                        break;
                     }
                     else if (rc.readSharedArray(i) == island) {
                         // If island already exists, skip this iteration.
@@ -258,27 +201,21 @@ public class Communication {
 
     /** Read if Elixir well needs to be built **/
     public static boolean isElixirSatisfied(RobotController rc) throws GameActionException {
-        boolean isSatisfied = rc.readSharedArray(ELIXIR_IDX) >= GameConstants.UPGRADE_TO_ELIXIR;
-        rc.setIndicatorString("Is satisfied? " + isSatisfied + ". Total deposited: " + rc.readSharedArray(ELIXIR_IDX));
+        int elixirAmount = rc.readSharedArray(ELIXIR_IDX);
+        boolean isSatisfied = elixirAmount >= GameConstants.UPGRADE_TO_ELIXIR;
+        rc.setIndicatorString("Is satisfied? " + isSatisfied + ". Total deposited: " + elixirAmount);
         return isSatisfied;
     }
 
     /** Update if Elixir well is needed **/
     public static boolean updateElixirAmount(RobotController rc, int amount) throws GameActionException {
-        int newAmount = amount + rc.readSharedArray(ELIXIR_IDX);
-        if (newAmount >= GameConstants.UPGRADE_TO_ELIXIR) {
-            newAmount = GameConstants.UPGRADE_TO_ELIXIR;
-        }
+        // If amount is going to be greater than constant, set new amount to constant value.
+        int newAmount = Math.min(amount + rc.readSharedArray(ELIXIR_IDX), GameConstants.UPGRADE_TO_ELIXIR);
         if (rc.canWriteSharedArray(ELIXIR_IDX, newAmount)) {
             rc.writeSharedArray(ELIXIR_IDX, newAmount);
-            System.out.print("Elixir amount: " + rc.readSharedArray(ELIXIR_IDX) + "\n");
+            System.out.print("Elixir amount: " + newAmount + "\n");
             return true;
         }
         return false;
-    }
-
-    /** Get Elixir amount in shared array **/
-    public static int getElixirAmount(RobotController rc) throws GameActionException {
-        return rc.readSharedArray(ELIXIR_IDX);
     }
 }

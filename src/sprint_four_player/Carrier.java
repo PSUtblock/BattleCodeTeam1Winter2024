@@ -2,8 +2,6 @@ package sprint_four_player;
 
 import battlecode.common.*;
 
-import java.awt.*;
-
 public class Carrier {
     // Map locations to store headquarters, closest well, and island positions.
     private static MapLocation myLocation;
@@ -118,7 +116,7 @@ public class Carrier {
 
     /** Locate designated Elixir well **/
     public static void locateDesignatedElixirWell(RobotController rc) throws GameActionException {
-        int[] wellProperties = Communication.findFirstWell(rc);
+        int[] wellProperties = Communication.findPotentialElixirWell(rc);
         if (wellProperties != null) {
             // Indices 0 and 1 represent x and y coordinates.
             designatedElixirWell = new MapLocation(wellProperties[0], wellProperties[1]);
