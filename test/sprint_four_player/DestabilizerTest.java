@@ -3,25 +3,42 @@ package sprint_four_player;
 import battlecode.common.*;
 import battlecode.world.Inventory;
 import junit.framework.TestCase;
+import org.junit.Assert;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
 public class DestabilizerTest extends TestCase {
+    public DestabilizerRobotController rc = new DestabilizerRobotController();
     @Test
-    public void testRunDestabilizer() throws GameActionException {
-
-
-        DestabilizerRobotController rc = new DestabilizerRobotController();
+    public void testSenseEnemyRobotsAndDestabilize() throws GameActionException {
         rc.canDestabilize(rc.enemyLoc);
         rc.destabilize(rc.enemyLoc);
-        //rc.senseNearbyRobots();
         Destabilizer.senseEnemyRobotsAndDestabilize(rc);
         assertEquals(rc.enemies[0].location, rc.attackLocation);
+    }
+    @Test
+    public void testWriteWell()throws GameActionException{
+        Destabilizer.destabilizerWriteWells(rc);
+        assertNull(Communication.readWell(rc,0));
+        assertNull(Communication.readWell(rc,1));
+    }
+    @Test
+    public void testWriteIslands()throws GameActionException{
+        Destabilizer.destabilizerWriteIslands(rc);
+        assertNull(Communication.readIsland(rc,0));
+        assertNull(Communication.readIsland(rc,1));
 
     }
+    @Test
+    public void testMovementExplore()throws GameActionException{
+        Destabilizer.destabilizerMovementExplore(rc);
+    }
+    @Test
+    public void testRunDestabilizer()throws GameActionException{
+        Destabilizer.runDestabilizer(rc);
+    }
 }
-
 
 class DestabilizerRobotController implements RobotController{
 
@@ -42,6 +59,15 @@ class DestabilizerRobotController implements RobotController{
     @Override
     public boolean canDestabilize(MapLocation loc) {
         return true;
+    }
+    @Override
+    public Team getTeam() {
+        return Team.A;
+    }
+
+    @Override
+    public RobotType getType() {
+        return RobotType.LAUNCHER;
     }
 
     @Override
@@ -78,15 +104,7 @@ class DestabilizerRobotController implements RobotController{
         return 0;
     }
 
-    @Override
-    public Team getTeam() {
-        return Team.A;
-    }
 
-    @Override
-    public RobotType getType() {
-        return RobotType.LAUNCHER;
-    }
 
     @Override
     public MapLocation getLocation() {

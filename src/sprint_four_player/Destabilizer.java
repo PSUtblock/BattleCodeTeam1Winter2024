@@ -17,13 +17,23 @@ public class Destabilizer {
             }
         }
     }
-    public static void runDestabilizer(RobotController rc) throws GameActionException {
-
+    public static void destabilizerWriteWells(RobotController rc) throws GameActionException{
         Communication.writeWells(rc);
-
+    }
+    public static void destabilizerWriteIslands(RobotController rc) throws GameActionException{
         Communication.writeIslands(rc);
 
+    }
+    public static void destabilizerMovementExplore(RobotController rc)throws  GameActionException{
         Movement.explore(rc);
+    }
+    public static void runDestabilizer(RobotController rc) throws GameActionException {
+
+        destabilizerWriteWells(rc);
+
+        destabilizerWriteIslands(rc);
+
+        destabilizerMovementExplore(rc);
 
         senseEnemyRobotsAndDestabilize(rc);
     }
