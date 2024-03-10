@@ -141,19 +141,6 @@ public class Carrier {
         }
     }
 
-    /** Sense number of carriers at well location **/
-    public static int numCarriersAtWell(RobotController rc) throws GameActionException {
-        RobotInfo[] nearbyCarriers = Mapping.getNearbyAllyCarriers(rc);
-        int carrierCount = 0;
-        for (RobotInfo carrierRobot : nearbyCarriers) {
-            MapLocation carrierLoc = carrierRobot.getLocation();
-            if (carrierLoc.isWithinDistanceSquared(wellLocation, rc.getType().actionRadiusSquared)) {
-                ++carrierCount;
-            }
-        }
-        return carrierCount;
-    }
-
     /** Get specific standard well based on round number **/
     public static MapLocation getStandardWell(RobotController rc, int roundNum) throws GameActionException {
         if (roundNum % 2 == 0) {
