@@ -64,7 +64,8 @@ public class Communication {
 
     /** Read well location of a certain type. **/
     public static MapLocation readWell(RobotController rc, int type) throws GameActionException {
-        Set<MapLocation> wellLocations = new HashSet<>();
+        Set<MapLocation> wellLocationsMatch = new HashSet<>();
+        Set<MapLocation> wellLocationNoMatch = new HashSet<>();
 
         // Read all wells.
         for (int i = START_WELL_IDX; i < START_ISLAND_IDX; ++i) {
@@ -73,11 +74,19 @@ public class Communication {
                 // Indices 0 and 1 of unpackedValue are x and y values.
                 int[] unpackedValue = Packing.unpackObject(rc, valueToUnpack);
                 MapLocation locToAdd = new MapLocation(unpackedValue[0], unpackedValue[1]);
-                wellLocations.add(locToAdd);
+                // Index 2 of unpackedValue represents the well type.
+                if (type == unpackedValue[2]) {
+                    // Add matching wells.
+                    wellLocationsMatch.add(locToAdd);
+                }
+                else {
+                    // Keep track of non-matching wells.
+                    wellLocationNoMatch.add(locToAdd);
+                }
             }
         }
         // Return the closest well or return null.
-        return Mapping.getClosestLocation(rc, wellLocations);
+        return Mapping.getClosestLocation(rc, wellLocationsMatch.isEmpty() ? wellLocationNoMatch : wellLocationsMatch);
     }
 
     /** Find first well, to become Elixir well **/
