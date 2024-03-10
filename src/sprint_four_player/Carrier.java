@@ -9,9 +9,9 @@ public class Carrier {
     private static MapLocation designatedElixirWell;
     private static int designatedWellType;
     private static MapLocation islandLocation;
-    private static Anchor hasAnchorType;
-    private static boolean isDepositingAtHQ = false;
-    private static int elixirDepositHistory = 0;
+    private static Anchor collectingAnchor;
+    private static boolean isNeededAtHQ = false;
+    private static int elixirDepositHistory;
 
     /**
      * Run a single turn for a Carrier.
@@ -19,7 +19,6 @@ public class Carrier {
      */
     public static void runCarrier(RobotController rc) throws GameActionException {
         myLocation = rc.getLocation();        // Get robot's current location.
-        int roundNum = rc.getRoundNum();
 
         // Locate the closest HQ.
         MapLocation hqLocation = Communication.readHQ(rc);
@@ -47,32 +46,21 @@ public class Carrier {
         }
 
         // If the robot does not have an anchor, try to collect one.
-        if (hasAnchorType == null) {
+        if (collectingAnchor == null) {
             collectAnchor(rc, hqLocation);
         }
 
         // If the robot has an anchor singularly focus on getting it to the first island it sees.
-        if (hasAnchorType != null) {
+        if (collectingAnchor != null) {
             if (islandLocation != null) {
-                rc.setIndicatorString("Moving my anchor towards " + islandLocation);
-                if (!myLocation.equals(islandLocation)) {
-                    Movement.moveToLocation(rc, islandLocation);
-                }
-                if (rc.canPlaceAnchor()) {
-                    rc.placeAnchor();
-                    hasAnchorType = null;
-                    rc.setIndicatorString("Huzzah, placed anchor!");
-                    // Updates if island to be occupied by team.
-                    Communication.updateIslands(rc, islandLocation, 1);
-                    islandLocation = null;
-                }
+                conquerIsland(rc);
             }
             else {
                 Movement.explore(rc);
             }
         }
         // If there is capacity, then go collect resources.
-        else if (rc.getWeight() < GameConstants.CARRIER_CAPACITY && !isDepositingAtHQ) {
+        else if (rc.getWeight() < GameConstants.CARRIER_CAPACITY && !isNeededAtHQ) {
             if (wellLocation != null) {
                 rc.setIndicatorString("Moving towards well at: " + wellLocation);
                 Movement.moveToLocation(rc, wellLocation);
@@ -87,13 +75,12 @@ public class Carrier {
         }
         // Head to HQ if your resources are full.
         else if (hqLocation != null) {
-            if (canBuildElixirWell(rc)) {
+            if (canBuildElixirWell(rc) && !Communication.isElixirSatisfied(rc) && elixirDepositHistory == 0) {
                 Movement.moveToLocation(rc, designatedElixirWell);
-                buildElixirWell(rc);
+                elixirDepositHistory = buildElixirWell(rc);
             }
-//            wellLocation = null;
             else {
-                isDepositingAtHQ = true;
+                isNeededAtHQ = true;
                 Movement.moveToLocation(rc, hqLocation);
                 // Deposit resources.
                 depositResource(rc, hqLocation, ResourceType.ADAMANTIUM, rc.getResourceAmount(ResourceType.ADAMANTIUM));
@@ -101,10 +88,27 @@ public class Carrier {
                 if (Communication.isElixirSatisfied(rc)) {
                     depositResource(rc, hqLocation, ResourceType.ELIXIR, rc.getResourceAmount(ResourceType.ELIXIR));
                 }
-                if (rc.getWeight() == 0) {
-                    isDepositingAtHQ = false;
+                if (rc.getWeight() == 0 && Communication.updateElixirAmount(rc, elixirDepositHistory)) {
+                    isNeededAtHQ = false;
+                    elixirDepositHistory = 0;
                 }
             }
+        }
+    }
+
+    /** Try to conquer an island **/
+    public static void conquerIsland(RobotController rc) throws GameActionException {
+        rc.setIndicatorString("Moving my anchor towards " + islandLocation);
+        if (!myLocation.equals(islandLocation)) {
+            Movement.moveToLocation(rc, islandLocation);
+        }
+        if (rc.canPlaceAnchor()) {
+            rc.placeAnchor();
+            collectingAnchor = null;
+            rc.setIndicatorString("Huzzah, placed anchor!");
+            // Updates if island to be occupied by team.
+            Communication.updateIslands(rc, islandLocation, 1);
+            islandLocation = null;
         }
     }
 
@@ -132,7 +136,7 @@ public class Carrier {
     }
 
     /** Deposit opposite resource to create Elixir well **/
-    public static void buildElixirWell(RobotController rc) throws GameActionException {
+    public static int buildElixirWell(RobotController rc) throws GameActionException {
         boolean deposited;
         int amountToDeposit;
         if (designatedWellType == 1) {
@@ -144,21 +148,16 @@ public class Carrier {
             deposited = depositResource(rc, designatedElixirWell, ResourceType.ADAMANTIUM, amountToDeposit);
         }
         if (deposited) {
-            elixirDepositHistory += amountToDeposit;
-            boolean elixirUpdated = Communication.updateElixirAmount(rc, elixirDepositHistory);
-            if (elixirUpdated) {
-                elixirDepositHistory = 0;
-            }
+            return amountToDeposit;
         }
+        return 0;
     }
 
     /** Check if Carrier can build Elixir **/
     public static boolean canBuildElixirWell(RobotController rc) throws GameActionException {
-        if (!Communication.isElixirSatisfied(rc)) {
-            return (designatedWellType == 1 && rc.getResourceAmount(ResourceType.MANA) > 0)
-                    || (designatedWellType == 2 && rc.getResourceAmount(ResourceType.ADAMANTIUM) > 0);
-        }
-        return false;
+        // Returns true if Carrier has opposite resource.
+        return (designatedWellType == 1 && rc.getResourceAmount(ResourceType.MANA) > 0)
+                || (designatedWellType == 2 && rc.getResourceAmount(ResourceType.ADAMANTIUM) > 0);
     }
 
     /** Deposit all resources of a certain type to headquarters. **/
@@ -204,10 +203,10 @@ public class Carrier {
         else if (rc.canTakeAnchor(location, Anchor.ACCELERATING)) {
             rc.takeAnchor(location, Anchor.ACCELERATING);
         }
-        hasAnchorType = rc.getAnchor();
+        collectingAnchor = rc.getAnchor();
 
-        if (hasAnchorType != null) {
-            rc.setIndicatorString("Taking anchor, now have, Anchor: " + hasAnchorType);
+        if (collectingAnchor != null) {
+            rc.setIndicatorString("Taking anchor, now have, Anchor: " + collectingAnchor);
         }
     }
 }

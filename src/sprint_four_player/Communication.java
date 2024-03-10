@@ -258,7 +258,7 @@ public class Communication {
 
     /** Read if Elixir well needs to be built **/
     public static boolean isElixirSatisfied(RobotController rc) throws GameActionException {
-        boolean isSatisfied = rc.readSharedArray(ELIXIR_IDX) >= 600;
+        boolean isSatisfied = rc.readSharedArray(ELIXIR_IDX) >= GameConstants.UPGRADE_TO_ELIXIR;
         rc.setIndicatorString("Is satisfied? " + isSatisfied + ". Total deposited: " + rc.readSharedArray(ELIXIR_IDX));
         return isSatisfied;
     }
@@ -274,11 +274,8 @@ public class Communication {
         return false;
     }
 
-    public static void displayArray(RobotController rc) throws GameActionException {
-        System.out.print("Array elements: ");
-        for (int i = 0; i < 64; ++i) {
-            System.out.print(rc.readSharedArray(i) + " ");
-        }
-        System.out.println("\n");
+    /** Get Elixir amount in shared array **/
+    public static int getElixirAmount(RobotController rc) throws GameActionException {
+        return rc.readSharedArray(ELIXIR_IDX);
     }
 }
