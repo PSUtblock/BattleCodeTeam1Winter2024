@@ -85,27 +85,15 @@ public class Mapping {
      * Sorts locations with respect to distance from a headquarters or from self if necessary
      **/
     private static List<MapLocation> sortLocations(RobotController rc, List<MapLocation> locations) throws GameActionException {
-        MapLocation centerLoc = Communication.readHQ(rc);
-        if (centerLoc == null) {
-            centerLoc = rc.getLocation();
-        }
+        MapLocation centerLoc = findCentralLocation(rc);
         locations.sort(new DistanceComparator(centerLoc));
         return locations;
     }
 
-    /** Find all nearby ally Carriers **/
-    public static RobotInfo[] getNearbyAllyCarriers(RobotController rc) {
-        RobotInfo[] nearbyRobots = rc.senseNearbyRobots();
-        Team myTeam = rc.getTeam();
-        RobotInfo[] nearbyCarriers = new RobotInfo[nearbyRobots.length];
-        int carrierCount = 0;
-        for (RobotInfo robot : nearbyRobots) {
-            if (robot.getType() == RobotType.CARRIER && robot.getTeam() == myTeam) {
-                nearbyCarriers[carrierCount] = robot;
-                ++carrierCount;
-            }
-        }
-        return nearbyCarriers;
+    /** Returns headquarters or robots location to be used as a central location **/
+    private static MapLocation findCentralLocation(RobotController rc) throws GameActionException {
+        MapLocation centerLoc = Communication.readHQ(rc);
+        return (centerLoc == null) ? rc.getLocation() : centerLoc;
     }
 }
 
