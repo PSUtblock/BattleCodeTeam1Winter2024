@@ -32,7 +32,7 @@ public class Communication {
     private static final int ELIXIR_IDX = START_CARRIER_IDX + NUM_CARRIERS;
 
     // Counters for objects in shared array.
-    private static int elixirAmount = 0;
+    private static final Object sharedLockObject = new Object();
     private static int numOfWells = 0;
 //    private static int numOfAdamantiumWells = 0;
     private static int wellCount = 0;
@@ -266,6 +266,9 @@ public class Communication {
     /** Update if Elixir well is needed **/
     public static boolean updateElixirAmount(RobotController rc, int amount) throws GameActionException {
         int newAmount = amount + rc.readSharedArray(ELIXIR_IDX);
+        if (newAmount >= GameConstants.UPGRADE_TO_ELIXIR) {
+            newAmount = GameConstants.UPGRADE_TO_ELIXIR;
+        }
         if (rc.canWriteSharedArray(ELIXIR_IDX, newAmount)) {
             rc.writeSharedArray(ELIXIR_IDX, newAmount);
             System.out.print("Elixir amount: " + rc.readSharedArray(ELIXIR_IDX) + "\n");
