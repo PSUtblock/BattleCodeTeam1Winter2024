@@ -4,7 +4,6 @@ import battlecode.common.*;
 
 public class Carrier {
     // Map locations to store headquarters, closest well, and island positions.
-    private static MapLocation myLocation;
     private static MapLocation wellLocation;
     private static MapLocation designatedElixirWell;
     private static int designatedWellType;
@@ -18,7 +17,7 @@ public class Carrier {
      * This code is wrapped inside the infinite loop in run(), so it is called once per turn.
      */
     public static void runCarrier(RobotController rc) throws GameActionException {
-        myLocation = rc.getLocation(); // Get robot's current location.
+        MapLocation myLocation = rc.getLocation(); // Get robot's current location.
 
         // Locate the closest HQ.
         MapLocation hqLocation = Communication.readHQ(rc);
@@ -47,11 +46,11 @@ public class Carrier {
 
         if (collectingAnchor != null) {
             // If the robot has an anchor singularly focus on getting it to the closest island it sees.
-            handleAnchor(rc);
+            handleAnchor(rc, myLocation);
         }
         else if (rc.getWeight() < GameConstants.CARRIER_CAPACITY && !isNeededAtHQ) {
             // If there is capacity, then go collect resources.
-            handleResourceCollection(rc);
+            handleResourceCollection(rc, myLocation);
         }
         // Head to designated Elixir well to create it or HQ if your resources are full.
         else {
@@ -90,7 +89,7 @@ public class Carrier {
     }
 
     /** Handle resource collection or exploring and collecting anything otherwise **/
-    public static void handleResourceCollection(RobotController rc) throws GameActionException {
+    public static void handleResourceCollection(RobotController rc, MapLocation myLocation) throws GameActionException {
         if (wellLocation != null) {
             rc.setIndicatorString("Moving towards well at: " + wellLocation);
             Movement.moveToLocation(rc, wellLocation);
@@ -99,15 +98,15 @@ public class Carrier {
         }
         else {
             // Try to collect a well anyway, in case there is one, while exploring.
-            collectFromAnywhere(rc);
+            collectFromAnywhere(rc, myLocation);
             Movement.explore(rc);
         }
     }
 
     /** Handle planting anchor or exploring otherwise **/
-    public static void handleAnchor(RobotController rc) throws GameActionException {
+    public static void handleAnchor(RobotController rc, MapLocation myLocation) throws GameActionException {
         if (islandLocation != null) {
-            conquerIsland(rc);
+            conquerIsland(rc, myLocation);
         }
         else {
             Movement.explore(rc);
@@ -126,7 +125,7 @@ public class Carrier {
     }
 
     /** Try to conquer an island **/
-    public static void conquerIsland(RobotController rc) throws GameActionException {
+    public static void conquerIsland(RobotController rc, MapLocation myLocation) throws GameActionException {
         rc.setIndicatorString("Moving my anchor towards " + islandLocation);
         if (!myLocation.equals(islandLocation)) {
             Movement.moveToLocation(rc, islandLocation);
@@ -191,7 +190,7 @@ public class Carrier {
     }
 
     /** Collect from adjacent squares. **/
-    public static void collectFromAnywhere(RobotController rc) throws GameActionException {
+    public static void collectFromAnywhere(RobotController rc, MapLocation myLocation) throws GameActionException {
         for (int dx = -1; dx <= 1; dx++) {
             for (int dy = -1; dy <= 1; dy++) {
                 MapLocation adjacentLoc = new MapLocation(myLocation.x + dx, myLocation.y + dy);
