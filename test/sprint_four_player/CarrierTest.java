@@ -12,6 +12,13 @@ public class CarrierTest {
     // Tests every run through of a Carrier's capabilities.
     @Test
     public void testRunCarrier() throws GameActionException {
+        testCanBuildElixirWellNot();
+        testCanBuildElixirWell();
+        
+        testDepositResourceAmountZero();
+        testDepositResourceCannot();
+        testDepositResourceCan();
+
         testCollectFromAnywhere();
         testCollectFromWell();
         testCollectFromWellCannot();
@@ -19,6 +26,56 @@ public class CarrierTest {
         testCollectAnchorSTANDARD();
         testCollectAnchorACCELERATING();
         testCollectAnchorCannot();
+    }
+
+    // Testing cannot build Elixir well.
+    @Test
+    public void testCanBuildElixirWellNot() {
+        CarrierRobotController rc = new CarrierRobotController();
+        assertFalse(Carrier.canBuildElixirWell(rc, 1));
+        assertFalse(Carrier.canBuildElixirWell(rc, 2));
+        assertFalse(Carrier.canBuildElixirWell(rc, 3));
+    }
+
+    // Testing can build Elixir well.
+    @Test
+    public void testCanBuildElixirWell() {
+        CarrierRobotController rc = new CarrierRobotController();
+        rc.setResourceAmount(ResourceType.ADAMANTIUM, 40);
+        // Well type 2 represents mana (opposite type)
+        assertTrue(Carrier.canBuildElixirWell(rc, 2));
+        rc.setResourceAmount(ResourceType.ADAMANTIUM, 0);
+        rc.setResourceAmount(ResourceType.MANA, 40);
+        // Well type 1 represents adamantium (opposite type)
+        assertTrue(Carrier.canBuildElixirWell(rc, 1));
+    }
+
+    // Testing deposit resource but amount too low.
+    @Test
+    public void testDepositResourceAmountZero() throws GameActionException {
+        CarrierRobotController rc = new CarrierRobotController();
+        rc.setResourceAmount(ResourceType.NO_RESOURCE, 40);
+        assertFalse(Carrier.depositResource(rc, new MapLocation(1, 1), ResourceType.ADAMANTIUM, 0));
+        assertEquals(rc.getResourceAmount(ResourceType.NO_RESOURCE), 40);
+    }
+
+    // Testing deposit resource cannot transfer.
+    @Test
+    public void testDepositResourceCannot() throws GameActionException {
+        CarrierRobotController rc = new CarrierRobotController();
+        rc.setCanDepositResource(false);
+        rc.setResourceAmount(ResourceType.NO_RESOURCE, 40);
+        assertFalse(Carrier.depositResource(rc, new MapLocation(1, 1), ResourceType.ADAMANTIUM, 40));
+        assertEquals(rc.getResourceAmount(ResourceType.NO_RESOURCE), 40);
+    }
+
+    // Testing deposit resource can transfer.
+    @Test
+    public void testDepositResourceCan() throws GameActionException {
+        CarrierRobotController rc = new CarrierRobotController();
+        rc.setResourceAmount(ResourceType.NO_RESOURCE, 40);
+        assertTrue(Carrier.depositResource(rc, new MapLocation(1, 1), ResourceType.ADAMANTIUM, 40));
+        assertEquals(rc.getResourceAmount(ResourceType.NO_RESOURCE), 0);
     }
 
     // Testing collecting from anywhere (just uses collectFromWell method on a loop)
@@ -82,7 +139,11 @@ public class CarrierTest {
 class CarrierRobotController implements RobotController {
     private boolean canTakeAnchorResult = true;
     private boolean canCollectResourceResult = true;
+    private boolean canDepositResourceResult = true;
     private int resourceAmount = 0;
+    private int adamantiumAmount = 0;
+    private int manaAmount = 0;
+    private int elixirAmount = 0;
     private Anchor anchorType;
     private MapLocation currentLocation;
 
@@ -94,7 +155,24 @@ class CarrierRobotController implements RobotController {
          canCollectResourceResult = result;
      }
 
-    public void setCanTakeAnchor(boolean result) {
+     public void setResourceAmount(ResourceType rType, int amount) {
+        switch (rType) {
+            case ADAMANTIUM:
+                adamantiumAmount = amount;
+            case MANA:
+                manaAmount = amount;
+            case ELIXIR:
+                elixirAmount = amount;
+            default:
+                resourceAmount = amount;
+        }
+     }
+
+     public void setCanDepositResource(boolean result) {
+         canDepositResourceResult = result;
+     }
+
+     public void setCanTakeAnchor(boolean result) {
         canTakeAnchorResult = result;
     }
 
@@ -154,7 +232,16 @@ class CarrierRobotController implements RobotController {
 
     @Override
     public int getResourceAmount(ResourceType rType) {
-        return resourceAmount;
+        switch (rType) {
+            case ADAMANTIUM:
+                return adamantiumAmount;
+            case MANA:
+                return manaAmount;
+            case ELIXIR:
+                return elixirAmount;
+            default:
+                return resourceAmount;
+        }
     }
 
     @Override
@@ -455,12 +542,21 @@ class CarrierRobotController implements RobotController {
 
     @Override
     public boolean canTransferResource(MapLocation loc, ResourceType rType, int amount) {
-        return false;
+        return canDepositResourceResult;
     }
 
     @Override
     public void transferResource(MapLocation loc, ResourceType rType, int amount) throws GameActionException {
-
+        switch (rType) {
+            case ADAMANTIUM:
+                adamantiumAmount -= amount;
+            case MANA:
+                manaAmount -= amount;
+            case ELIXIR:
+                elixirAmount -= amount;
+            default:
+                resourceAmount -= amount;
+        }
     }
 
     @Override

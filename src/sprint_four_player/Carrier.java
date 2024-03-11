@@ -54,7 +54,7 @@ public class Carrier {
         }
         // Head to designated Elixir well to create it or HQ if your resources are full.
         else {
-            if (canBuildElixirWell(rc) && !Communication.isElixirSatisfied(rc) && elixirDepositHistory == 0) {
+            if (canBuildElixirWell(rc, designatedWellType) && !Communication.isElixirSatisfied(rc) && elixirDepositHistory == 0) {
                 // Create Elixir well
                 handleElixirCreation(rc);
             }
@@ -169,10 +169,10 @@ public class Carrier {
     }
 
     /** Check if Carrier can build Elixir **/
-    public static boolean canBuildElixirWell(RobotController rc) throws GameActionException {
+    public static boolean canBuildElixirWell(RobotController rc, int wellType) {
         // Returns true if Carrier has opposite resource.
-        return (designatedWellType == 1 && rc.getResourceAmount(ResourceType.MANA) > 0)
-                || (designatedWellType == 2 && rc.getResourceAmount(ResourceType.ADAMANTIUM) > 0);
+        return (wellType == 1 && rc.getResourceAmount(ResourceType.MANA) > 0)
+                || (wellType == 2 && rc.getResourceAmount(ResourceType.ADAMANTIUM) > 0);
     }
 
     /** Deposit all resources of a certain type to headquarters. **/
