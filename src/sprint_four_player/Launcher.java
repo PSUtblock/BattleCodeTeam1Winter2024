@@ -72,7 +72,7 @@ public class Launcher {
         }
     }
 
-    private static void attackWithPriority(RobotController rc) throws GameActionException {
+    public static void attackWithPriority(RobotController rc) throws GameActionException {
         RobotInfo[] enemies = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam().opponent());
         // Group enemies by type with predefined priorities
         RobotInfo targetCarrier = null;
@@ -108,7 +108,7 @@ public class Launcher {
         }
     }
 
-    private static void moveTowardsOccupiedIslandsAndAttack(RobotController rc) throws GameActionException {
+    public static void moveTowardsOccupiedIslandsAndAttack(RobotController rc) throws GameActionException {
         MapLocation closestOccupiedIsland = null;
         double closestDistance = Double.MAX_VALUE;
 
