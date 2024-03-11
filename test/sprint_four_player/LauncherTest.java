@@ -26,8 +26,15 @@ public class LauncherTest {
         Direction dir = Direction.SOUTH;
         rc.setCanMoveResult(true);
         sprint_four_player.Launcher.runLauncher(rc);
-        Movement.moveToLocation(rc, dir);
         assertNotNull("moved to location",rc.getLocation());
+    }
+    
+    @Test
+    public void testIfCarrierHasAnchor() throws GameActionException {
+        LauncherRobotController rc = new LauncherRobotController();
+        rc.getTotalAnchors();
+        rc.Inventory(0,0,0,0,1,1);
+        sprint_four_player.Launcher.runLauncher(rc);
     }
 }
 
@@ -35,12 +42,23 @@ class LauncherRobotController implements RobotController {
     public MapLocation attackLocation = new MapLocation(5, 5);
     RobotInfo[] enemies = new RobotInfo[]{new RobotInfo(0, Team.B, RobotType.CARRIER, new Inventory(), 150, attackLocation),
             new RobotInfo(1, Team.B, RobotType.LAUNCHER, new Inventory(), 150, attackLocation),
-            new RobotInfo(2, Team.B, RobotType.AMPLIFIER, new Inventory(), 150, attackLocation)};
+            new RobotInfo(2, Team.B, RobotType.AMPLIFIER, new Inventory(), 150, attackLocation),
+            new RobotInfo(2, Team.A, RobotType.LAUNCHER, new Inventory(), 150, attackLocation),
+            new RobotInfo(3, Team.A, RobotType.CARRIER, new Inventory(0,0,0,0,1,0), 150, attackLocation)};
     public MapLocation toAttack = enemies[0].location;
 
     public boolean readyToMove = true;
     private boolean canMoveResult = true;
     private MapLocation currentLocation = new MapLocation(5, 5);
+
+    public int totalAnchors = 1;
+    public int maxCapacity;
+    public int adamantium;
+    public int mana;
+    public int elixir;
+    public int numStandardAnchors;
+    public int numAcceleratingAnchors;
+
     public void setReadyToMove(boolean readyToMove) {
         this.readyToMove = readyToMove;
     }
@@ -54,6 +72,17 @@ class LauncherRobotController implements RobotController {
     @Override
     public void attack(MapLocation loc) throws GameActionException {
 
+    }
+    public void Inventory(int maxCapacity, int adamantium, int mana, int elixir, int numStandardAnchors, int numAcceleratingAnchors) {
+        this.maxCapacity = maxCapacity;
+        this.adamantium = adamantium;
+        this.mana = mana;
+        this.elixir = elixir;
+        this.numStandardAnchors = numStandardAnchors;
+        this.numAcceleratingAnchors = numAcceleratingAnchors;
+    }
+    public int getTotalAnchors(){
+        return getNumAnchors(Anchor.STANDARD) + getNumAnchors(Anchor.ACCELERATING);
     }
     public void setCanMoveResult(boolean moveResult) {
         canMoveResult = moveResult;
@@ -120,7 +149,7 @@ class LauncherRobotController implements RobotController {
 
     @Override
     public int getNumAnchors(Anchor anchorType) {
-        return 0;
+        return 1;
     }
 
     @Override
