@@ -14,7 +14,7 @@ public class CarrierTest {
     public void testRunCarrier() throws GameActionException {
         testCanBuildElixirWellNot();
         testCanBuildElixirWell();
-        
+
         testDepositResourceAmountZero();
         testDepositResourceCannot();
         testDepositResourceCan();
