@@ -841,6 +841,25 @@ public class CommunicationTest {
         assertTrue(Communication.updateElixirAmount(rc, 40));
         assertArrayEquals(validArray, rc.getArray());
     }
+
+    // Testing updating elixir amount when already satisfied.
+    @Test
+    public void testUpdateElixirAmountCanWriteButAlreadySatisfied() throws GameActionException{
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] initialArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 600
+        };
+        rc.setSharedArray(initialArray);
+        assertFalse(Communication.updateElixirAmount(rc, 40));
+        assertArrayEquals(initialArray, rc.getArray());
+    }
 }
 
 /**

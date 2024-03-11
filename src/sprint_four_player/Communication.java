@@ -220,7 +220,7 @@ public class Communication {
     public static boolean updateElixirAmount(RobotController rc, int amount) throws GameActionException {
         // If amount is going to be greater than constant, set new amount to constant value.
         int newAmount = Math.min(amount + rc.readSharedArray(ELIXIR_IDX), GameConstants.UPGRADE_TO_ELIXIR);
-        if (rc.canWriteSharedArray(ELIXIR_IDX, newAmount)) {
+        if (rc.canWriteSharedArray(ELIXIR_IDX, newAmount) && !isElixirSatisfied(rc)) {
             rc.writeSharedArray(ELIXIR_IDX, newAmount);
             System.out.print("Elixir amount: " + newAmount + "\n");
             return true;
