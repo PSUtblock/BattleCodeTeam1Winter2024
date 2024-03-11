@@ -27,6 +27,7 @@ public class Launcher {
         // Also try to move randomly.
         Direction dir = directions[rng.nextInt(directions.length)];
         Movement.moveToLocation(rc, dir);
+        attackEnemies(rc);
     }
 
     private static void followAndProtectCarrier(RobotController rc) throws GameActionException {
@@ -57,6 +58,7 @@ public class Launcher {
                 attackWithPriority(rc);
             } else {
                 Movement.moveToLocation(rc, closestCarrierLocation);
+                attackWithPriority(rc);
             }
         }
     }
@@ -107,7 +109,7 @@ public class Launcher {
             attackEnemies(rc);
         }
     }
-
+    static int allyLauncherCount = 0;
     public static void moveTowardsOccupiedIslandsAndAttack(RobotController rc) throws GameActionException {
         MapLocation closestOccupiedIsland = null;
         double closestDistance = Double.MAX_VALUE;
@@ -135,7 +137,7 @@ public class Launcher {
         if (closestOccupiedIsland != null) {
             // Sense nearby allied launchers
             RobotInfo[] nearbyAllies = rc.senseNearbyRobots(rc.getType().actionRadiusSquared, rc.getTeam());
-            int allyLauncherCount = 0;
+
             for (RobotInfo ally : nearbyAllies) {
                 if (ally.type == RobotType.LAUNCHER) {
                     allyLauncherCount++;
@@ -144,10 +146,19 @@ public class Launcher {
 
             if (allyLauncherCount <=5) {
                 Movement.moveToLocation(rc, closestOccupiedIsland);
+                attackEnemies(rc);
             }
             else{
-                Direction dir = directions[rng.nextInt(directions.length)];
-                Movement.moveToLocation(rc, dir);
+                //attackEnemies(rc);
+                if(rc.senseIsland(rc.getLocation())!=-1){
+                    Movement.moveToLocation(rc,rc.getLocation());
+                    attackEnemies(rc);
+                }
+                else {
+                    Direction dir = directions[rng.nextInt(directions.length)];
+                    Movement.moveToLocation(rc, dir);
+                    attackEnemies(rc);
+                }
             }
             attackWithPriority(rc);
         }
