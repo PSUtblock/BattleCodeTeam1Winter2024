@@ -3,8 +3,6 @@ package sprint_four_player;
 import battlecode.common.*;
 import org.junit.Test;
 
-import java.util.Map;
-
 import static org.junit.Assert.*;
 
 public class CarrierTest {
@@ -12,6 +10,10 @@ public class CarrierTest {
     // Tests every run through of a Carrier's capabilities.
     @Test
     public void testRunCarrier() throws GameActionException {
+        testBuildElixirWellWrongWellType();
+        testBuildElixirWellCannot();
+        testBuildElixirWellCan();
+
         testCanBuildElixirWellNot();
         testCanBuildElixirWell();
 
@@ -26,6 +28,43 @@ public class CarrierTest {
         testCollectAnchorSTANDARD();
         testCollectAnchorACCELERATING();
         testCollectAnchorCannot();
+    }
+
+    // Testing conquer island if cannot.
+    @Test
+    public void testConquerIslandCannot() throws GameActionException {
+        CarrierRobotController rc = new CarrierRobotController();
+        rc.setLocation(new MapLocation(1, 1));
+        rc.setIslandLocation(new MapLocation(1, 1));
+        rc.setCanPlaceAnchor(false);
+        assertFalse(Carrier.conquerIsland(rc, rc.getLocation(), rc.getIslandLocation()));
+    }
+
+    // Testing building elixir well with wrong well type.
+    @Test
+    public void testBuildElixirWellWrongWellType() throws GameActionException {
+        CarrierRobotController rc = new CarrierRobotController();
+        assertEquals(0, Carrier.buildElixirWell(rc, new MapLocation(1, 1), 3));
+    }
+
+    // Testing building elixir well cannot.
+    @Test
+    public void testBuildElixirWellCannot() throws GameActionException {
+        CarrierRobotController rc = new CarrierRobotController();
+        rc.setResourceAmount(ResourceType.MANA, 0);
+        rc.setResourceAmount(ResourceType.ADAMANTIUM, 0);
+        assertEquals(0, Carrier.buildElixirWell(rc, new MapLocation(1, 1), 1));
+        assertEquals(0, Carrier.buildElixirWell(rc, new MapLocation(1, 1), 2));
+    }
+
+    // Testing building elixir can.
+    @Test
+    public void testBuildElixirWellCan() throws GameActionException {
+        CarrierRobotController rc = new CarrierRobotController();
+        rc.setResourceAmount(ResourceType.MANA, 25);
+        rc.setResourceAmount(ResourceType.ADAMANTIUM, 30);
+        assertEquals(25, Carrier.buildElixirWell(rc, new MapLocation(1, 1), 1));
+        assertEquals(30, Carrier.buildElixirWell(rc, new MapLocation(1, 1), 2));
     }
 
     // Testing cannot build Elixir well.
@@ -74,7 +113,7 @@ public class CarrierTest {
     public void testDepositResourceCan() throws GameActionException {
         CarrierRobotController rc = new CarrierRobotController();
         rc.setResourceAmount(ResourceType.NO_RESOURCE, 40);
-        assertTrue(Carrier.depositResource(rc, new MapLocation(1, 1), ResourceType.ADAMANTIUM, 40));
+        assertTrue(Carrier.depositResource(rc, new MapLocation(1, 1), ResourceType.NO_RESOURCE, 40));
         assertEquals(rc.getResourceAmount(ResourceType.NO_RESOURCE), 0);
     }
 
@@ -140,31 +179,55 @@ class CarrierRobotController implements RobotController {
     private boolean canTakeAnchorResult = true;
     private boolean canCollectResourceResult = true;
     private boolean canDepositResourceResult = true;
+    private boolean canPlaceAnchorResult = true;
+    private boolean anchorPlaced = false;
     private int resourceAmount = 0;
     private int adamantiumAmount = 0;
     private int manaAmount = 0;
     private int elixirAmount = 0;
     private Anchor anchorType;
     private MapLocation currentLocation;
+    private MapLocation islandLocation;
+    private String indicator;
 
     public void setLocation(MapLocation location) {
         currentLocation = location;
+    }
+
+    public void setIslandLocation(MapLocation location) {
+        islandLocation = location;
+    }
+
+    public MapLocation getIslandLocation() {
+        return islandLocation;
     }
 
      public void setCanCollectResource(boolean result) {
          canCollectResourceResult = result;
      }
 
+     public void setCanPlaceAnchor(boolean result) {
+        canPlaceAnchorResult = result;
+     }
+
+     public boolean didPlaceAnchor() {
+        return anchorPlaced;
+     }
+
      public void setResourceAmount(ResourceType rType, int amount) {
         switch (rType) {
             case ADAMANTIUM:
                 adamantiumAmount = amount;
+                break;
             case MANA:
                 manaAmount = amount;
+                break;
             case ELIXIR:
                 elixirAmount = amount;
+                break;
             default:
                 resourceAmount = amount;
+                break;
         }
      }
 
@@ -550,12 +613,16 @@ class CarrierRobotController implements RobotController {
         switch (rType) {
             case ADAMANTIUM:
                 adamantiumAmount -= amount;
+                break;
             case MANA:
                 manaAmount -= amount;
+                break;
             case ELIXIR:
                 elixirAmount -= amount;
+                break;
             default:
                 resourceAmount -= amount;
+                break;
         }
     }
 
@@ -599,7 +666,7 @@ class CarrierRobotController implements RobotController {
 
     @Override
     public void placeAnchor() throws GameActionException {
-
+        anchorPlaced = true;
     }
 
     @Override
@@ -629,7 +696,7 @@ class CarrierRobotController implements RobotController {
 
     @Override
     public void setIndicatorString(String string) {
-
+        indicator = string;
     }
 
     @Override

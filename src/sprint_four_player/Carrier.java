@@ -46,7 +46,7 @@ public class Carrier {
 
         if (collectingAnchor != null) {
             // If the robot has an anchor singularly focus on getting it to the closest island it sees.
-            handleAnchor(rc, myLocation);
+            handleAnchor(rc, myLocation, islandLocation);
         }
         else if (rc.getWeight() < GameConstants.CARRIER_CAPACITY && !isNeededAtHQ) {
             // If there is capacity, then go collect resources.
@@ -56,7 +56,7 @@ public class Carrier {
         else {
             if (canBuildElixirWell(rc, designatedWellType) && !Communication.isElixirSatisfied(rc) && elixirDepositHistory == 0) {
                 // Create Elixir well
-                handleElixirCreation(rc);
+                handleElixirCreation(rc, designatedElixirWell, designatedWellType);
             }
             else {
                 // Deposit resources and update whether resources deposited to Elixir well.
@@ -83,9 +83,9 @@ public class Carrier {
     }
 
     /** Handle creation of an Elixir well **/
-    public static void handleElixirCreation(RobotController rc) throws GameActionException {
-        Movement.moveToLocation(rc, designatedElixirWell);
-        elixirDepositHistory = buildElixirWell(rc);
+    public static void handleElixirCreation(RobotController rc, MapLocation wellLocation, int wellType) throws GameActionException {
+        Movement.moveToLocation(rc, wellLocation);
+        elixirDepositHistory = buildElixirWell(rc, wellLocation, wellType);
     }
 
     /** Handle resource collection or exploring and collecting anything otherwise **/
@@ -104,9 +104,11 @@ public class Carrier {
     }
 
     /** Handle planting anchor or exploring otherwise **/
-    public static void handleAnchor(RobotController rc, MapLocation myLocation) throws GameActionException {
-        if (islandLocation != null) {
-            conquerIsland(rc, myLocation);
+    public static void handleAnchor(RobotController rc, MapLocation myLocation, MapLocation island) throws GameActionException {
+        if (island != null) {
+            if (conquerIsland(rc, myLocation, island)) {
+                islandLocation = null;
+            }
         }
         else {
             Movement.explore(rc);
@@ -125,42 +127,33 @@ public class Carrier {
     }
 
     /** Try to conquer an island **/
-    public static void conquerIsland(RobotController rc, MapLocation myLocation) throws GameActionException {
-        rc.setIndicatorString("Moving my anchor towards " + islandLocation);
-        if (!myLocation.equals(islandLocation)) {
-            Movement.moveToLocation(rc, islandLocation);
+    public static boolean conquerIsland(RobotController rc, MapLocation myLocation, MapLocation island) throws GameActionException {
+        rc.setIndicatorString("Moving my anchor towards " + island);
+        if (!myLocation.equals(island)) {
+            Movement.moveToLocation(rc, island);
         }
         if (rc.canPlaceAnchor()) {
             rc.placeAnchor();
             collectingAnchor = null;
             rc.setIndicatorString("Huzzah, placed anchor!");
             // Updates if island to be occupied by team.
-            Communication.updateIslands(rc, islandLocation, 1);
-            islandLocation = null;
+            Communication.updateIslands(rc, island, 1);
+            return true;
         }
-    }
-
-    /** Get specific standard well based on round number **/
-    public static MapLocation getStandardWell(RobotController rc, int roundNum) throws GameActionException {
-        if (roundNum % 2 == 0) {
-            // Collect Adamantium on even rounds.
-            return Communication.readWell(rc, 1);
-        }
-        // Collect Mana on odd rounds.
-        return Communication.readWell(rc, 2);
+        return false;
     }
 
     /** Deposit opposite resource to create Elixir well **/
-    public static int buildElixirWell(RobotController rc) throws GameActionException {
-        boolean deposited;
-        int amountToDeposit;
-        if (designatedWellType == 1) {
+    public static int buildElixirWell(RobotController rc, MapLocation wellLocation, int wellType) throws GameActionException {
+        boolean deposited = false;
+        int amountToDeposit = 0;
+        if (wellType == 1) {
             amountToDeposit = rc.getResourceAmount(ResourceType.MANA);
-            deposited = depositResource(rc, designatedElixirWell, ResourceType.MANA, amountToDeposit);
+            deposited = depositResource(rc, wellLocation, ResourceType.MANA, amountToDeposit);
         }
-        else {
+        else if (wellType == 2){
             amountToDeposit = rc.getResourceAmount(ResourceType.ADAMANTIUM);
-            deposited = depositResource(rc, designatedElixirWell, ResourceType.ADAMANTIUM, amountToDeposit);
+            deposited = depositResource(rc, wellLocation, ResourceType.ADAMANTIUM, amountToDeposit);
         }
         if (deposited) {
             return amountToDeposit;
