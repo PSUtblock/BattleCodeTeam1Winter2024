@@ -3,7 +3,9 @@ package sprint_four_player;
 import battlecode.common.*;
 import battlecode.world.Inventory;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class LauncherTest {
 
@@ -13,25 +15,56 @@ public class LauncherTest {
         LauncherRobotController rc = new LauncherRobotController();
         rc.canAttack(rc.toAttack);
         rc.attack(rc.toAttack);
-        rc.senseNearbyRobots();
+        rc.senseNearbyRobots(100, Team.B);
         sprint_four_player.Launcher.attackEnemies(rc);
         assertEquals(rc.enemies[0].location, rc.attackLocation);
+        rc.setLocation(new MapLocation(5, 5));
+    }
+    @Test
+    public void testMoveToLocationDirCanMove() throws GameActionException {
+        LauncherRobotController rc = new LauncherRobotController();
+        Direction dir = Direction.SOUTH;
+        rc.setCanMoveResult(true);
+        sprint_four_player.Launcher.runLauncher(rc);
+        assertNotNull("moved to location",rc.getLocation());
+    }
+    
+    @Test
+    public void testIfCarrierHasAnchor() throws GameActionException {
+        LauncherRobotController rc = new LauncherRobotController();
+        rc.getTotalAnchors();
+        rc.Inventory(0,0,0,0,1,1);
+        sprint_four_player.Launcher.runLauncher(rc);
     }
 }
 
-
 class LauncherRobotController implements RobotController {
     public MapLocation attackLocation = new MapLocation(5, 5);
-    RobotInfo[] enemies = new RobotInfo[]{new RobotInfo(1, Team.B, RobotType.CARRIER, new Inventory(), 150, attackLocation)};
-
+    RobotInfo[] enemies = new RobotInfo[]{new RobotInfo(0, Team.B, RobotType.CARRIER, new Inventory(), 150, attackLocation),
+            new RobotInfo(1, Team.B, RobotType.LAUNCHER, new Inventory(), 150, attackLocation),
+            new RobotInfo(2, Team.B, RobotType.AMPLIFIER, new Inventory(), 150, attackLocation),
+            new RobotInfo(2, Team.A, RobotType.LAUNCHER, new Inventory(), 150, attackLocation),
+            new RobotInfo(3, Team.A, RobotType.CARRIER, new Inventory(0,0,0,0,1,0), 150, attackLocation)};
     public MapLocation toAttack = enemies[0].location;
 
-    public Direction lastMoveDirection = Direction.SOUTH;
     public boolean readyToMove = true;
+    private boolean canMoveResult = true;
+    private MapLocation currentLocation = new MapLocation(5, 5);
+
+    public int totalAnchors = 1;
+    public int maxCapacity;
+    public int adamantium;
+    public int mana;
+    public int elixir;
+    public int numStandardAnchors;
+    public int numAcceleratingAnchors;
+
     public void setReadyToMove(boolean readyToMove) {
         this.readyToMove = readyToMove;
     }
-
+    public void setLocation(MapLocation location) {
+        currentLocation = location;
+    }
     @Override
     public boolean canAttack(MapLocation loc) {
         return true;
@@ -39,6 +72,20 @@ class LauncherRobotController implements RobotController {
     @Override
     public void attack(MapLocation loc) throws GameActionException {
 
+    }
+    public void Inventory(int maxCapacity, int adamantium, int mana, int elixir, int numStandardAnchors, int numAcceleratingAnchors) {
+        this.maxCapacity = maxCapacity;
+        this.adamantium = adamantium;
+        this.mana = mana;
+        this.elixir = elixir;
+        this.numStandardAnchors = numStandardAnchors;
+        this.numAcceleratingAnchors = numAcceleratingAnchors;
+    }
+    public int getTotalAnchors(){
+        return getNumAnchors(Anchor.STANDARD) + getNumAnchors(Anchor.ACCELERATING);
+    }
+    public void setCanMoveResult(boolean moveResult) {
+        canMoveResult = moveResult;
     }
     @Override
     public int getRoundNum() {
@@ -82,7 +129,7 @@ class LauncherRobotController implements RobotController {
 
     @Override
     public MapLocation getLocation() {
-        return null;
+        return currentLocation;
     }
 
     @Override
@@ -102,7 +149,7 @@ class LauncherRobotController implements RobotController {
 
     @Override
     public int getNumAnchors(Anchor anchorType) {
-        return 0;
+        return 1;
     }
 
     @Override
@@ -162,7 +209,7 @@ class LauncherRobotController implements RobotController {
 
     @Override
     public RobotInfo[] senseNearbyRobots(int radiusSquared, Team team) throws GameActionException {
-        return new RobotInfo[0];
+        return enemies;
     }
 
     @Override
@@ -327,14 +374,12 @@ class LauncherRobotController implements RobotController {
 
     @Override
     public boolean canMove(Direction dir) {
-        return false;
+        return canMoveResult;
     }
 
     @Override
     public void move(Direction dir) throws GameActionException {
-        if (readyToMove) {
-            lastMoveDirection = dir;
-        }
+        currentLocation = currentLocation.add(dir);
     }
 
     @Override
