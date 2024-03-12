@@ -5,6 +5,27 @@ import java.util.*;
 
 public class Mapping {
     /**
+     * Return the closest location with respect to robot's current location. Uses set of MapLocations as a parameter.
+     **/
+    public static MapLocation getClosestLocation(RobotController rc, Iterable<MapLocation> locations) {
+        if (locations.iterator().hasNext()) {
+            MapLocation currClosest = locations.iterator().next();
+            MapLocation myLocation = rc.getLocation();
+            int minDistance = myLocation.distanceSquaredTo(currClosest);
+
+            for (MapLocation island : locations) {
+                int currDistance = myLocation.distanceSquaredTo(island);
+                if (minDistance > currDistance) {
+                    minDistance = currDistance;
+                    currClosest = island;
+                }
+            }
+            return currClosest;
+        }
+        return null;
+    }
+
+    /**
      * Return the closest location with respect to robot's current location. Uses an array of MapLocations as a parameter.
      **/
     public static MapLocation getClosestLocation(RobotController rc, MapLocation[] locations) {
@@ -27,47 +48,6 @@ public class Mapping {
     }
 
     /**
-     * Return the closest location with respect to robot's current location. Uses set of MapLocations as a parameter.
-     **/
-    public static MapLocation getClosestLocation(RobotController rc, Set<MapLocation> locations) {
-        if (!locations.isEmpty()) {
-            MapLocation currClosest = locations.iterator().next();
-            MapLocation myLocation = rc.getLocation();
-            int minDistance = myLocation.distanceSquaredTo(currClosest);
-
-            for (MapLocation island : locations) {
-                int currDistance = myLocation.distanceSquaredTo(island);
-                if (minDistance > currDistance) {
-                    minDistance = currDistance;
-                    currClosest = island;
-                }
-            }
-            return currClosest;
-        }
-        return null;
-    }
-
-    /**
-     * Return the closest location with respect to robot's current location. Uses list of MapLocations as a parameter.
-     **/
-    public static MapLocation getClosestLocation(RobotController rc, List<MapLocation> locations) {
-        if (!locations.isEmpty()) {
-            MapLocation currClosest = locations.iterator().next();
-            MapLocation myLocation = rc.getLocation();
-            int minDistance = myLocation.distanceSquaredTo(currClosest);
-
-            for (MapLocation island : locations) {
-                int currDistance = myLocation.distanceSquaredTo(island);
-                if (minDistance > currDistance) {
-                    minDistance = currDistance;
-                    currClosest = island;
-                }
-            }
-            return currClosest;
-        }
-        return null;
-    }
-    /**
      * Fills a list with possible landmarks spaced out by 100 units
      **/
     public static List<MapLocation> getPossibleLandmarks(RobotController rc, int mapWidth, int mapHeight, int radius) throws GameActionException {
@@ -85,27 +65,15 @@ public class Mapping {
      * Sorts locations with respect to distance from a headquarters or from self if necessary
      **/
     private static List<MapLocation> sortLocations(RobotController rc, List<MapLocation> locations) throws GameActionException {
-        MapLocation centerLoc = Communication.readHQ(rc);
-        if (centerLoc == null) {
-            centerLoc = rc.getLocation();
-        }
+        MapLocation centerLoc = findCentralLocation(rc);
         locations.sort(new DistanceComparator(centerLoc));
         return locations;
     }
 
-    /** Find all nearby ally Carriers **/
-    public static RobotInfo[] getNearbyAllyCarriers(RobotController rc) {
-        RobotInfo[] nearbyRobots = rc.senseNearbyRobots();
-        Team myTeam = rc.getTeam();
-        RobotInfo[] nearbyCarriers = new RobotInfo[nearbyRobots.length];
-        int carrierCount = 0;
-        for (RobotInfo robot : nearbyRobots) {
-            if (robot.getType() == RobotType.CARRIER && robot.getTeam() == myTeam) {
-                nearbyCarriers[carrierCount] = robot;
-                ++carrierCount;
-            }
-        }
-        return nearbyCarriers;
+    /** Returns headquarters or robots location to be used as a central location **/
+    private static MapLocation findCentralLocation(RobotController rc) throws GameActionException {
+        MapLocation centerLoc = Communication.readHQ(rc);
+        return (centerLoc == null) ? rc.getLocation() : centerLoc;
     }
 }
 

@@ -179,91 +179,116 @@ public class CommunicationTest {
         assertArrayEquals(validArray, rc.getArray());
     }
 
-//    // Testing reading a well from an empty shared array.
-//    @Test
-//    public void testReadWellWithEmptySharedArray() throws GameActionException {
-//        CommunicationRobotController rc = new CommunicationRobotController();
-//        int typeToFind = 2;
-//        MapLocation closestWell = Communication.readWell(rc, typeToFind);
-//        // Assert that location is null.
-//        assertNull(closestWell);
-//    }
-//
-    // Testing reading the well matching a specific type from a shared array with one well.
-//    @Test
-//    public void testReadWellWithOneWellMatchingType() throws GameActionException {
-//        CommunicationRobotController rc = new CommunicationRobotController();
-//        int[] oneWellInArray = new int[] {
-//                0, 0, 0, 0, 82, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0
-//        };
-//        rc.setSharedArray(oneWellInArray);
-//        MapLocation wellResult = Communication.readWell(rc, 2);
-//        assertEquals(new MapLocation(1, 1), wellResult);
-//    }
+    // Testing reading a well from an empty shared array.
+    @Test
+    public void testReadWellWithEmptySharedArray() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int typeToFind = 2;
+        MapLocation closestWell = Communication.readWell(rc, typeToFind);
+        // Assert that location is null.
+        assertNull(closestWell);
+    }
 
-//    // Testing reading the well not matching a specific type from a shared array with one well.
-//    @Test
-//    public void testReadWellWithOneWellNotMatchingType() throws GameActionException {
-//        CommunicationRobotController rc = new CommunicationRobotController();
-//        int[] oneWellInArray = new int[] {
-//                0, 0, 0, 0, 80, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0
-//        };
-//        rc.setSharedArray(oneWellInArray);
-//        MapLocation wellResult = Communication.readWell(rc, 2);
-//        assertEquals(new MapLocation(1, 1), wellResult);
-//    }
-//
-//    // Testing reading the matching well type from a shared array with multiple wells.
-//    @Test
-//    public void testReadWellWithMultipleWellMatchingType() throws GameActionException {
-//        CommunicationRobotController rc = new CommunicationRobotController();
-//        int[] multiWellInArray = new int[] {
-//                0, 0, 0, 0, 146, 114, 131, 81,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0
-//        };
-//        rc.setSharedArray(multiWellInArray);
-//        MapLocation wellResult = Communication.readWell(rc, 1);
-//        assertEquals(new MapLocation(1, 1), wellResult);
-//    }
-//
-//    // Testing reading the well not matching type from a shared array with multiple wells.
-//    @Test
-//    public void testReadWellWithMultipleWellNotMatchingType() throws GameActionException {
-//        CommunicationRobotController rc = new CommunicationRobotController();
-//        int[] multiWellInArray = new int[] {
-//                0, 0, 0, 0, 146, 114, 131, 82,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0
-//        };
-//        rc.setSharedArray(multiWellInArray);
-//        MapLocation wellResult = Communication.readWell(rc, 1);
-//        assertEquals(new MapLocation(1, 1), wellResult);
-//    }
+    // Testing reading the well matching a specific type from a shared array with one well.
+    @Test
+    public void testReadWellWithOneWellMatchingType() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] oneWellInArray = new int[] {
+                0, 0, 0, 0, 82, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        rc.setSharedArray(oneWellInArray);
+        MapLocation wellResult = Communication.readWell(rc, 2);
+        assertEquals(new MapLocation(1, 1), wellResult);
+    }
+
+    // Testing reading the well not matching a specific type from a shared array with one well.
+    @Test
+    public void testReadWellWithOneWellNotMatchingType() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] oneWellInArray = new int[] {
+                0, 0, 0, 0, 80, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        rc.setSharedArray(oneWellInArray);
+        MapLocation wellResult = Communication.readWell(rc, 2);
+        assertEquals(new MapLocation(1, 1), wellResult);
+    }
+
+    // Testing reading the matching well type from a shared array with multiple wells.
+    @Test
+    public void testReadWellWithMultipleWellMatchingType() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] multiWellInArray = new int[] {
+                0, 0, 0, 0, 146, 114, 131, 81,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        rc.setSharedArray(multiWellInArray);
+        MapLocation wellResult = Communication.readWell(rc, 1);
+        assertEquals(new MapLocation(1, 1), wellResult);
+    }
+
+    // Testing reading the well not matching type from a shared array with multiple wells.
+    @Test
+    public void testReadWellWithMultipleWellNotMatchingType() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] multiWellInArray = new int[] {
+                0, 0, 0, 0, 146, 114, 131, 82,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        rc.setSharedArray(multiWellInArray);
+        MapLocation wellResult = Communication.readWell(rc, 1);
+        assertEquals(new MapLocation(1, 1), wellResult);
+    }
+
+    // Testing not finding a potential elixir well.
+    @Test
+    public void testFindPotentialElixirWellNot() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        assertNull(Communication.findPotentialElixirWell(rc));
+    }
+
+    // Testing finding a potential elixir well.
+    @Test
+    public void testFindPotentialElixirWell() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 81, 130, 147, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        rc.setSharedArray(validArray);
+        assertArrayEquals(Communication.findPotentialElixirWell(rc), new int[] {1, 1, 1});
+    }
 
     // Testing writing a well when none are sensed.
     @Test
@@ -408,6 +433,91 @@ public class CommunicationTest {
         rc.setSharedArray(initialArray);
         Communication.writeWells(rc);
         assertArrayEquals(validArray, rc.getArray());
+    }
+
+    // Testing writing a well to a shared array with a matching location but different type.
+    @Test
+    public void testWriteWellsExistingWellNewType() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        rc.setWells(new WellInfo[] {
+                new WellInfo(
+                        new MapLocation(1, 1),
+                        ResourceType.ELIXIR,
+                        new Inventory(10),
+                        false),
+                new WellInfo(
+                        new MapLocation(1, 2),
+                        ResourceType.MANA,
+                        new Inventory(10),
+                        false),
+                new WellInfo(
+                        new MapLocation(2, 2),
+                        ResourceType.ELIXIR,
+                        new Inventory(10),
+                        false)
+        });
+        int[] initialArray = new int[] {
+                0, 0, 0, 0, 81, 130, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 83, 130, 147, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+
+        rc.setSharedArray(initialArray);
+        Communication.writeWells(rc);
+        assertArrayEquals(validArray, rc.getArray());
+    }
+
+    // Testing cannot write a well to a shared array with a matching location but different type.
+    @Test
+    public void testCannotWriteWellsExistingWellNewType() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        rc.setWells(new WellInfo[] {
+                new WellInfo(
+                        new MapLocation(1, 1),
+                        ResourceType.ELIXIR,
+                        new Inventory(10),
+                        false),
+                new WellInfo(
+                        new MapLocation(1, 2),
+                        ResourceType.MANA,
+                        new Inventory(10),
+                        false),
+                new WellInfo(
+                        new MapLocation(2, 2),
+                        ResourceType.ELIXIR,
+                        new Inventory(10),
+                        false)
+        });
+        int[] initialArray = new int[] {
+                0, 0, 0, 0, 81, 130, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+
+        rc.setCanWriteResult(false);
+        rc.setSharedArray(initialArray);
+        Communication.writeWells(rc);
+        assertArrayEquals(initialArray, rc.getArray());
     }
 
     // Testing reading an island from an empty shared array.
@@ -648,72 +758,108 @@ public class CommunicationTest {
         assertArrayEquals(validArray, rc.getArray());
     }
 
-//    // Testing read priority returning the correct value from the shared array.
-//    @Test
-//    public void testReadPriority() throws GameActionException {
-//        CommunicationRobotController rc = new CommunicationRobotController();
-//        int[] initialArray = new int[] {
-//                1, 1, 1, 1, 1, 1, 1, 1,
-//                1, 1, 1, 1, 1, 1, 1, 1,
-//                1, 1, 1, 1, 1, 1, 1, 1,
-//                1, 1, 1, 1, 1, 1, 1, 1,
-//                1, 1, 1, 1, 1, 1, 1, 1,
-//                1, 1, 1, 1, 1, 1, 1, 1,
-//                1, 1, 1, 1, 1, 1, 1, 1,
-//                1, 1, 1, 1, 1, 1, 1, 2
-//        };
-//        rc.setSharedArray(initialArray);
-//        int priorityResult = Communication.readPriority(rc);
-//        assertEquals(2, priorityResult);
-//    }
-//
-//    // Testing writing priority when robot cannot write.
-//    @Test
-//    public void testWritePriorityCannotWrite() throws GameActionException{
-//        CommunicationRobotController rc = new CommunicationRobotController();
-//        int[] validArray = new int[] {
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0
-//        };
-//        rc.setCanWriteResult(false);
-//        Communication.writePriority(rc, 1);
-//        assertArrayEquals(validArray, rc.getArray());
-//    }
-//
-//    // Testing writing priority when robot can write.
-//    @Test
-//    public void testWritePriorityCanWrite() throws GameActionException{
-//        CommunicationRobotController rc = new CommunicationRobotController();
-//        int[] initialArray = new int[] {
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 1
-//        };
-//        int[] validArray = new int[] {
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, 0, 0, 0, 2
-//        };
-//        rc.setSharedArray(initialArray);
-//        Communication.writePriority(rc, 2);
-//        assertArrayEquals(validArray, rc.getArray());
-//    }
+    // Testing that Elixir amount is satisfied.
+    @Test
+    public void testIsElixirSatisfiedTrue() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] initialArray = new int[] {
+                1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 600
+        };
+        rc.setSharedArray(initialArray);
+        assertTrue(Communication.isElixirSatisfied(rc));
+    }
+
+    // Testing that Elixir amount is not satisfied.
+    @Test
+    public void testIsElixirSatisfiedFalse() throws GameActionException {
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] initialArray = new int[] {
+                1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 599
+        };
+        rc.setSharedArray(initialArray);
+        assertFalse(Communication.isElixirSatisfied(rc));
+    }
+
+    // Testing updating Elixir amount if cannot write.
+    @Test
+    public void testUpdateElixirAmountCannotWrite() throws GameActionException{
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        rc.setCanWriteResult(false);
+        assertFalse(Communication.updateElixirAmount(rc, 1));
+        assertArrayEquals(validArray, rc.getArray());
+    }
+
+    // Testing updating elixir amount when can write.
+    @Test
+    public void testUpdateElixirAmountCanWrite() throws GameActionException{
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] initialArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 1
+        };
+        int[] validArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 41
+        };
+        rc.setSharedArray(initialArray);
+        assertTrue(Communication.updateElixirAmount(rc, 40));
+        assertArrayEquals(validArray, rc.getArray());
+    }
+
+    // Testing updating elixir amount when already satisfied.
+    @Test
+    public void testUpdateElixirAmountCanWriteButAlreadySatisfied() throws GameActionException{
+        CommunicationRobotController rc = new CommunicationRobotController();
+        int[] initialArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 600
+        };
+        rc.setSharedArray(initialArray);
+        assertFalse(Communication.updateElixirAmount(rc, 40));
+        assertArrayEquals(initialArray, rc.getArray());
+    }
 }
 
 /**

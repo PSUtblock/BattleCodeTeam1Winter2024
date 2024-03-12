@@ -1,7 +1,9 @@
 package sprint_four_player;
 
 import battlecode.common.*;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import static org.junit.Assert.*;
 
@@ -120,9 +122,22 @@ public class MovementTest {
         assertEquals(new MapLocation(0, 0), rc.getLocation());
     }
 
+    // Testing moveToLocation method when exception is thrown.
+    @Test
+    public void testMoveToLocationExceptionThrown() throws GameActionException {
+        MovementRobotController rc = new MovementRobotController() {
+            @Override
+            public void move(Direction direction) throws GameActionException {
+                throw new GameActionException(GameActionExceptionType.CANT_MOVE_THERE, "Simulation");
+            }
+        };
+        Movement.moveToLocation(rc, new MapLocation(1, 1));
+        assertEquals("Cannot Move", rc.getIndicatorString());
+    }
+
     // Testing movedClockwise method to a target location when a robot can move.
     @Test
-    public void testMoveClockwiseCanMove() throws GameActionException {
+    public void testMovedClockwiseCanMove() throws GameActionException {
         MovementRobotController rc = new MovementRobotController();
         Direction validDir = Direction.NORTHEAST;
         rc.setCanMoveResult(true);
@@ -131,7 +146,7 @@ public class MovementTest {
 
     // Testing movedClockwise method to a target location when a robot can move but has already visited a location.
     @Test
-    public void testMoveClockwiseCanMoveButAlreadyVisitedALocation() throws GameActionException {
+    public void testMovedClockwiseCanMoveButAlreadyVisitedALocation() throws GameActionException {
         MovementRobotController rc = new MovementRobotController();
         Movement.moveToLocation(rc, new MapLocation(0, 10));
         Movement.moveToLocation(rc, new MapLocation(0, 10));
@@ -162,7 +177,7 @@ public class MovementTest {
 
     // Testing moveClockwise method to a target location when a robot cannot move.
     @Test
-    public void testMoveClockwiseCannotMove() throws GameActionException {
+    public void testMovedClockwiseCannotMove() throws GameActionException {
         MovementRobotController rc = new MovementRobotController();
         Direction validDir = Direction.NORTHEAST;
         rc.setCanMoveResult(false);
@@ -269,7 +284,7 @@ public class MovementTest {
 class MovementRobotController implements RobotController{
     private boolean canMoveResult = true; // Controls canMove result
     private boolean movementReadyResult = true; // Controls isMovementReady result
-    private String indicator = "";
+    private String indicator;
     private MapLocation currentLocation = new MapLocation(0, 0);
     private int mapWidth = 11;
     private int mapHeight = 11;
@@ -326,7 +341,7 @@ class MovementRobotController implements RobotController{
     }
 
     @Override
-    public void move(Direction dir) {
+    public void move(Direction dir) throws GameActionException {
         currentLocation = currentLocation.add(dir);
     }
 
