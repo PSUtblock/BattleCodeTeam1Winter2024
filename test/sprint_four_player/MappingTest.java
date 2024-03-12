@@ -149,11 +149,6 @@ class MappingRobotController implements RobotController{
         currentLocation = location;
     }
 
-    public void setMapWidthAndHeight(int width, int height) {
-        mapWidth = width;
-        mapHeight = height;
-    }
-
     @Override
     public boolean isMovementReady() {
         return movementReadyResult;

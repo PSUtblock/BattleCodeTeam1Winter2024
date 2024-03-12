@@ -2,6 +2,7 @@ package sprint_four_player;
 
 import battlecode.common.*;
 import org.junit.Test;
+import org.scalactic.Or;
 
 import static org.junit.Assert.*;
 
@@ -71,6 +72,7 @@ public class MovementTest {
     @Test
     public void testMoveToLocationTargetCanMoveNotAdjacent() throws GameActionException {
         MovementRobotController rc = new MovementRobotController();
+        Movement.resetGlobals();
         MapLocation targetLocation = new MapLocation(3, 3);
         rc.setMovementReady(true);
         rc.setCanMoveResult(true);
@@ -160,6 +162,7 @@ public class MovementTest {
     @Test
     public void testMovedClockwiseCanMoveButAlreadyVisitedEverything() throws GameActionException {
         MovementRobotController rc = new MovementRobotController();
+        Movement.resetGlobals();
         Movement.moveToLocation(rc, new MapLocation(0, 10));
         Movement.moveToLocation(rc, new MapLocation(0, 10));
         Movement.moveToLocation(rc, new MapLocation(10, 2));
@@ -189,7 +192,8 @@ public class MovementTest {
         MovementRobotController rc = new MovementRobotController();
         rc.setCanMoveResult(true);
         Movement.moveRandomly(rc);
-        // Nothing to check.
+        // Check that robot moved.
+        assertNotEquals(new MapLocation(0, 0), rc.getLocation());
     }
 
     // Testing moveRandomly if cannot move.
@@ -204,7 +208,7 @@ public class MovementTest {
     // Testing explore if target not locked.
     @Test
     public void testExploreNotLocked() throws GameActionException {
-        MappingRobotController rc = new MappingRobotController();
+        MovementRobotController rc = new MovementRobotController();
         resetVisitLandmarks(rc);
         rc.setLocation(new MapLocation(5, 5));
         Movement.explore(rc);
@@ -212,7 +216,7 @@ public class MovementTest {
     }
 
     // Helper function for testing exploration.
-    private void resetVisitLandmarks(MappingRobotController rc) throws GameActionException {
+    private void resetVisitLandmarks(MovementRobotController rc) throws GameActionException {
         int count = 0;
         boolean visitedOne = false;
         boolean visitedTwo = false;
@@ -242,7 +246,7 @@ public class MovementTest {
     // Testing explore if location to explore is null.
     @Test
     public void testExploreLocationToExploreNull() throws GameActionException {
-        MappingRobotController rc = new MappingRobotController();
+        MovementRobotController rc = new MovementRobotController();
         rc.setMapWidthAndHeight(-1, -1);
         rc.setLocation(new MapLocation(5, 5));
         Movement.explore(rc);
@@ -252,7 +256,7 @@ public class MovementTest {
     // Testing explore if adjacent to location.
     @Test
     public void testExploreAdjacentToLocation() throws GameActionException {
-        MappingRobotController rc = new MappingRobotController();
+        MovementRobotController rc = new MovementRobotController();
         rc.setLocation(new MapLocation(5, 5));
         Movement.explore(rc); // to (6, 6)
         assertEquals(new MapLocation(6, 6), rc.getLocation());
@@ -267,12 +271,28 @@ public class MovementTest {
     // Testing explore if visited all.
     @Test
     public void testExploreVisitedAll() throws GameActionException {
-        MappingRobotController rc = new MappingRobotController();
+        MovementRobotController rc = new MovementRobotController();
         rc.setLocation(new MapLocation(5, 5));
         resetVisitLandmarks(rc); //Visits all locations
         assertEquals(new MapLocation(1, 0), rc.getLocation());
     }
 
+    // Testing all globals reset.
+    @Test
+    public void testResetGlobals() throws GameActionException {
+        MovementRobotController rc = new MovementRobotController();
+        Movement.resetGlobals();
+        rc.setMapWidthAndHeight(11, 11);
+        rc.setLocation(new MapLocation(3, 3));
+        Movement.moveToLocation(rc, new MapLocation(0, 3));
+        Movement.explore(rc);
+        rc.setLocation(new MapLocation(0, 1));
+        Movement.explore(rc);
+        Movement.resetGlobals();
+        Movement.explore(rc);
+        // Robot will not move due to reset.
+        assertEquals(new MapLocation(0, 1), rc.getLocation());
+    }
 }
 
 
@@ -301,6 +321,11 @@ class MovementRobotController implements RobotController{
 
     public void setMovementReady(boolean movementReady) {
         movementReadyResult = movementReady;
+    }
+
+    public void setMapWidthAndHeight(int width, int height) {
+        mapWidth = width;
+        mapHeight = height;
     }
 
     @Override

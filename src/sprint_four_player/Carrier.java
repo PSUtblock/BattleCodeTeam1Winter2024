@@ -122,6 +122,7 @@ public class Carrier {
             designatedElixirWell = new MapLocation(wellProperties[0], wellProperties[1]);
             // Index 2 represents the well type.
             designatedWellType = wellProperties[2];
+            rc.setIndicatorString("Future Elixir well located.");
         }
     }
 
