@@ -34,58 +34,65 @@ public class TemporalBoosters {
      */
     public static void runTemporalBoosters(RobotController rc) throws GameActionException {
 
-        findFriend(rc); // finds the ID of a friendly robot, Carrier or Launcher determined by spawned behavior state.
-        boostFriendArea(rc); // Looks for the robot friend, follows them, and boosts them. If no friend or doesn't want a friend randomly move and boost.
+        findFriend(rc, randomBehavior); // finds the ID of a friendly robot, Carrier or Launcher determined by spawned behavior state.
+
+        boostFriendArea(rc, randomBehavior); // Looks for the robot friend, follows them, and boosts them. If no friend or doesn't want a friend randomly move and boost.
     }
 
     /**
      * Boost the area, if it is possible to boost.
      */
-    public static void boostArea(RobotController rc) throws GameActionException {
+    public static boolean boostArea(RobotController rc) throws GameActionException {
         if(rc.canBoost()) {
             rc.boost();
+            return true;
         }
+        return false;
     }
 
     /**
      * Find a Robot Friend on your team. Uses the Behavior state to determine what type of friend the
      * Booster will make.
      */
-    public static void findFriend(RobotController rc) {
+    public static int findFriend(RobotController rc, int behavior) {
         RobotInfo[] nearbyRobots;
 
         // check if we need a friend. If -1 we have no friend.
-        if(randomBehavior != 3 && roboBuddy == -1) {
+        if(behavior != 3 && roboBuddy == -1) {
             nearbyRobots = rc.senseNearbyRobots();
 
             for (RobotInfo nearbyRobot : nearbyRobots) {
 
-                switch (randomBehavior) {
+                switch (behavior) {
                     case 1:
-                        if (nearbyRobot.team == rc.getTeam() && Objects.equals(nearbyRobot.getType().toString(), "CARRIER")) {
+                        if (nearbyRobot.getTeam() == rc.getTeam() && Objects.equals(nearbyRobot.getType().name(),"CARRIER")) {
                             roboBuddy = nearbyRobot.ID;
                             rc.setIndicatorString("My Carrier Friend Is: " + roboBuddy);
-                            break;
+                            return 1;
                         }
                         else {
                             rc.setIndicatorString("Couldn't find a friendly Carrier");
+                            roboBuddy = -1;
                         }
                         break;
                     case 2:
-                        if (nearbyRobot.team == rc.getTeam() && Objects.equals(nearbyRobot.getType().toString(), "LAUNCHER")) {
+                        if (nearbyRobot.getTeam() == rc.getTeam() && Objects.equals(nearbyRobot.getType().name(), "LAUNCHER")) {
                             roboBuddy = nearbyRobot.ID;
                             rc.setIndicatorString("My Launcher Friend Is: " + roboBuddy);
-                            break;
+                            return 2;
                         }
                         else {
                             rc.setIndicatorString("Couldn't find a friendly Launcher");
+                            roboBuddy = -1;
                         }
                         break;
                     default:
-                        break;
+                        return 0;
                 }
             }
+            return 0;
         }
+        return -1;
     }
 
     /**
@@ -94,7 +101,7 @@ public class TemporalBoosters {
      * If no robot friends are found or the friend that it was following, the Booster will
      * wander around until it finds another friend.
      */
-    public static void boostFriendArea(RobotController rc) throws GameActionException {
+    public static void boostFriendArea(RobotController rc, int behavior) throws GameActionException {
 
         if( roboBuddy != -1) {
             if(rc.canSenseRobot(roboBuddy))
@@ -109,7 +116,7 @@ public class TemporalBoosters {
 
         }
 
-        if( randomBehavior == 3)
+        if( behavior == 3)
         {
             rc.setIndicatorString("I don't need a friend");
             Movement.moveRandomly(rc);
@@ -117,6 +124,11 @@ public class TemporalBoosters {
 
         boostArea(rc);
 
+    }
+
+    public static int setRoboBuddID(int value) {
+        roboBuddy = value;
+        return roboBuddy;
     }
 }
 
