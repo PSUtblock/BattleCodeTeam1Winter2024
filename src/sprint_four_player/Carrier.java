@@ -4,7 +4,6 @@ import battlecode.common.*;
 
 public class Carrier {
     // Map locations to store headquarters, closest well, and island positions.
-    private static MapLocation wellLocation;
     private static MapLocation designatedElixirWell;
     private static int designatedWellType;
     private static MapLocation islandLocation;
@@ -27,7 +26,7 @@ public class Carrier {
         Communication.writeIslands(rc);
 
         // Find closest well location.
-        wellLocation = Communication.readWell(rc, 0);
+        MapLocation wellLocation = Communication.readWell(rc, 0);
 
         if (designatedElixirWell == null) {
             // If no designated Elixir well, find one.
@@ -46,17 +45,17 @@ public class Carrier {
 
         if (collectingAnchor != null) {
             // If the robot has an anchor singularly focus on getting it to the closest island it sees.
-            handleAnchor(rc, myLocation);
+            handleAnchor(rc, myLocation, islandLocation);
         }
         else if (rc.getWeight() < GameConstants.CARRIER_CAPACITY && !isNeededAtHQ) {
             // If there is capacity, then go collect resources.
-            handleResourceCollection(rc, myLocation);
+            handleResourceCollection(rc, myLocation, wellLocation);
         }
         // Head to designated Elixir well to create it or HQ if your resources are full.
         else {
             if (canBuildElixirWell(rc, designatedWellType) && !Communication.isElixirSatisfied(rc) && elixirDepositHistory == 0) {
                 // Create Elixir well
-                handleElixirCreation(rc);
+                handleElixirCreation(rc, designatedElixirWell, designatedWellType);
             }
             else {
                 // Deposit resources and update whether resources deposited to Elixir well.
@@ -83,18 +82,18 @@ public class Carrier {
     }
 
     /** Handle creation of an Elixir well **/
-    public static void handleElixirCreation(RobotController rc) throws GameActionException {
-        Movement.moveToLocation(rc, designatedElixirWell);
-        elixirDepositHistory = buildElixirWell(rc);
+    public static void handleElixirCreation(RobotController rc, MapLocation wellLoc, int wellType) throws GameActionException {
+        Movement.moveToLocation(rc, wellLoc);
+        elixirDepositHistory = buildElixirWell(rc, wellLoc, wellType);
     }
 
     /** Handle resource collection or exploring and collecting anything otherwise **/
-    public static void handleResourceCollection(RobotController rc, MapLocation myLocation) throws GameActionException {
-        if (wellLocation != null) {
-            rc.setIndicatorString("Moving towards well at: " + wellLocation);
-            Movement.moveToLocation(rc, wellLocation);
+    public static void handleResourceCollection(RobotController rc, MapLocation myLocation, MapLocation wellLoc) throws GameActionException {
+        if (wellLoc != null) {
+            rc.setIndicatorString("Moving towards well at: " + wellLoc);
+            Movement.moveToLocation(rc, wellLoc);
             // -1 indicates to collect all.
-            collectFromWell(rc, wellLocation, -1);
+            collectFromWell(rc, wellLoc, -1);
         }
         else {
             // Try to collect a well anyway, in case there is one, while exploring.
@@ -104,9 +103,11 @@ public class Carrier {
     }
 
     /** Handle planting anchor or exploring otherwise **/
-    public static void handleAnchor(RobotController rc, MapLocation myLocation) throws GameActionException {
-        if (islandLocation != null) {
-            conquerIsland(rc, myLocation);
+    public static void handleAnchor(RobotController rc, MapLocation myLocation, MapLocation island) throws GameActionException {
+        if (island != null) {
+            if (conquerIsland(rc, myLocation, island)) {
+                islandLocation = null;
+            }
         }
         else {
             Movement.explore(rc);
@@ -121,46 +122,38 @@ public class Carrier {
             designatedElixirWell = new MapLocation(wellProperties[0], wellProperties[1]);
             // Index 2 represents the well type.
             designatedWellType = wellProperties[2];
+            rc.setIndicatorString("Future Elixir well located.");
         }
     }
 
     /** Try to conquer an island **/
-    public static void conquerIsland(RobotController rc, MapLocation myLocation) throws GameActionException {
-        rc.setIndicatorString("Moving my anchor towards " + islandLocation);
-        if (!myLocation.equals(islandLocation)) {
-            Movement.moveToLocation(rc, islandLocation);
+    public static boolean conquerIsland(RobotController rc, MapLocation myLocation, MapLocation island) throws GameActionException {
+        rc.setIndicatorString("Moving my anchor towards " + island);
+        if (!myLocation.equals(island)) {
+            Movement.moveToLocation(rc, island);
         }
         if (rc.canPlaceAnchor()) {
             rc.placeAnchor();
             collectingAnchor = null;
             rc.setIndicatorString("Huzzah, placed anchor!");
             // Updates if island to be occupied by team.
-            Communication.updateIslands(rc, islandLocation, 1);
-            islandLocation = null;
+            Communication.updateIslands(rc, island, 1);
+            return true;
         }
-    }
-
-    /** Get specific standard well based on round number **/
-    public static MapLocation getStandardWell(RobotController rc, int roundNum) throws GameActionException {
-        if (roundNum % 2 == 0) {
-            // Collect Adamantium on even rounds.
-            return Communication.readWell(rc, 1);
-        }
-        // Collect Mana on odd rounds.
-        return Communication.readWell(rc, 2);
+        return false;
     }
 
     /** Deposit opposite resource to create Elixir well **/
-    public static int buildElixirWell(RobotController rc) throws GameActionException {
-        boolean deposited;
-        int amountToDeposit;
-        if (designatedWellType == 1) {
+    public static int buildElixirWell(RobotController rc, MapLocation wellLocation, int wellType) throws GameActionException {
+        boolean deposited = false;
+        int amountToDeposit = 0;
+        if (wellType == 1) {
             amountToDeposit = rc.getResourceAmount(ResourceType.MANA);
-            deposited = depositResource(rc, designatedElixirWell, ResourceType.MANA, amountToDeposit);
+            deposited = depositResource(rc, wellLocation, ResourceType.MANA, amountToDeposit);
         }
-        else {
+        else if (wellType == 2){
             amountToDeposit = rc.getResourceAmount(ResourceType.ADAMANTIUM);
-            deposited = depositResource(rc, designatedElixirWell, ResourceType.ADAMANTIUM, amountToDeposit);
+            deposited = depositResource(rc, wellLocation, ResourceType.ADAMANTIUM, amountToDeposit);
         }
         if (deposited) {
             return amountToDeposit;
@@ -200,9 +193,9 @@ public class Carrier {
     }
 
     /** Try to collect resource. **/
-    public static void collectFromWell(RobotController rc, MapLocation location, int amount) throws GameActionException {
-        if (rc.canCollectResource(location, amount)) {
-            rc.collectResource(location, amount);
+    public static void collectFromWell(RobotController rc, MapLocation wellLoc, int amount) throws GameActionException {
+        if (rc.canCollectResource(wellLoc, amount)) {
+            rc.collectResource(wellLoc, amount);
             rc.setIndicatorString("Collecting, now have, AD:" +
                     rc.getResourceAmount(ResourceType.ADAMANTIUM) +
                     " MN: " + rc.getResourceAmount(ResourceType.MANA) +

@@ -3,29 +3,541 @@ package sprint_four_player;
 import battlecode.common.*;
 import org.junit.Test;
 
-import java.util.Map;
+import java.lang.reflect.Field;
 
 import static org.junit.Assert.*;
 
 public class CarrierTest {
 
-    // Tests every run through of a Carrier's capabilities.
+    // Testing running Carrier when designated elixir well is null.
     @Test
-    public void testRunCarrier() throws GameActionException {
-        testCanBuildElixirWellNot();
-        testCanBuildElixirWell();
+    public void testRunCarrierElixirWellNull() throws GameActionException, NoSuchFieldException, IllegalAccessException {
+        CarrierRobotController rc = new CarrierRobotController();
+        Carrier carrier = new Carrier();
+        // Create fields for private globals.
+        Field designatedElixirWellField = Carrier.class.getDeclaredField("designatedElixirWell");
+        Field designatedWellTypeField = Carrier.class.getDeclaredField("designatedWellType");
+        Field islandLocationField = Carrier.class.getDeclaredField("islandLocation");
+        Field collectingAnchorField = Carrier.class.getDeclaredField("collectingAnchor");
+        Field elixirDepositHistoryField = Carrier.class.getDeclaredField("elixirDepositHistory");
 
-        testDepositResourceAmountZero();
-        testDepositResourceCannot();
-        testDepositResourceCan();
+        // Set accessible to true.
+        designatedElixirWellField.setAccessible(true);
+        designatedWellTypeField.setAccessible(true);
+        islandLocationField.setAccessible(true);
+        collectingAnchorField.setAccessible(true);
+        elixirDepositHistoryField.setAccessible(true);
 
-        testCollectFromAnywhere();
-        testCollectFromWell();
-        testCollectFromWellCannot();
+        // Set fields for test
+        designatedElixirWellField.set(carrier, null);
+        designatedWellTypeField.set(carrier, 0);
+        islandLocationField.set(carrier, new MapLocation(1, 1));
+        collectingAnchorField.set(carrier, Anchor.STANDARD);
+        elixirDepositHistoryField.set(carrier, -1);
 
-        testCollectAnchorSTANDARD();
-        testCollectAnchorACCELERATING();
-        testCollectAnchorCannot();
+        // Set other parameters for testing
+        rc.setCanPlaceAnchor(false);
+        rc.setLocation(new MapLocation(0, 0));
+        rc.setResourceAmount(ResourceType.NO_RESOURCE, 40);
+        int[] initialArray = new int[] {
+                80, 0, 0, 0, 81, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                80, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 600
+        };
+        rc.setSharedArray(initialArray);
+
+        // Run test
+        carrier.runCarrier(rc);
+        assertEquals(new MapLocation(1, 1), designatedElixirWellField.get(carrier));
+        assertEquals(1, designatedWellTypeField.get(carrier));
+    }
+
+    // Testing running Carrier when islandLocation is null.
+    @Test
+    public void testRunCarrierIslandLocationNull() throws GameActionException, NoSuchFieldException, IllegalAccessException {
+        CarrierRobotController rc = new CarrierRobotController();
+        Carrier carrier = new Carrier();
+        // Create fields for private globals.
+        Field designatedElixirWellField = Carrier.class.getDeclaredField("designatedElixirWell");
+        Field designatedWellTypeField = Carrier.class.getDeclaredField("designatedWellType");
+        Field islandLocationField = Carrier.class.getDeclaredField("islandLocation");
+        Field collectingAnchorField = Carrier.class.getDeclaredField("collectingAnchor");
+        Field elixirDepositHistoryField = Carrier.class.getDeclaredField("elixirDepositHistory");
+
+        // Set accessible to true.
+        designatedElixirWellField.setAccessible(true);
+        designatedWellTypeField.setAccessible(true);
+        islandLocationField.setAccessible(true);
+        collectingAnchorField.setAccessible(true);
+        elixirDepositHistoryField.setAccessible(true);
+
+        // Set fields for test
+        designatedElixirWellField.set(carrier, new MapLocation(1, 1));
+        designatedWellTypeField.set(carrier, 2);
+        islandLocationField.set(carrier, null);
+        collectingAnchorField.set(carrier, Anchor.STANDARD);
+        elixirDepositHistoryField.set(carrier, -1);
+
+        // Set other parameters for testing
+        rc.setCanPlaceAnchor(false);
+        rc.setLocation(new MapLocation(0, 0));
+        rc.setResourceAmount(ResourceType.NO_RESOURCE, 40);
+        int[] initialArray = new int[] {
+                80, 0, 0, 0, 81, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                80, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 600
+        };
+        rc.setSharedArray(initialArray);
+
+        // Run test
+        carrier.runCarrier(rc);
+        assertEquals(new MapLocation(1, 1), islandLocationField.get(carrier));
+    }
+
+    // Testing running Carrier when collect anchor is null.
+    @Test
+    public void testRunCarrierCollectingAnchorNull() throws GameActionException, NoSuchFieldException, IllegalAccessException {
+        CarrierRobotController rc = new CarrierRobotController();
+        Carrier carrier = new Carrier();
+        // Create fields for private globals.
+        Field designatedElixirWellField = Carrier.class.getDeclaredField("designatedElixirWell");
+        Field designatedWellTypeField = Carrier.class.getDeclaredField("designatedWellType");
+        Field islandLocationField = Carrier.class.getDeclaredField("islandLocation");
+        Field collectingAnchorField = Carrier.class.getDeclaredField("collectingAnchor");
+        Field elixirDepositHistoryField = Carrier.class.getDeclaredField("elixirDepositHistory");
+
+        // Set accessible to true.
+        designatedElixirWellField.setAccessible(true);
+        designatedWellTypeField.setAccessible(true);
+        islandLocationField.setAccessible(true);
+        collectingAnchorField.setAccessible(true);
+        elixirDepositHistoryField.setAccessible(true);
+
+        // Set fields for test
+        designatedElixirWellField.set(carrier, new MapLocation(1, 1));
+        designatedWellTypeField.set(carrier, 2);
+        islandLocationField.set(carrier, new MapLocation(1, 1));
+        collectingAnchorField.set(carrier, null);
+        elixirDepositHistoryField.set(carrier, -1);
+
+        // Set other parameters for testing
+        rc.setCanPlaceAnchor(false);
+        rc.setCanTakeAnchor(Anchor.STANDARD);
+        rc.setLocation(new MapLocation(0, 0));
+        rc.setResourceAmount(ResourceType.NO_RESOURCE, 40);
+        int[] initialArray = new int[] {
+                80, 0, 0, 0, 81, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                80, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 600
+        };
+        rc.setSharedArray(initialArray);
+
+        // Run test
+        carrier.runCarrier(rc);
+        assertEquals(Anchor.STANDARD, collectingAnchorField.get(carrier));
+    }
+
+    // Testing running Carrier when collect anchor is null after being placed.
+    @Test
+    public void testRunCarrierCollectingAnchorPlaced() throws GameActionException, NoSuchFieldException, IllegalAccessException {
+        CarrierRobotController rc = new CarrierRobotController();
+        Carrier carrier = new Carrier();
+        // Create fields for private globals.
+        Field designatedElixirWellField = Carrier.class.getDeclaredField("designatedElixirWell");
+        Field designatedWellTypeField = Carrier.class.getDeclaredField("designatedWellType");
+        Field islandLocationField = Carrier.class.getDeclaredField("islandLocation");
+        Field collectingAnchorField = Carrier.class.getDeclaredField("collectingAnchor");
+        Field elixirDepositHistoryField = Carrier.class.getDeclaredField("elixirDepositHistory");
+
+        // Set accessible to true.
+        designatedElixirWellField.setAccessible(true);
+        designatedWellTypeField.setAccessible(true);
+        islandLocationField.setAccessible(true);
+        collectingAnchorField.setAccessible(true);
+        elixirDepositHistoryField.setAccessible(true);
+
+        // Set fields for test
+        designatedElixirWellField.set(carrier, new MapLocation(1, 1));
+        designatedWellTypeField.set(carrier, 2);
+        islandLocationField.set(carrier, new MapLocation(1, 1));
+        collectingAnchorField.set(carrier, Anchor.STANDARD);
+        elixirDepositHistoryField.set(carrier, -1);
+
+        // Set other parameters for testing
+        rc.setCanPlaceAnchor(true);
+        rc.setLocation(new MapLocation(0, 0));
+        rc.setResourceAmount(ResourceType.NO_RESOURCE, 40);
+        int[] initialArray = new int[] {
+                80, 0, 0, 0, 81, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                80, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 600
+        };
+        rc.setSharedArray(initialArray);
+
+        // Run test
+        carrier.runCarrier(rc);
+        assertEquals(null, collectingAnchorField.get(carrier));
+    }
+
+    // Testing running Carrier when handling resources.
+    @Test
+    public void testRunCarrierHandlingResources() throws GameActionException, NoSuchFieldException, IllegalAccessException {
+        CarrierRobotController rc = new CarrierRobotController();
+        Carrier carrier = new Carrier();
+        // Create fields for private globals.
+        Field designatedElixirWellField = Carrier.class.getDeclaredField("designatedElixirWell");
+        Field designatedWellTypeField = Carrier.class.getDeclaredField("designatedWellType");
+        Field islandLocationField = Carrier.class.getDeclaredField("islandLocation");
+        Field collectingAnchorField = Carrier.class.getDeclaredField("collectingAnchor");
+        Field elixirDepositHistoryField = Carrier.class.getDeclaredField("elixirDepositHistory");
+
+        // Set accessible to true.
+        designatedElixirWellField.setAccessible(true);
+        designatedWellTypeField.setAccessible(true);
+        islandLocationField.setAccessible(true);
+        collectingAnchorField.setAccessible(true);
+        elixirDepositHistoryField.setAccessible(true);
+
+        // Set fields for test
+        designatedElixirWellField.set(carrier, new MapLocation(1, 1));
+        designatedWellTypeField.set(carrier, 2);
+        islandLocationField.set(carrier, new MapLocation(1, 1));
+        collectingAnchorField.set(carrier, null);
+        elixirDepositHistoryField.set(carrier, -1);
+
+        // Set other parameters for testing
+        rc.setCanPlaceAnchor(false);
+        rc.setCanTakeAnchor(false);
+        rc.setCanCollectResource(true);
+        rc.setLocation(new MapLocation(0, 0));
+        int[] initialArray = new int[] {
+                80, 0, 0, 0, 81, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                80, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 600
+        };
+        rc.setSharedArray(initialArray);
+
+        // Run test
+        assertEquals(0, rc.getResourceAmount(ResourceType.NO_RESOURCE));
+        carrier.runCarrier(rc);
+        assertEquals(40, rc.getResourceAmount(ResourceType.NO_RESOURCE));
+    }
+
+    // Testing running Carrier when handling Elixir creation.
+    @Test
+    public void testRunCarrierHandlingElixirCreation() throws GameActionException, NoSuchFieldException, IllegalAccessException {
+        CarrierRobotController rc = new CarrierRobotController();
+        Carrier carrier = new Carrier();
+        // Create fields for private globals.
+        Field designatedElixirWellField = Carrier.class.getDeclaredField("designatedElixirWell");
+        Field designatedWellTypeField = Carrier.class.getDeclaredField("designatedWellType");
+        Field islandLocationField = Carrier.class.getDeclaredField("islandLocation");
+        Field collectingAnchorField = Carrier.class.getDeclaredField("collectingAnchor");
+        Field elixirDepositHistoryField = Carrier.class.getDeclaredField("elixirDepositHistory");
+
+        // Set accessible to true.
+        designatedElixirWellField.setAccessible(true);
+        designatedWellTypeField.setAccessible(true);
+        islandLocationField.setAccessible(true);
+        collectingAnchorField.setAccessible(true);
+        elixirDepositHistoryField.setAccessible(true);
+
+        // Set fields for test
+        designatedElixirWellField.set(carrier, new MapLocation(1, 1));
+        designatedWellTypeField.set(carrier, 2);
+        islandLocationField.set(carrier, new MapLocation(1, 1));
+        collectingAnchorField.set(carrier, null);
+        elixirDepositHistoryField.set(carrier, 0);
+
+        // Set other parameters for testing
+        rc.setCanPlaceAnchor(false);
+        rc.setCanTakeAnchor(false);
+        rc.setCanCollectResource(false);
+        rc.setCanDepositResource(true);
+        rc.setResourceAmount(ResourceType.ADAMANTIUM, 40);
+        rc.setLocation(new MapLocation(0, 0));
+        int[] initialArray = new int[] {
+                80, 0, 0, 0, 81, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                80, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 500
+        };
+        rc.setSharedArray(initialArray);
+
+        // Run test
+        assertEquals(40, rc.getResourceAmount(ResourceType.ADAMANTIUM));
+        carrier.runCarrier(rc);
+        assertEquals(0, rc.getResourceAmount(ResourceType.ADAMANTIUM));
+    }
+
+    // Testing running Carrier when handling HQ operations.
+    @Test
+    public void testRunCarrierHandlingHQOperations() throws GameActionException, NoSuchFieldException, IllegalAccessException {
+        CarrierRobotController rc = new CarrierRobotController();
+        Carrier carrier = new Carrier();
+        // Create fields for private globals.
+        Field designatedElixirWellField = Carrier.class.getDeclaredField("designatedElixirWell");
+        Field designatedWellTypeField = Carrier.class.getDeclaredField("designatedWellType");
+        Field islandLocationField = Carrier.class.getDeclaredField("islandLocation");
+        Field collectingAnchorField = Carrier.class.getDeclaredField("collectingAnchor");
+        Field elixirDepositHistoryField = Carrier.class.getDeclaredField("elixirDepositHistory");
+
+        // Set accessible to true.
+        designatedElixirWellField.setAccessible(true);
+        designatedWellTypeField.setAccessible(true);
+        islandLocationField.setAccessible(true);
+        collectingAnchorField.setAccessible(true);
+        elixirDepositHistoryField.setAccessible(true);
+
+        // Set fields for test
+        designatedElixirWellField.set(carrier, new MapLocation(1, 1));
+        designatedWellTypeField.set(carrier, 2);
+        islandLocationField.set(carrier, new MapLocation(1, 1));
+        collectingAnchorField.set(carrier, null);
+        elixirDepositHistoryField.set(carrier, 40);
+
+        // Set other parameters for testing
+        rc.setCanPlaceAnchor(false);
+        rc.setCanTakeAnchor(false);
+        rc.setCanCollectResource(false);
+        rc.setCanDepositResource(true);
+        rc.setResourceAmount(ResourceType.ADAMANTIUM, 40);
+        rc.setLocation(new MapLocation(0, 0));
+        int[] initialArray = new int[] {
+                80, 0, 0, 0, 81, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                80, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 500
+        };
+        rc.setSharedArray(initialArray);
+
+        // Run test
+        assertEquals(40, rc.getResourceAmount(ResourceType.ADAMANTIUM));
+        assertEquals(40, elixirDepositHistoryField.get(carrier));
+        carrier.runCarrier(rc);
+        assertEquals(0, rc.getResourceAmount(ResourceType.ADAMANTIUM));
+        assertEquals(0, elixirDepositHistoryField.get(carrier));
+    }
+
+    // Testing handling of HQ operations, weight not zero.
+    @Test
+    public void testHandleHQOperationsWeightNotZero() throws GameActionException {
+        CarrierRobotController rc = new CarrierRobotController();
+        rc.setLocation(new MapLocation(0, 0));
+        rc.setCanDepositResource(false);
+        rc.setResourceAmount(ResourceType.NO_RESOURCE, 39);
+        Carrier.handleHQOperations(rc, new MapLocation(1, 1));
+        assertEquals(39, rc.getWeight());
+    }
+
+    // Testing handling of HQ operations, weight zero.
+    @Test
+    public void testHandleHQOperationsWeightZero() throws GameActionException {
+        CarrierRobotController rc = new CarrierRobotController();
+        rc.setLocation(new MapLocation(0, 0));
+        rc.setResourceAmount(ResourceType.ADAMANTIUM, 13);
+        rc.setResourceAmount(ResourceType.MANA, 13);
+        rc.setResourceAmount(ResourceType.ELIXIR, 13);
+        Carrier.handleHQOperations(rc, new MapLocation(1, 1));
+        assertEquals(0, rc.getWeight());
+    }
+
+    // Testing handling of Elixir creation, depositing correct amount.
+    @Test
+    public void testHandleElixirCreation() throws GameActionException {
+        CarrierRobotController rc = new CarrierRobotController();
+        rc.setLocation(new MapLocation(1, 1));
+        rc.setResourceAmount(ResourceType.ADAMANTIUM, 40);
+        rc.setResourceAmount(ResourceType.MANA, 25);
+
+        assertEquals(25, rc.getResourceAmount(ResourceType.MANA));
+        Carrier.handleElixirCreation(rc, new MapLocation(1, 1), 1);
+        assertEquals(0, rc.getResourceAmount(ResourceType.MANA));
+
+        assertEquals(40, rc.getResourceAmount(ResourceType.ADAMANTIUM));
+        Carrier.handleElixirCreation(rc, new MapLocation(1, 1), 2);
+        assertEquals(0, rc.getResourceAmount(ResourceType.ADAMANTIUM));
+    }
+
+    // Testing handling of resource collection, no well, explore.
+    @Test
+    public void testHandleResourceCollectionNoWellExplore() throws GameActionException {
+        CarrierRobotController rc = new CarrierRobotController();
+        rc.setLocation(new MapLocation(2, 2));
+        Carrier.handleResourceCollection(rc, rc.getLocation(), null);
+        assertEquals(new MapLocation(1, 1), rc.getLocation());
+        Movement.resetGlobals();
+    }
+
+    // Testing handling of resource collection, can.
+    @Test
+    public void testHandleResourceCollection() throws GameActionException {
+        CarrierRobotController rc = new CarrierRobotController();
+        rc.setLocation(new MapLocation(1, 1));
+        Carrier.handleResourceCollection(rc, rc.getLocation(), new MapLocation(1, 1));
+        assertEquals(40, rc.getResourceAmount(ResourceType.NO_RESOURCE));
+    }
+
+    // Testing handling of anchor, exploring when no island.
+    @Test
+    public void testHandleAnchorExplore() throws GameActionException {
+        CarrierRobotController rc = new CarrierRobotController();
+        rc.setLocation(new MapLocation(2, 2));
+        Carrier.handleAnchor(rc, rc.getLocation(), null);
+        assertEquals(new MapLocation(1, 1), rc.getLocation());
+        Movement.resetGlobals();
+    }
+
+    // Testing handling of anchor, cannot place anchor.
+    @Test
+    public void testHandleAnchorCannotPlaceAnchor() throws GameActionException {
+        CarrierRobotController rc = new CarrierRobotController();
+        rc.setLocation(new MapLocation(1, 1));
+        rc.setCanPlaceAnchor(false);
+        Carrier.handleAnchor(rc, rc.getLocation(), new MapLocation(1, 1));
+        assertFalse(rc.didPlaceAnchor());
+    }
+
+    // Testing handling of anchor, can place anchor.
+    @Test
+    public void testHandleAnchorCanPlaceAnchor() throws GameActionException {
+        CarrierRobotController rc = new CarrierRobotController();
+        rc.setLocation(new MapLocation(1, 1));
+        Carrier.handleAnchor(rc, rc.getLocation(), new MapLocation(1, 1));
+        assertTrue(rc.didPlaceAnchor());
+    }
+
+    // Testing locating a designated Elixir well cannot.
+    @Test
+    public void testLocateDesignatedElixirWellCannot() throws GameActionException {
+        CarrierRobotController rc = new CarrierRobotController();
+        int[] initialArray = new int[] {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        rc.setSharedArray(initialArray);
+        Carrier.locateDesignatedElixirWell(rc);
+        assertNull(Communication.findPotentialElixirWell(rc));
+        assertNull(rc.getIndicator());
+    }
+
+    // Testing locating a designated Elixir well can.
+    @Test
+    public void testLocateDesignatedElixirWell() throws GameActionException {
+        CarrierRobotController rc = new CarrierRobotController();
+        int[] initialArray = new int[] {
+                0, 0, 0, 0, 81, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+        };
+        rc.setSharedArray(initialArray);
+        Carrier.locateDesignatedElixirWell(rc);
+        assertArrayEquals(new int[] {1, 1, 1}, Communication.findPotentialElixirWell(rc));
+        assertEquals(rc.getIndicator(), "Future Elixir well located.");
+    }
+
+    // Testing conquer island if cannot.
+    @Test
+    public void testConquerIslandCannot() throws GameActionException {
+        CarrierRobotController rc = new CarrierRobotController();
+        rc.setLocation(new MapLocation(1, 1));
+        rc.setIslandLocation(new MapLocation(1, 1));
+        rc.setCanPlaceAnchor(false);
+        assertFalse(Carrier.conquerIsland(rc, rc.getLocation(), rc.getIslandLocation()));
+        assertFalse(rc.didPlaceAnchor());
+    }
+
+    // Testing conquer island, must move first.
+    @Test
+    public void testConquerIslandMoveFirst() throws GameActionException {
+        CarrierRobotController rc = new CarrierRobotController();
+        rc.setLocation(new MapLocation(0, 0));
+        rc.setIslandLocation(new MapLocation(1, 1));
+        assertTrue(Carrier.conquerIsland(rc, rc.getLocation(), rc.getIslandLocation()));
+        assertTrue(rc.didPlaceAnchor());
+        assertEquals(rc.getIndicator(), "Huzzah, placed anchor!");
+    }
+
+    // Testing conquer island, does not need to move.
+    @Test
+    public void testConquerIsland() throws GameActionException {
+        CarrierRobotController rc = new CarrierRobotController();
+        rc.setLocation(new MapLocation(0, 0));
+        rc.setIslandLocation(new MapLocation(0, 0));
+        assertTrue(Carrier.conquerIsland(rc, rc.getLocation(), rc.getIslandLocation()));
+        assertTrue(rc.didPlaceAnchor());
+        assertEquals(rc.getIndicator(), "Huzzah, placed anchor!");
+    }
+
+    // Testing building elixir well with wrong well type.
+    @Test
+    public void testBuildElixirWellWrongWellType() throws GameActionException {
+        CarrierRobotController rc = new CarrierRobotController();
+        assertEquals(0, Carrier.buildElixirWell(rc, new MapLocation(1, 1), 3));
+    }
+
+    // Testing building elixir well cannot.
+    @Test
+    public void testBuildElixirWellCannot() throws GameActionException {
+        CarrierRobotController rc = new CarrierRobotController();
+        rc.setResourceAmount(ResourceType.MANA, 0);
+        rc.setResourceAmount(ResourceType.ADAMANTIUM, 0);
+        assertEquals(0, Carrier.buildElixirWell(rc, new MapLocation(1, 1), 1));
+        assertEquals(0, Carrier.buildElixirWell(rc, new MapLocation(1, 1), 2));
+    }
+
+    // Testing building elixir can.
+    @Test
+    public void testBuildElixirWellCan() throws GameActionException {
+        CarrierRobotController rc = new CarrierRobotController();
+        rc.setResourceAmount(ResourceType.MANA, 25);
+        rc.setResourceAmount(ResourceType.ADAMANTIUM, 30);
+        assertEquals(25, Carrier.buildElixirWell(rc, new MapLocation(1, 1), 1));
+        assertEquals(30, Carrier.buildElixirWell(rc, new MapLocation(1, 1), 2));
     }
 
     // Testing cannot build Elixir well.
@@ -74,7 +586,7 @@ public class CarrierTest {
     public void testDepositResourceCan() throws GameActionException {
         CarrierRobotController rc = new CarrierRobotController();
         rc.setResourceAmount(ResourceType.NO_RESOURCE, 40);
-        assertTrue(Carrier.depositResource(rc, new MapLocation(1, 1), ResourceType.ADAMANTIUM, 40));
+        assertTrue(Carrier.depositResource(rc, new MapLocation(1, 1), ResourceType.NO_RESOURCE, 40));
         assertEquals(rc.getResourceAmount(ResourceType.NO_RESOURCE), 0);
     }
 
@@ -140,31 +652,74 @@ class CarrierRobotController implements RobotController {
     private boolean canTakeAnchorResult = true;
     private boolean canCollectResourceResult = true;
     private boolean canDepositResourceResult = true;
+    private boolean canPlaceAnchorResult = true;
+    private boolean anchorPlaced = false;
     private int resourceAmount = 0;
     private int adamantiumAmount = 0;
     private int manaAmount = 0;
     private int elixirAmount = 0;
     private Anchor anchorType;
     private MapLocation currentLocation;
+    private MapLocation islandLocation;
+    private String indicator;
+     // Create a sharedArray of 64 integers.
+     int[] sharedArray = new int[] {
+             0, 0, 0, 0, 0, 0, 0, 0,
+             0, 0, 0, 0, 0, 0, 0, 0,
+             0, 0, 0, 0, 0, 0, 0, 0,
+             0, 0, 0, 0, 0, 0, 0, 0,
+             0, 0, 0, 0, 0, 0, 0, 0,
+             0, 0, 0, 0, 0, 0, 0, 0,
+             0, 0, 0, 0, 0, 0, 0, 0,
+             0, 0, 0, 0, 0, 0, 0, 0
+     };
 
     public void setLocation(MapLocation location) {
         currentLocation = location;
+    }
+
+    public void setIslandLocation(MapLocation location) {
+        islandLocation = location;
+    }
+
+     public void setSharedArray(int[] sharedArrayResult) {
+         sharedArray = sharedArrayResult.clone();
+     }
+
+    public MapLocation getIslandLocation() {
+        return islandLocation;
+    }
+
+    public String getIndicator() {
+        return indicator;
     }
 
      public void setCanCollectResource(boolean result) {
          canCollectResourceResult = result;
      }
 
+     public void setCanPlaceAnchor(boolean result) {
+        canPlaceAnchorResult = result;
+     }
+
+     public boolean didPlaceAnchor() {
+        return anchorPlaced;
+     }
+
      public void setResourceAmount(ResourceType rType, int amount) {
         switch (rType) {
             case ADAMANTIUM:
                 adamantiumAmount = amount;
+                break;
             case MANA:
                 manaAmount = amount;
+                break;
             case ELIXIR:
                 elixirAmount = amount;
+                break;
             default:
                 resourceAmount = amount;
+                break;
         }
      }
 
@@ -187,12 +742,12 @@ class CarrierRobotController implements RobotController {
 
     @Override
     public int getMapWidth() {
-        return 0;
+        return 3;
     }
 
     @Override
     public int getMapHeight() {
-        return 0;
+        return 3;
     }
 
     @Override
@@ -256,7 +811,7 @@ class CarrierRobotController implements RobotController {
 
     @Override
     public int getWeight() {
-        return 40;
+        return resourceAmount == 0 ? adamantiumAmount + manaAmount + elixirAmount : resourceAmount;
     }
 
     @Override
@@ -466,7 +1021,7 @@ class CarrierRobotController implements RobotController {
 
     @Override
     public boolean isMovementReady() {
-        return false;
+        return true;
     }
 
     @Override
@@ -476,12 +1031,12 @@ class CarrierRobotController implements RobotController {
 
     @Override
     public boolean canMove(Direction dir) {
-        return false;
+        return true;
     }
 
     @Override
     public void move(Direction dir) throws GameActionException {
-
+        currentLocation = currentLocation.add(dir);
     }
 
     @Override
@@ -533,7 +1088,7 @@ class CarrierRobotController implements RobotController {
     public void collectResource(MapLocation loc, int amount) throws GameActionException {
          if (amount == -1) {
              // Fill up on resources.
-             resourceAmount += getWeight();
+             resourceAmount += 40;
          }
          else {
              resourceAmount += amount;
@@ -550,12 +1105,16 @@ class CarrierRobotController implements RobotController {
         switch (rType) {
             case ADAMANTIUM:
                 adamantiumAmount -= amount;
+                break;
             case MANA:
                 manaAmount -= amount;
+                break;
             case ELIXIR:
                 elixirAmount -= amount;
+                break;
             default:
                 resourceAmount -= amount;
+                break;
         }
     }
 
@@ -594,22 +1153,22 @@ class CarrierRobotController implements RobotController {
 
     @Override
     public boolean canPlaceAnchor() {
-        return false;
+        return canPlaceAnchorResult;
     }
 
     @Override
     public void placeAnchor() throws GameActionException {
-
+        anchorPlaced = true;
     }
 
     @Override
     public int readSharedArray(int index) throws GameActionException {
-        return 0;
+        return sharedArray[index];
     }
 
     @Override
     public boolean canWriteSharedArray(int index, int value) {
-        return false;
+        return true;
     }
 
     @Override
@@ -629,7 +1188,7 @@ class CarrierRobotController implements RobotController {
 
     @Override
     public void setIndicatorString(String string) {
-
+        indicator = string;
     }
 
     @Override

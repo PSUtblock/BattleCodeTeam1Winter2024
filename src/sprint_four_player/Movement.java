@@ -128,4 +128,14 @@ public class Movement {
             }
         }
     }
+
+    /** Reset all globals (for testing purposes) **/
+    public static void resetGlobals() {
+        potentialLandmarks.clear();
+        visitedLocations.clear();
+        visitedLandmarks.clear();
+        currentDir = null;
+        locToExplore = null;
+        targetLocked = false;
+    }
 }
