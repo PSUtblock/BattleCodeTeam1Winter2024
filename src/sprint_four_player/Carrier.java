@@ -4,7 +4,6 @@ import battlecode.common.*;
 
 public class Carrier {
     // Map locations to store headquarters, closest well, and island positions.
-    private static MapLocation wellLocation;
     private static MapLocation designatedElixirWell;
     private static int designatedWellType;
     private static MapLocation islandLocation;
@@ -27,7 +26,7 @@ public class Carrier {
         Communication.writeIslands(rc);
 
         // Find closest well location.
-        wellLocation = Communication.readWell(rc, 0);
+        MapLocation wellLocation = Communication.readWell(rc, 0);
 
         if (designatedElixirWell == null) {
             // If no designated Elixir well, find one.
@@ -50,7 +49,7 @@ public class Carrier {
         }
         else if (rc.getWeight() < GameConstants.CARRIER_CAPACITY && !isNeededAtHQ) {
             // If there is capacity, then go collect resources.
-            handleResourceCollection(rc, myLocation);
+            handleResourceCollection(rc, myLocation, wellLocation);
         }
         // Head to designated Elixir well to create it or HQ if your resources are full.
         else {
@@ -83,18 +82,18 @@ public class Carrier {
     }
 
     /** Handle creation of an Elixir well **/
-    public static void handleElixirCreation(RobotController rc, MapLocation wellLocation, int wellType) throws GameActionException {
-        Movement.moveToLocation(rc, wellLocation);
-        elixirDepositHistory = buildElixirWell(rc, wellLocation, wellType);
+    public static void handleElixirCreation(RobotController rc, MapLocation wellLoc, int wellType) throws GameActionException {
+        Movement.moveToLocation(rc, wellLoc);
+        elixirDepositHistory = buildElixirWell(rc, wellLoc, wellType);
     }
 
     /** Handle resource collection or exploring and collecting anything otherwise **/
-    public static void handleResourceCollection(RobotController rc, MapLocation myLocation) throws GameActionException {
-        if (wellLocation != null) {
-            rc.setIndicatorString("Moving towards well at: " + wellLocation);
-            Movement.moveToLocation(rc, wellLocation);
+    public static void handleResourceCollection(RobotController rc, MapLocation myLocation, MapLocation wellLoc) throws GameActionException {
+        if (wellLoc != null) {
+            rc.setIndicatorString("Moving towards well at: " + wellLoc);
+            Movement.moveToLocation(rc, wellLoc);
             // -1 indicates to collect all.
-            collectFromWell(rc, wellLocation, -1);
+            collectFromWell(rc, wellLoc, -1);
         }
         else {
             // Try to collect a well anyway, in case there is one, while exploring.
@@ -193,9 +192,9 @@ public class Carrier {
     }
 
     /** Try to collect resource. **/
-    public static void collectFromWell(RobotController rc, MapLocation location, int amount) throws GameActionException {
-        if (rc.canCollectResource(location, amount)) {
-            rc.collectResource(location, amount);
+    public static void collectFromWell(RobotController rc, MapLocation wellLoc, int amount) throws GameActionException {
+        if (rc.canCollectResource(wellLoc, amount)) {
+            rc.collectResource(wellLoc, amount);
             rc.setIndicatorString("Collecting, now have, AD:" +
                     rc.getResourceAmount(ResourceType.ADAMANTIUM) +
                     " MN: " + rc.getResourceAmount(ResourceType.MANA) +
