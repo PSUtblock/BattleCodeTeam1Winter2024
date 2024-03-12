@@ -1,9 +1,7 @@
 package sprint_four_player;
 
 import battlecode.common.*;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import static org.junit.Assert.*;
 
