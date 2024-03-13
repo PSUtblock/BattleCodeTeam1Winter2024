@@ -2,7 +2,6 @@ package sprint_four_player;
 
 import battlecode.common.*;
 import org.junit.Test;
-import org.scalactic.Or;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -37,11 +36,11 @@ public class HeadquartersTest {
         Headquarters.spawnAnchor(rc);
         assertNull(rc.getAnchor());
     }
-    @Test
-    public void testSpawnAcceleratingAnchor() throws GameActionException{
-        Headquarters.spawnAcceleratingAnchor(rc);
-        assertNull(rc.getAnchor());
-    }
+//    @Test
+//    public void testSpawnAcceleratingAnchor() throws GameActionException{
+//        Headquarters.spawnAcceleratingAnchor(rc);
+//        assertNull(rc.getAnchor());
+//    }
 
     @Test
     public void testSpawnCarriers()throws GameActionException{

@@ -13,10 +13,10 @@ public class Headquarters {
         rc.buildAnchor(Anchor.STANDARD);
         rc.setIndicatorString("Building anchor! " + rc.getNumAnchors(null));
     }
-    public static void spawnAcceleratingAnchor(RobotController rc) throws GameActionException{
-        rc.buildAnchor(Anchor.ACCELERATING);
-        rc.setIndicatorString("Building accelerating anchor! " + rc.getNumAnchors(null));
-    }
+//    public static void spawnAcceleratingAnchor(RobotController rc) throws GameActionException{
+//        rc.buildAnchor(Anchor.ACCELERATING);
+//        rc.setIndicatorString("Building accelerating anchor! " + rc.getNumAnchors(null));
+//    }
     public static void spawnCarriers(RobotController rc, MapLocation newLoc)throws GameActionException{
                 rc.buildRobot(RobotType.CARRIER, newLoc );
     }
@@ -77,15 +77,15 @@ public class Headquarters {
         /**
          * For every 20 rounds, build an accelerating anchor
          */
-        if(roundNum % spawn_interval_accelerating_anchor == 0){
-            if (rc.canBuildAnchor(Anchor.ACCELERATING)) {
-                // If we can build an anchor do it!
-                spawnAcceleratingAnchor(rc);
-            }
-            else{
-                spawn_interval_accelerating_anchor ++;
-            }
-        }
+//        if(roundNum % spawn_interval_accelerating_anchor == 0){
+//            if (rc.canBuildAnchor(Anchor.ACCELERATING)) {
+//                // If we can build an anchor do it!
+//                spawnAcceleratingAnchor(rc);
+//            }
+//            else{
+//                spawn_interval_accelerating_anchor ++;
+//            }
+//        }
 
         /**
          * For every 10 rounds, create a carrier
